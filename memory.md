@@ -90,10 +90,19 @@
 - Edge Functions endpoint: Accessible (ready for deployment)
 - Created verify-env.sh script for future verification
 
+## Edge Function Deployment Verified
+- Created hello function at supabase/functions/hello/index.ts
+- Successfully deployed to Supabase
+- GET, POST, and OPTIONS (CORS) requests all working
+- Function accessible at: ${SUPABASE_URL}/functions/v1/hello
+- Created test-edge-function.sh script for testing
+- Note: Vercel proxy redirects to www subdomain (may need configuration)
+
 ## Current Status
 - Project initialized with core planning documents
 - Requirements clarified and understood
 - Phase 1, Task 1, Subtask 1 completed: Supabase project verified accessible
 - Phase 1, Task 1, Subtask 2 completed: Supabase CLI connection tested
 - Phase 1, Task 1, Subtask 3 completed: Environment variables verified correct
-- Next: Test basic Edge Function deployment works
+- Phase 1, Task 1, Subtask 4 completed: Edge Function deployment tested
+- Next: Confirm database access with proper credentials
