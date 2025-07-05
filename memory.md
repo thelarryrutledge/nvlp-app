@@ -115,5 +115,6 @@
 - Project initialized with core planning documents
 - Requirements clarified and understood
 - Phase 1, Task 1 COMPLETED: All environment setup subtasks finished
-- Ready to begin Phase 1, Task 2: Simple Authentication Test
-- Next: Create minimal "hello world" Edge Function to test deployment
+- Phase 1, Task 2, Subtask 1 COMPLETED: Hello world Edge Function verified working
+- Hello function accessible at https://api.nvlp.app/hello (GET/POST methods)
+- Next: Create simple auth login endpoint (POST /auth/login)

@@ -10,7 +10,7 @@
 - [x] Confirm database access with proper credentials
 
 ### Task 2: Simple Authentication Test
-- [ ] Create minimal "hello world" Edge Function to test deployment
+- [x] Create minimal "hello world" Edge Function to test deployment
 - [ ] Create simple auth login endpoint (POST /auth/login)
 - [ ] Test login endpoint with curl/Postman FIRST
 - [ ] Verify JWT token generation and format
