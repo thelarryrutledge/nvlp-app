@@ -1,0 +1,32 @@
+{
+  "name": "nvlp-app",
+  "version": "1.0.0",
+  "description": "NVLP - Virtual Envelope Budget App",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "keywords": [
+    "budgeting",
+    "envelope",
+    "supabase"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "vercel": "^32.7.2"
+  },
+  "directories": {
+    "doc": "docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thelarryrutledge/nvlp-app.git"
+  },
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/thelarryrutledge/nvlp-app/issues"
+  },
+  "homepage": "https://github.com/thelarryrutledge/nvlp-app#readme"
+}
