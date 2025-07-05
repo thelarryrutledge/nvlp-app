@@ -76,8 +76,16 @@
 - Static auth pages created for email confirmation and password reset
 - API proxy configured: /api/* → Supabase Edge Functions
 
+## Supabase CLI Setup
+- CLI version: 2.26.9 (update available to 2.30.4)
+- Successfully logged in with access token
+- Project linked: qnpatlosomopoimtsmsr
+- Local config differs from remote (auth settings)
+- Edge functions list verified (empty, ready for deployment)
+
 ## Current Status
 - Project initialized with core planning documents
 - Requirements clarified and understood
 - Phase 1, Task 1, Subtask 1 completed: Supabase project verified accessible
-- Next: Test Supabase CLI connection with proper tokens
+- Phase 1, Task 1, Subtask 2 completed: Supabase CLI connection tested
+- Next: Verify environment variables (.env.local) are correct
