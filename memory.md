@@ -96,12 +96,12 @@
 - GET, POST, and OPTIONS (CORS) requests all working
 - Function accessible at: ${SUPABASE_URL}/functions/v1/hello
 - Created test-edge-function.sh script for testing
-- Vercel proxy configuration:
-  - www.nvlp.app/api/* → Supabase Edge Functions (working)
-  - api.nvlp.app/* → Supabase Edge Functions (pending setup)
+- API Domain Configuration:
+  - Primary API URL: https://api.nvlp.app
+  - Fallback: www.nvlp.app/api/* → Supabase Edge Functions
+  - api.nvlp.app/* → Supabase Edge Functions (DNS propagating)
   - Authorization headers required and passed through
-  - nvlp.app → www.nvlp.app (307 redirect)
-  - API base URL will be: https://api.nvlp.app
+  - All future development uses api.nvlp.app base URL
 
 ## Current Status
 - Project initialized with core planning documents
