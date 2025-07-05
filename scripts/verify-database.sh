@@ -30,18 +30,18 @@ else
     echo "✗ Service role database access: Failed (Status: $SERVICE_STATUS)"
 fi
 
-# Get database version info
+# Get PostgREST API version info
 echo ""
-echo "Database information:"
+echo "PostgREST API information:"
 DB_INFO=$(curl -s "${SUPABASE_URL}/rest/v1/" \
   -H "apikey: ${SUPABASE_SERVICE_ROLE_KEY}" \
   -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" | \
-  python3 -c "import sys, json; data=json.load(sys.stdin); print(f'Version: {data[\"info\"][\"version\"]}'); print(f'Host: {data[\"host\"]}')" 2>/dev/null)
+  python3 -c "import sys, json; data=json.load(sys.stdin); print(f'PostgREST Version: {data[\"info\"][\"version\"]}'); print(f'Host: {data[\"host\"]}')" 2>/dev/null)
 
 if [ $? -eq 0 ]; then
     echo "✓ $DB_INFO"
 else
-    echo "✗ Could not retrieve database info"
+    echo "✗ Could not retrieve PostgREST info"
 fi
 
 # Test if we can access public schema

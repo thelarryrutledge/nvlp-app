@@ -106,7 +106,8 @@
 ## Database Access Verified
 - Anon key: REST API access working (200 status)
 - Service role key: Full database access working (200 status)
-- Database version: 12.2.3 (519615d)
+- PostgreSQL version: 17.4 (latest)
+- PostgREST API version: 12.2.3 (519615d)
 - Public schema accessible for table creation
 - Created verify-database.sh script for testing
 
