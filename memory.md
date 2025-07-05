@@ -99,15 +99,20 @@
 - API Domain Configuration:
   - Primary API URL: https://api.nvlp.app
   - Fallback: www.nvlp.app/api/* → Supabase Edge Functions
-  - api.nvlp.app/* → Supabase Edge Functions (DNS propagating)
+  - api.nvlp.app/* → Supabase Edge Functions (✅ WORKING)
   - Authorization headers required and passed through
   - All future development uses api.nvlp.app base URL
+
+## Database Access Verified
+- Anon key: REST API access working (200 status)
+- Service role key: Full database access working (200 status)
+- Database version: 12.2.3 (519615d)
+- Public schema accessible for table creation
+- Created verify-database.sh script for testing
 
 ## Current Status
 - Project initialized with core planning documents
 - Requirements clarified and understood
-- Phase 1, Task 1, Subtask 1 completed: Supabase project verified accessible
-- Phase 1, Task 1, Subtask 2 completed: Supabase CLI connection tested
-- Phase 1, Task 1, Subtask 3 completed: Environment variables verified correct
-- Phase 1, Task 1, Subtask 4 completed: Edge Function deployment tested
-- Next: Confirm database access with proper credentials
+- Phase 1, Task 1 COMPLETED: All environment setup subtasks finished
+- Ready to begin Phase 1, Task 2: Simple Authentication Test
+- Next: Create minimal "hello world" Edge Function to test deployment
