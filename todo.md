@@ -11,8 +11,10 @@
 
 ### Task 2: Simple Authentication Test
 - [x] Create minimal "hello world" Edge Function to test deployment
-- [ ] Create simple auth login endpoint (POST /auth/login)
-- [ ] Test login endpoint with curl/Postman FIRST
+- [x] Create simple auth register endpoint (POST /auth/register)
+- [x] Test register endpoint with curl/Postman FIRST
+- [x] Create simple auth login endpoint (POST /auth/login)
+- [x] Test login endpoint with curl/Postman FIRST
 - [ ] Verify JWT token generation and format
 - [ ] Test token validation with a protected endpoint
 - [ ] Document exact request/response format

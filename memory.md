@@ -111,10 +111,19 @@
 - Public schema accessible for table creation
 - Created verify-database.sh script for testing
 
+## Authentication Implementation
+- Created auth Edge Function with domain-grouped endpoints
+- Register endpoint: POST /auth/register (with email/password validation)
+- Login endpoint: POST /auth/login (returns JWT in session.access_token)
+- Both endpoints require anon key authorization
+- Email confirmation required after registration
+- JWT tokens expire in 3600 seconds (1 hour)
+- Created test-auth-endpoints.sh script for testing
+
 ## Current Status
 - Project initialized with core planning documents
 - Requirements clarified and understood
 - Phase 1, Task 1 COMPLETED: All environment setup subtasks finished
-- Phase 1, Task 2, Subtask 1 COMPLETED: Hello world Edge Function verified working
-- Hello function accessible at https://api.nvlp.app/hello (GET/POST methods)
-- Next: Create simple auth login endpoint (POST /auth/login)
+- Phase 1, Task 2, Subtasks 1-5 COMPLETED: Auth endpoints created and tested
+- Auth endpoints accessible at https://api.nvlp.app/auth/*
+- Next: Verify JWT token generation and format
