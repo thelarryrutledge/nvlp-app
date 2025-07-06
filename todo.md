@@ -15,9 +15,9 @@
 - [x] Test register endpoint with curl/Postman FIRST
 - [x] Create simple auth login endpoint (POST /auth/login)
 - [x] Test login endpoint with curl/Postman FIRST
-- [ ] Verify JWT token generation and format
-- [ ] Test token validation with a protected endpoint
-- [ ] Document exact request/response format
+- [x] Verify JWT token generation and format
+- [x] Test token validation with a protected endpoint
+- [x] Document exact request/response format
 
 ### Task 3: Authentication Foundation
 - [ ] Implement complete auth endpoints (register, logout, profile, refresh)

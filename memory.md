@@ -120,10 +120,17 @@
 - JWT tokens expire in 3600 seconds (1 hour)
 - Created test-auth-endpoints.sh script for testing
 
+## API Documentation
+- Created comprehensive auth API documentation in docs/API_AUTH.md
+- Documented all request/response formats with examples
+- Created quick reference guide in docs/AUTH_QUICK_REFERENCE.md
+- Includes error codes, JWT structure, and testing examples
+
 ## Current Status
 - Project initialized with core planning documents
 - Requirements clarified and understood
 - Phase 1, Task 1 COMPLETED: All environment setup subtasks finished
-- Phase 1, Task 2, Subtasks 1-5 COMPLETED: Auth endpoints created and tested
-- Auth endpoints accessible at https://api.nvlp.app/auth/*
-- Next: Verify JWT token generation and format
+- Phase 1, Task 2 COMPLETED: Simple authentication test implemented
+- Auth endpoints: /auth/register, /auth/login, /auth/profile (protected)
+- JWT token validation working correctly
+- Next: Task 3 - Authentication Foundation (complete auth system)

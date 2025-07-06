@@ -26,7 +26,67 @@ serve(async (req) => {
     const method = req.method
 
     // Route handling
-    if (path === '/auth/login' && method === 'POST') {
+    // Protected endpoint - requires valid JWT token
+    if (path === '/auth/profile' && method === 'GET') {
+      // Get the authorization header
+      const authHeader = req.headers.get('authorization')
+      
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return new Response(
+          JSON.stringify({ 
+            error: 'Missing or invalid authorization header',
+            code: 'UNAUTHORIZED'
+          }),
+          { 
+            status: 401, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        )
+      }
+
+      // Extract the JWT token
+      const token = authHeader.replace('Bearer ', '')
+      
+      // Verify the JWT token and get user
+      const { data: { user }, error } = await supabase.auth.getUser(token)
+      
+      if (error || !user) {
+        return new Response(
+          JSON.stringify({ 
+            error: 'Invalid or expired token',
+            code: 'INVALID_TOKEN'
+          }),
+          { 
+            status: 401, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        )
+      }
+
+      // Return user profile
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: 'Profile retrieved successfully',
+          user: {
+            id: user.id,
+            email: user.email,
+            email_confirmed_at: user.email_confirmed_at,
+            created_at: user.created_at,
+            updated_at: user.updated_at,
+            role: user.role,
+            app_metadata: user.app_metadata,
+            user_metadata: user.user_metadata
+          }
+        }),
+        { 
+          status: 200, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+    
+    else if (path === '/auth/login' && method === 'POST') {
       const { email, password } = await req.json()
 
       // Validate input
@@ -180,7 +240,7 @@ serve(async (req) => {
       JSON.stringify({ 
         error: 'Not found',
         code: 'ROUTE_NOT_FOUND',
-        available_routes: ['/auth/register', '/auth/login']
+        available_routes: ['/auth/register', '/auth/login', '/auth/profile (GET, protected)']
       }),
       { 
         status: 404, 
