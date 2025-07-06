@@ -30,7 +30,7 @@
 ## Phase 2: Database Schema (After Auth 100% Working)
 
 ### Task 4: Core Tables Creation
-- [ ] Create user_profiles table (extends auth.users)
+- [x] Create user_profiles table (extends auth.users)
 - [ ] Create budgets table with user relationship
 - [ ] Test database tables with direct SQL queries
 - [ ] Add Row Level Security (RLS) policies

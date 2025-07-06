@@ -43,7 +43,16 @@ Complete API documentation created:
 - Comprehensive error codes, validation rules, security features
 - Test scripts and web page references included
 
+## Database Schema (Phase 2)
+user_profiles table created successfully:
+- Migration: supabase/migrations/20250706142628_create_user_profiles.sql
+- Applied via: SUPABASE_DB_PASSWORD + supabase db push
+- Extends auth.users with display_name, timezone, currency_code, date_format
+- Includes RLS policies: users can only access own profile
+- Auto-creation trigger: handle_new_user() VERIFIED WORKING ✅
+- Tested: new user registration auto-creates profile with defaults
+
 ## Next Steps
-Phase 1, Task 3: COMPLETED (6/6 done) ✅
-Phase 1 AUTHENTICATION FOUNDATION: COMPLETE
-Next: Phase 2 - Database Schema
+Phase 1: AUTHENTICATION FOUNDATION COMPLETE ✅
+Phase 2, Task 4, Subtask 1: user_profiles table COMPLETE ✅
+Next: Phase 2, Task 4, Subtask 2 - Create budgets table
