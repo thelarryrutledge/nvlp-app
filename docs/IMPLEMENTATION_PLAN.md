@@ -168,30 +168,85 @@ This document outlines the detailed implementation plan for the NVLP (Virtual En
 6. Audit logging and edit tracking
 7. Soft delete and recovery
 
-## Frontend Integration Patterns
+## ARCHITECTURAL PIVOT: Direct PostgREST + Abstract Layer
 
-### API Client Implementation
-- **Retry Logic with Exponential Backoff**: All API calls should implement retry logic to handle serverless cold starts
-  - First request timeout: 10 seconds
-  - Retry timeout: 30 seconds
-  - Maximum 2-3 retry attempts
-  - Exponential backoff between retries (2s, 4s, 8s)
-- **Connection Timeout Handling**: Graceful handling of Edge Function cold starts
-- **Error State Management**: Proper error messages for different failure scenarios
+### Decision Rationale
+Due to Edge Function cold start performance issues, we've pivoted from wrapping all operations in Edge Functions to a hybrid approach:
 
-### User Experience Patterns
-- **Optimistic Updates**: Update UI immediately for non-critical operations
-  - ✅ Use for: Name changes, description updates, toggle settings, reordering
-  - ❌ Avoid for: Financial transactions, creating new records, critical operations
-  - Always implement rollback on failure
-- **Loading States**: Show appropriate loading indicators during API calls
+**NEW ARCHITECTURE:**
+- **Direct PostgREST calls** for simple CRUD operations (fast, no cold start)
+- **Edge Functions** only for complex business logic requiring custom validation
+- **Abstract Client Library** providing consistent interface regardless of transport
+- **Flexible Implementation** allowing UIs to choose optimal transport per operation
+
+### API Transport Options
+
+#### 1. Direct PostgREST (Recommended for CRUD)
+```typescript
+// Direct PostgREST - No cold start, immediate response
+const response = await fetch(`${SUPABASE_URL}/rest/v1/budgets`, {
+  headers: {
+    'Authorization': `Bearer ${jwt}`,
+    'apikey': SUPABASE_ANON_KEY,
+    'Content-Type': 'application/json'
+  }
+})
+```
+
+#### 2. Edge Functions (For Complex Logic)
+```typescript
+// Edge Functions - Use for complex validation, business logic
+const response = await fetch(`${API_URL}/complex-transaction`, {
+  headers: { 'Authorization': `Bearer ${jwt}` }
+})
+```
+
+#### 3. Abstract Client Library (Recommended Interface)
+```typescript
+// Consistent interface, configurable transport
+const client = new NVLPClient({
+  transport: 'postgrest', // or 'edge-functions'
+  supabaseUrl: SUPABASE_URL,
+  apiKey: SUPABASE_ANON_KEY,
+  token: jwt
+})
+
+const budgets = await client.budgets.list() // Uses optimal transport
+```
+
+### Performance Benefits
+- **🚀 Immediate Response**: PostgREST calls respond in <50ms vs 2-10s Edge Function cold starts
+- **🔄 Retry Logic Simplified**: Only needed for Edge Functions, not PostgREST
+- **📊 Predictable Performance**: Direct database queries eliminate serverless variability
+- **⚡ Concurrent Operations**: Multiple PostgREST calls can run simultaneously without cold start penalty
+
+### Implementation Strategy
+1. **Phase 3A**: Convert existing Edge Functions to direct PostgREST documentation
+2. **Phase 3B**: Create abstract client library with both transport options
+3. **Phase 3C**: Update testing scripts to use direct PostgREST calls
+4. **Phase 4+**: Use Edge Functions only for complex business logic (multi-step transactions, validation)
+
+### Frontend Integration Patterns
+
+#### API Client Implementation
+- **Direct PostgREST**: Fast, reliable, no retry logic needed for simple operations
+- **Edge Function Fallback**: For complex operations requiring custom business logic
+- **Consistent Error Handling**: Abstract layer normalizes error responses from both transports
+- **Authentication**: JWT + API key pattern for PostgREST, JWT-only for Edge Functions
+
+#### User Experience Patterns
+- **Optimistic Updates**: More reliable with fast PostgREST responses
+  - ✅ Use for: Most CRUD operations (create, update, delete)
+  - ❌ Avoid for: Complex financial transactions, multi-step operations
+- **Loading States**: Simplified - minimal loading for PostgREST, longer for Edge Functions
 - **Offline Support**: Cache frequently accessed data (user profile, budgets, recent transactions)
 
-### Performance Optimization
-- **Request Batching**: Group multiple operations where possible
+#### Performance Optimization
+- **PostgREST First**: Use direct PostgREST for all simple CRUD operations
+- **Edge Functions Last**: Only when PostgREST cannot handle the complexity
+- **Request Batching**: PostgREST supports multiple operations in single request
 - **Caching Strategy**: Cache user profile and budget list on authentication
-- **Progressive Loading**: Load critical data first, then secondary data
-- **Keep-Alive Strategy**: Optional periodic API calls to keep Edge Functions warm
+- **Progressive Loading**: Load critical data first using PostgREST, then secondary data
 
 ### Frontend Authentication Flow
 ```

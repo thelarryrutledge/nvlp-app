@@ -64,23 +64,38 @@
 - [x] Add proper error messages and validation
 - [x] Test edge cases and error conditions
 
-### Task 8: Core Business APIs
-- [ ] Create income sources CRUD endpoints
-- [ ] Create categories CRUD endpoints
-- [ ] Create envelopes CRUD endpoints
-- [ ] Create payees CRUD endpoints
+### Task 8: ARCHITECTURAL PIVOT - Direct PostgREST
+- [ ] Convert profile endpoint from Edge Function to direct PostgREST calls
+- [ ] Convert budgets endpoint from Edge Function to direct PostgREST calls  
+- [ ] Remove Edge Function wrappers for profile and budgets
+- [ ] Update testing scripts to use direct PostgREST calls
+- [ ] Document PostgREST API patterns and authentication
+
+### Task 9: Core Business APIs (Direct PostgREST)
+- [ ] Create income sources CRUD documentation (PostgREST)
+- [ ] Create categories CRUD documentation (PostgREST)
+- [ ] Create envelopes CRUD documentation (PostgREST)
+- [ ] Create payees CRUD documentation (PostgREST)
 - [ ] Test each API module completely before next
 - [ ] Verify data isolation between users
 
-### Task 9: Transaction System
-- [ ] Create transaction validation functions
-- [ ] Create transaction CRUD endpoints
+### Task 10: Abstract Client Library
+- [ ] Create abstract client library wrapper (Task 10a)
+- [ ] Implement PostgREST transport layer
+- [ ] Implement Edge Function transport layer (for complex operations)
+- [ ] Create consistent error handling across transports
+- [ ] Add authentication management for both transports
+- [ ] Test client library with both transport options
+
+### Task 11: Transaction System (Edge Functions for Complex Logic)
+- [ ] Create transaction validation functions (Edge Function)
+- [ ] Create transaction CRUD endpoints (Edge Function)
 - [ ] Implement transaction types (income, expense, allocation, transfer)
 - [ ] Test transaction logic with real data
 - [ ] Add balance calculation and state updates
 - [ ] Test envelope balance tracking
 
-### Task 10: Advanced Features
+### Task 12: Advanced Features
 - [ ] Create dashboard API endpoint
 - [ ] Create reporting APIs
 - [ ] Create data export functionality
