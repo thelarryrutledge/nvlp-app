@@ -48,7 +48,7 @@
 
 ### Task 6: Advanced Database Features
 - [x] Create transaction_events table (audit trail)
-- [ ] Create user_state table (available amount tracking)
+- [x] Create user_state table (available amount tracking)
 - [ ] Add database functions for calculations
 - [ ] Create triggers for automatic updates
 - [ ] Test trigger functions work with RLS
