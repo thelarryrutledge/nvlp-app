@@ -57,7 +57,7 @@
 ## Phase 3: API Development (Test Each Endpoint Immediately)
 
 ### Task 7: Profile & Budget APIs
-- [ ] Create user profile CRUD endpoints
+- [x] Create user profile CRUD endpoints
 - [ ] Create budget CRUD endpoints
 - [ ] Test each endpoint with curl/Postman before moving on
 - [ ] Verify authentication works for each endpoint

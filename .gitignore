@@ -54,6 +54,9 @@ supabase/.branches/
 # Claude
 .claude/
 
+# API Testing
+.token
+
 # Package manager files
 package-lock.json
 yarn.lock
