@@ -27,6 +27,7 @@ Core tables implemented with full RLS security and automation:
 **income_sources**: Budget-scoped income tracking with auto-creation of defaults
 **categories**: Budget-scoped categories with 8 expense + 2 income defaults auto-created
 **envelopes**: Budget-scoped envelopes with notification features (notify_date, notify_amount)
+**payees**: Budget-scoped payees with 6 types (business, person, organization, utility, service, other)
 
 All tables feature:
 - Complete RLS policies enforcing user data isolation
@@ -42,9 +43,9 @@ All tables feature:
 ## Current Status & Next Steps
 **COMPLETED ✅**
 - Phase 1: Authentication Foundation (7 endpoints, full security)
-- Phase 2: Core Tables (user_profiles, budgets, income_sources, categories, envelopes)
+- Phase 2: Core Tables (user_profiles, budgets, income_sources, categories, envelopes, payees)
 - Multi-user RLS testing and automation verification
-- Complete automation chain: user registration → profile → budget → income_sources + categories + envelopes
+- Complete automation chain: user registration → profile → budget → income_sources + categories + envelopes + payees
 
-**NEXT: Phase 2, Task 5, Subtask 4**
-Create payees table (budget-scoped)
+**NEXT: Phase 2, Task 5, Subtask 5**
+Create transactions table (budget-scoped)

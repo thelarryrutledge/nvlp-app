@@ -11,6 +11,7 @@ This directory contains essential utility and testing scripts for the NVLP proje
 
 - **test-auth-endpoints.sh** - Comprehensive test of all 7 authentication endpoints
 - **test-envelopes-table.sh** - Complete test of envelopes table with CRUD, constraints, and notifications
+- **test-payees-table.sh** - Complete test of payees table with CRUD, constraints, and payee types
 - **test-multi-user-rls.sh** - Multi-user RLS testing for data isolation verification
 
 ## Notes
