@@ -28,12 +28,15 @@ Core tables implemented with full RLS security and automation:
 **categories**: Budget-scoped categories with 8 expense + 2 income defaults auto-created
 **envelopes**: Budget-scoped envelopes with notification features (notify_date, notify_amount)
 **payees**: Budget-scoped payees with 6 types (business, person, organization, utility, service, other)
+**transactions**: Money flow tracking with 5 transaction types (income, allocation, expense, transfer, debt_payment)
+**transaction_events**: Audit trail for all transaction modifications with event logging triggers
 
 All tables feature:
 - Complete RLS policies enforcing user data isolation
-- Auto-creation triggers for new users/budgets
+- Auto-creation triggers for new users/budgets (except transactions)
 - Comprehensive constraint validation
 - Multi-user testing verified ✅
+- Automatic balance calculations via database triggers
 
 ## Testing & Scripts
 - Comprehensive test scripts in `/scripts` directory (cleaned up from 20+ to 5 essential scripts)
@@ -43,9 +46,11 @@ All tables feature:
 ## Current Status & Next Steps
 **COMPLETED ✅**
 - Phase 1: Authentication Foundation (7 endpoints, full security)
-- Phase 2: Core Tables (user_profiles, budgets, income_sources, categories, envelopes, payees)
+- Phase 2: Core Tables (user_profiles, budgets, income_sources, categories, envelopes, payees, transactions, transaction_events)
+- Money flow model implementation with automatic balance tracking
+- Audit trail system with comprehensive event logging for all transaction modifications
 - Multi-user RLS testing and automation verification
 - Complete automation chain: user registration → profile → budget → income_sources + categories + envelopes + payees
 
-**NEXT: Phase 2, Task 5, Subtask 5**
-Create transactions table (budget-scoped)
+**NEXT: Phase 2, Task 6 (Partial)**
+Continue Advanced Database Features (user_state table, validation functions, triggers)

@@ -42,12 +42,12 @@
 - [x] Create categories table (budget-scoped) 
 - [x] Create envelopes table (budget-scoped)
 - [x] Create payees table (budget-scoped)
-- [ ] Create transactions table (budget-scoped)
-- [ ] Add necessary indexes and constraints
-- [ ] Test all tables work with RLS policies
+- [x] Create transactions table (budget-scoped)
+- [x] Add necessary indexes and constraints
+- [x] Test all tables work with RLS policies
 
 ### Task 6: Advanced Database Features
-- [ ] Create transaction_events table (audit trail)
+- [x] Create transaction_events table (audit trail)
 - [ ] Create user_state table (available amount tracking)
 - [ ] Add database functions for calculations
 - [ ] Create triggers for automatic updates
