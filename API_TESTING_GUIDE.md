@@ -65,16 +65,38 @@ curl -H "Authorization: Bearer $(cat .token)" \
 
 ### Budgets
 ```bash
-# Get your budgets
-curl $AUTH_HEADERS $REST_URL/budgets
+# Get all your budgets
+curl -H "Authorization: Bearer $(cat .token)" https://api.nvlp.app/budgets
 
 # Get specific budget
-curl $AUTH_HEADERS "$REST_URL/budgets?id=eq.YOUR_BUDGET_ID"
+curl -H "Authorization: Bearer $(cat .token)" "https://api.nvlp.app/budgets?id=YOUR_BUDGET_ID"
+
+# Create new budget
+curl -H "Authorization: Bearer $(cat .token)" \
+  -H "Content-Type: application/json" \
+  -X POST https://api.nvlp.app/budgets \
+  -d '{
+    "name": "New Budget",
+    "description": "Budget description",
+    "is_active": true
+  }'
 
 # Update budget
-curl $AUTH_HEADERS -X PATCH "$REST_URL/budgets?id=eq.YOUR_BUDGET_ID" \
+curl -H "Authorization: Bearer $(cat .token)" \
   -H "Content-Type: application/json" \
+  -X PATCH "https://api.nvlp.app/budgets?id=YOUR_BUDGET_ID" \
   -d '{"name": "Updated Budget Name"}'
+
+# Delete budget (cannot delete default budget)
+curl -H "Authorization: Bearer $(cat .token)" \
+  -X DELETE "https://api.nvlp.app/budgets?id=YOUR_BUDGET_ID"
+
+# Notes:
+# - name is required and must be 1-100 characters
+# - description is optional and must be ≤500 characters  
+# - is_active defaults to true
+# - Cannot delete default budget
+# - Budget names must be unique per user
 ```
 
 ### Income Sources
