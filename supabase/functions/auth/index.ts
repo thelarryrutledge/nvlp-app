@@ -8,6 +8,14 @@ const corsHeaders = {
   'Access-Control-Max-Age': '86400', // Cache preflight for 24 hours
 }
 
+const securityHeaders = {
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'X-XSS-Protection': '1; mode=block',
+  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+  'Content-Security-Policy': "default-src 'none'; frame-ancestors 'none';",
+}
+
 // Helper function for consistent error responses
 function createErrorResponse(error: string, code: string, status: number = 400, details?: any) {
   const errorObj: any = { error, code }
@@ -19,7 +27,11 @@ function createErrorResponse(error: string, code: string, status: number = 400, 
     JSON.stringify(errorObj),
     { 
       status, 
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      headers: { 
+        ...corsHeaders, 
+        ...securityHeaders,
+        'Content-Type': 'application/json' 
+      } 
     }
   )
 }
@@ -30,7 +42,11 @@ function createSuccessResponse(data: any, status: number = 200) {
     JSON.stringify(data),
     { 
       status, 
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      headers: { 
+        ...corsHeaders, 
+        ...securityHeaders,
+        'Content-Type': 'application/json' 
+      } 
     }
   )
 }
@@ -49,6 +65,87 @@ async function validateTokenAndGetUser(supabase: any, authHeader: string | null)
   }
 
   return user
+}
+
+// Input validation helpers
+const ValidationRules = {
+  email: {
+    pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+    maxLength: 255,
+    minLength: 3
+  },
+  password: {
+    minLength: 6,
+    maxLength: 72, // bcrypt limit
+    pattern: /^[\x20-\x7E]*$/ // Printable ASCII characters
+  },
+  general: {
+    maxJsonSize: 10 * 1024 // 10KB max request size
+  }
+}
+
+// Sanitize and validate email
+function sanitizeEmail(email: any): string | null {
+  if (typeof email !== 'string') return null
+  
+  // Remove leading/trailing whitespace and convert to lowercase
+  const cleaned = email.trim().toLowerCase()
+  
+  // Check length constraints
+  if (cleaned.length < ValidationRules.email.minLength || 
+      cleaned.length > ValidationRules.email.maxLength) {
+    return null
+  }
+  
+  // Validate format
+  if (!ValidationRules.email.pattern.test(cleaned)) {
+    return null
+  }
+  
+  return cleaned
+}
+
+// Validate password (no sanitization for security)
+function validatePassword(password: any): { valid: boolean; error?: string } {
+  if (typeof password !== 'string') {
+    return { valid: false, error: 'Password must be a string' }
+  }
+  
+  if (password.length < ValidationRules.password.minLength) {
+    return { valid: false, error: `Password must be at least ${ValidationRules.password.minLength} characters` }
+  }
+  
+  if (password.length > ValidationRules.password.maxLength) {
+    return { valid: false, error: `Password must be less than ${ValidationRules.password.maxLength} characters` }
+  }
+  
+  if (!ValidationRules.password.pattern.test(password)) {
+    return { valid: false, error: 'Password contains invalid characters' }
+  }
+  
+  return { valid: true }
+}
+
+// Validate request size
+function validateRequestSize(req: Request): boolean {
+  const contentLength = req.headers.get('content-length')
+  if (contentLength && parseInt(contentLength) > ValidationRules.general.maxJsonSize) {
+    return false
+  }
+  return true
+}
+
+// Safe JSON parsing with size limit
+async function parseJsonBody(req: Request): Promise<any> {
+  if (!validateRequestSize(req)) {
+    throw new Error('Request body too large')
+  }
+  
+  try {
+    return await req.json()
+  } catch (error) {
+    throw new Error('Invalid JSON in request body')
+  }
 }
 
 console.log("Auth function started")
@@ -102,33 +199,41 @@ serve(async (req) => {
     
     else if (path === '/auth/login' && method === 'POST') {
       try {
-        const { email, password } = await req.json()
+        const body = await parseJsonBody(req)
+        const { email, password } = body
 
-        // Validate input
+        // Validate required fields
         if (!email || !password) {
           return createErrorResponse('Email and password are required', 'MISSING_CREDENTIALS', 400)
         }
 
-        // Basic email validation
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-        if (!emailRegex.test(email)) {
+        // Sanitize and validate email
+        const sanitizedEmail = sanitizeEmail(email)
+        if (!sanitizedEmail) {
           return createErrorResponse('Invalid email format', 'INVALID_EMAIL', 400)
         }
 
-        console.log(`[AUTH LOGIN] Attempting login for: ${email}`)
+        // Validate password
+        const passwordValidation = validatePassword(password)
+        if (!passwordValidation.valid) {
+          return createErrorResponse(passwordValidation.error!, 'INVALID_PASSWORD', 400)
+        }
+
+        console.log(`[AUTH LOGIN] Attempting login for: ${sanitizedEmail}`)
 
         // Sign in user with Supabase Auth
         const { data, error } = await supabase.auth.signInWithPassword({
-          email: email.trim().toLowerCase(),
+          email: sanitizedEmail,
           password,
         })
 
         if (error) {
           console.error(`[AUTH LOGIN ERROR] ${error.code}: ${error.message}`)
-          return createErrorResponse(error.message, error.code || 'LOGIN_FAILED', 401)
+          // Don't leak information about whether email exists
+          return createErrorResponse('Invalid email or password', 'INVALID_CREDENTIALS', 401)
         }
 
-        console.log(`[AUTH SUCCESS] Login successful for: ${email}`)
+        console.log(`[AUTH SUCCESS] Login successful for: ${sanitizedEmail}`)
 
         // Return success response with session
         return createSuccessResponse({
@@ -147,9 +252,13 @@ serve(async (req) => {
             expires_at: data.session?.expires_at,
           }
         })
-      } catch (parseError) {
-        console.error('[AUTH ERROR] Failed to parse login request:', parseError)
-        return createErrorResponse('Invalid request body', 'INVALID_JSON', 400)
+      } catch (parseError: any) {
+        console.error('[AUTH ERROR] Failed to process login request:', parseError)
+        return createErrorResponse(
+          parseError.message || 'Invalid request',
+          'INVALID_REQUEST',
+          400
+        )
       }
     }
     
@@ -180,10 +289,17 @@ serve(async (req) => {
     
     else if (path === '/auth/refresh' && method === 'POST') {
       try {
-        const { refresh_token } = await req.json()
+        const body = await parseJsonBody(req)
+        const { refresh_token } = body
         
-        if (!refresh_token) {
-          return createErrorResponse('Refresh token is required', 'MISSING_REFRESH_TOKEN', 400)
+        // Validate refresh token is provided and is a string
+        if (!refresh_token || typeof refresh_token !== 'string') {
+          return createErrorResponse('Valid refresh token is required', 'MISSING_REFRESH_TOKEN', 400)
+        }
+
+        // Basic token validation - ensure it's not empty and has reasonable length
+        if (refresh_token.length < 10 || refresh_token.length > 500) {
+          return createErrorResponse('Invalid refresh token', 'INVALID_TOKEN', 400)
         }
 
         console.log(`[AUTH REFRESH] Attempting token refresh`)
@@ -227,43 +343,50 @@ serve(async (req) => {
     
     else if (path === '/auth/register' && method === 'POST') {
       try {
-        const { email, password } = await req.json()
+        const body = await parseJsonBody(req)
+        const { email, password } = body
 
-        // Validate input
+        // Validate required fields
         if (!email || !password) {
           return createErrorResponse('Email and password are required', 'MISSING_CREDENTIALS', 400)
         }
 
-        // Basic email validation
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-        if (!emailRegex.test(email)) {
+        // Sanitize and validate email
+        const sanitizedEmail = sanitizeEmail(email)
+        if (!sanitizedEmail) {
           return createErrorResponse('Invalid email format', 'INVALID_EMAIL', 400)
         }
 
-        // Password validation
-        if (password.length < 6) {
-          return createErrorResponse('Password must be at least 6 characters', 'WEAK_PASSWORD', 400)
+        // Validate password
+        const passwordValidation = validatePassword(password)
+        if (!passwordValidation.valid) {
+          return createErrorResponse(passwordValidation.error!, 'INVALID_PASSWORD', 400)
         }
 
-        console.log(`[AUTH REGISTER] Attempting registration for: ${email}`)
+        console.log(`[AUTH REGISTER] Attempting registration for: ${sanitizedEmail}`)
 
         // Register user with Supabase Auth
         const { data, error } = await supabase.auth.signUp({
-          email: email.trim().toLowerCase(),
+          email: sanitizedEmail,
           password,
         })
 
         if (error) {
           console.error(`[AUTH REGISTER ERROR] ${error.code}: ${error.message}`)
-          return createErrorResponse(error.message, error.code || 'REGISTRATION_FAILED', 400)
+          // Generic error to prevent email enumeration
+          return createErrorResponse(
+            'Registration failed. Please try again.',
+            error.code || 'REGISTRATION_FAILED',
+            400
+          )
         }
 
-        console.log(`[AUTH SUCCESS] Registration successful for: ${email}`)
+        console.log(`[AUTH SUCCESS] Registration successful for: ${sanitizedEmail}`)
 
         // Return success response
         return createSuccessResponse({
           success: true,
-          message: 'User registered successfully',
+          message: 'User registered successfully. Please check your email to confirm your account.',
           user: {
             id: data.user?.id,
             email: data.user?.email,
@@ -276,30 +399,36 @@ serve(async (req) => {
             expires_at: data.session.expires_at,
           } : null
         }, 201)
-      } catch (parseError) {
-        console.error('[AUTH ERROR] Failed to parse register request:', parseError)
-        return createErrorResponse('Invalid request body', 'INVALID_JSON', 400)
+      } catch (parseError: any) {
+        console.error('[AUTH ERROR] Failed to process register request:', parseError)
+        return createErrorResponse(
+          parseError.message || 'Invalid request',
+          'INVALID_REQUEST',
+          400
+        )
       }
     }
     
     else if (path === '/auth/reset-password' && method === 'POST') {
       try {
-        const { email } = await req.json()
+        const body = await parseJsonBody(req)
+        const { email } = body
         
+        // Validate email is provided
         if (!email) {
           return createErrorResponse('Email is required', 'MISSING_EMAIL', 400)
         }
 
-        // Basic email validation
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-        if (!emailRegex.test(email)) {
+        // Sanitize and validate email
+        const sanitizedEmail = sanitizeEmail(email)
+        if (!sanitizedEmail) {
           return createErrorResponse('Invalid email format', 'INVALID_EMAIL', 400)
         }
 
-        console.log(`[AUTH RESET] Initiating password reset for: ${email}`)
+        console.log(`[AUTH RESET] Initiating password reset for: ${sanitizedEmail}`)
 
         // Send password reset email
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        const { error } = await supabase.auth.resetPasswordForEmail(sanitizedEmail, {
           redirectTo: 'https://nvlp.app/auth/reset.html'
         })
 
@@ -323,15 +452,18 @@ serve(async (req) => {
     
     else if (path === '/auth/update-password' && method === 'POST') {
       try {
-        const { password } = await req.json()
+        const body = await parseJsonBody(req)
+        const { password } = body
         
+        // Validate password is provided
         if (!password) {
           return createErrorResponse('Password is required', 'MISSING_PASSWORD', 400)
         }
 
-        // Password validation
-        if (password.length < 6) {
-          return createErrorResponse('Password must be at least 6 characters', 'WEAK_PASSWORD', 400)
+        // Validate password
+        const passwordValidation = validatePassword(password)
+        if (!passwordValidation.valid) {
+          return createErrorResponse(passwordValidation.error!, 'INVALID_PASSWORD', 400)
         }
 
         // Get the authorization header
