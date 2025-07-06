@@ -40,7 +40,7 @@
 ### Task 5: Business Logic Tables
 - [x] Create income_sources table (budget-scoped)
 - [x] Create categories table (budget-scoped) 
-- [ ] Create envelopes table (budget-scoped)
+- [x] Create envelopes table (budget-scoped)
 - [ ] Create payees table (budget-scoped)
 - [ ] Create transactions table (budget-scoped)
 - [ ] Add necessary indexes and constraints
