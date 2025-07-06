@@ -284,6 +284,9 @@ echo
 
 echo "🗑️ Step 9: Test soft delete"
 if [ -n "$EXPENSE_TX_ID" ]; then
+    # Get current user ID from token
+    USER_ID=$(echo "$LOGIN_RESPONSE" | jq -r '.user.id // empty')
+    
     DELETE_RESPONSE=$(curl -s -X PATCH "$REST_URL/transactions?id=eq.$EXPENSE_TX_ID" \
       -H "Authorization: Bearer $ACCESS_TOKEN" \
       -H "apikey: $ANON_KEY" \
@@ -291,7 +294,8 @@ if [ -n "$EXPENSE_TX_ID" ]; then
       -H "Prefer: return=representation" \
       -d "{
         \"is_deleted\": true,
-        \"deleted_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"
+        \"deleted_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",
+        \"deleted_by\": \"$USER_ID\"
       }")
     
     echo "Soft delete response: $DELETE_RESPONSE"

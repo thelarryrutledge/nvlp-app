@@ -159,6 +159,9 @@ fi
 echo
 
 echo "🗑️ Step 5: Soft delete transaction and verify event logging"
+# Get current user ID from token
+USER_ID=$(echo "$LOGIN_RESPONSE" | jq -r '.user.id // empty')
+
 DELETE_RESPONSE=$(curl -s -X PATCH "$REST_URL/transactions?id=eq.$TRANSACTION_ID" \
   -H "Authorization: Bearer $ACCESS_TOKEN" \
   -H "apikey: $ANON_KEY" \
@@ -166,7 +169,8 @@ DELETE_RESPONSE=$(curl -s -X PATCH "$REST_URL/transactions?id=eq.$TRANSACTION_ID
   -H "Prefer: return=representation" \
   -d "{
     \"is_deleted\": true,
-    \"deleted_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"
+    \"deleted_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",
+    \"deleted_by\": \"$USER_ID\"
   }")
 
 echo "Delete response: $DELETE_RESPONSE"
@@ -270,7 +274,8 @@ FINAL_DELETE=$(curl -s -X PATCH "$REST_URL/transactions?id=eq.$TRANSACTION_ID" \
   -H "Content-Type: application/json" \
   -d "{
     \"is_deleted\": true,
-    \"deleted_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"
+    \"deleted_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",
+    \"deleted_by\": \"$USER_ID\"
   }")
 
 echo "✅ Test transaction cleaned up"
