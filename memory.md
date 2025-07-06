@@ -3,125 +3,41 @@
 ## Core Setup
 - Supabase project: qnpatlosomopoimtsmsr
 - API URL: https://api.nvlp.app (via Vercel proxy)
-- Test user: larryjrutledge@gmail.com / Test1234!
+- Test users: larryjrutledge@gmail.com & larry@mariomurillo.org / Test1234!
 - All Edge Functions require wrapping PostgREST calls
 
-## Auth Implementation
-7 endpoints in auth Edge Function:
-- POST /auth/register (anon key)
-- POST /auth/login (anon key) → returns access_token + refresh_token
-- POST /auth/logout (JWT required)
-- GET /auth/profile (JWT required)
+## Authentication System (COMPLETE ✅)
+7 endpoints implemented with full security:
+- POST /auth/register, /auth/login (anon key)
+- POST /auth/logout, GET /auth/profile (JWT required)
 - POST /auth/refresh (anon key + refresh_token)
-- POST /auth/reset-password (anon key)
-- POST /auth/update-password (recovery token via setSession)
+- POST /auth/reset-password, /auth/update-password (recovery flow)
 
-Key fixes:
-- Recovery tokens need setSession before updateUser
-- Email normalization: trim().toLowerCase()
-- CORS headers include x-requested-with
-- Centralized error/success response helpers
+Security features: email normalization, input validation, CORS, CSP headers, generic error messages
 
-## Money Flow (Future)
+## Money Flow Model
 Income → available_amount → Envelopes → Payees (exit)
 Transaction types: income(NULL→NULL), allocation(NULL→envelope), expense(envelope→NULL+payee), transfer(envelope→envelope)
 
-## Validation & Security
-Enhanced input validation and sanitization:
-- Request size limits (10KB max)
-- Email sanitization: trim().toLowerCase() + format validation
-- Password validation: length, character set (printable ASCII), bcrypt limits
-- Type checking for all inputs
-- Safe JSON parsing with error handling
-- Security headers: CSP, HSTS, XSS protection, frame options
-- Generic error messages to prevent enumeration
+## Database Schema (COMPLETE ✅)
+Core tables implemented with full RLS security and automation:
 
-## Documentation
-Complete API documentation created:
-- AUTH_API_COMPLETE.md: Full spec for all 7 endpoints with examples
-- AUTH_QUICK_REFERENCE.md: Updated with all endpoints and usage
-- Comprehensive error codes, validation rules, security features
-- Test scripts and web page references included
+**user_profiles**: Extends auth.users with display_name, timezone, currency_code, date_format
+**budgets**: Budget management with user relationship and default budget automation  
+**income_sources**: Budget-scoped income tracking with auto-creation of defaults
+**categories**: Budget-scoped categories with 8 expense + 2 income defaults auto-created
 
-## Database Schema (Phase 2)
-user_profiles table created successfully:
-- Migration: supabase/migrations/20250706142628_create_user_profiles.sql
-- Applied via: SUPABASE_DB_PASSWORD + supabase db push
-- Extends auth.users with display_name, timezone, currency_code, date_format
-- Includes RLS policies: users can only access own profile
-- Auto-creation trigger: handle_new_user() VERIFIED WORKING ✅
+All tables feature:
+- Complete RLS policies enforcing user data isolation
+- Auto-creation triggers for new users/budgets
+- Comprehensive constraint validation
+- Multi-user testing verified ✅
 
-budgets table created successfully:
-- Migration: supabase/migrations/20250706145134_create_budgets.sql  
-- Links to user_profiles via user_id foreign key
-- Includes name, description, is_default, is_active fields
-- RLS policies: users can only access own budgets
-- Auto-creation trigger: create_default_budget_for_user() VERIFIED WORKING ✅
-- Tested: new user registration creates profile + default budget automatically
-- Foreign key link: user_profiles.default_budget_id → budgets.id
+## Current Status & Next Steps
+**COMPLETED ✅**
+- Phase 1: Authentication Foundation (7 endpoints, full security)
+- Phase 2: Core Tables (user_profiles, budgets, income_sources, categories)
+- Multi-user RLS testing and automation verification
 
-## Database Testing
-Created test-database-tables.sh script that verifies:
-- Table accessibility via REST API ✅
-- Data integrity and foreign key relationships ✅
-- Auto-creation triggers functionality ✅
-- Constraint enforcement (single default budget per user) ✅
-- Proper CRUD operations and data consistency ✅
-
-## RLS Policies Implementation
-Created comprehensive RLS security:
-- user_profiles: SELECT/INSERT/UPDATE policies using auth.uid() = id ✅
-- budgets: SELECT/INSERT/UPDATE/DELETE policies using auth.uid() = user_id ✅
-- Data isolation verified: users can only access their own data ✅
-- Service role can bypass RLS for admin operations ✅
-- Created test-rls-policies.sh script for verification ✅
-- Documented in docs/RLS_POLICIES.md ✅
-
-## Multi-User RLS Testing
-Comprehensive multi-user testing completed:
-- Created 2 real test users: larryjrutledge@gmail.com & larry@mariomurillo.org ✅
-- Email verification and login successful for both users ✅
-- Auto-creation triggers worked for both users (profiles + budgets) ✅
-- Perfect data isolation: each user sees only their own data ✅
-- Cross-user access attempts return empty results [] ✅
-- Service role can see all data (admin access working) ✅
-- RLS policies enforce complete data security at database level ✅
-
-## Default Budget Automation
-Comprehensive automation system implemented and verified:
-- Auto-creation: Default budget created when user profile is created ✅
-- Auto-linking: user_profiles.default_budget_id automatically set ✅
-- Single default constraint: Only one default budget per user enforced ✅
-- Constraint enforcement: Creating new default demotes previous default ✅
-- Functions: create_default_budget_for_user() & ensure_single_default_budget() ✅
-- Triggers: Profile creation and budget constraint triggers working ✅
-- Tested: Existing users verified, constraint testing successful ✅
-- Documented: Complete automation documentation in docs/ ✅
-
-## Business Logic Tables (Phase 2, Task 5)
-income_sources table created successfully:
-- Migration: supabase/migrations/20250706155458_create_income_sources.sql
-- Budget-scoped: income sources belong to specific budgets ✅
-- RLS policies: users can only access income sources in their own budgets ✅
-- Auto-creation trigger: default income sources created for new budgets ✅
-- Constraints: unique name per budget, positive amounts ✅
-- Tested: complete CRUD operations and data isolation working ✅
-- Features: name, description, expected_monthly_amount, is_active ✅
-
-categories table created successfully:
-- Migration: supabase/migrations/20250706162931_create_categories.sql
-- Budget-scoped: categories belong to specific budgets ✅
-- RLS policies: users can only access categories in their own budgets ✅
-- Auto-creation trigger: default categories created for new budgets ✅
-- Constraints: unique name per budget, color format validation, positive sort_order ✅
-- Tested: comprehensive CRUD operations and constraint validation working ✅
-- Features: name, description, color, icon, category_type, is_active, sort_order ✅
-- Default categories: 8 expense + 2 income categories auto-created ✅
-- VERIFIED: Complete automation chain works (user registration → profile → budget → categories) ✅
-
-## Next Steps
-Phase 1: AUTHENTICATION FOUNDATION COMPLETE ✅
-Phase 2, Task 4: CORE TABLES CREATION COMPLETE ✅
-Phase 2, Task 5, Subtask 1: income_sources table COMPLETE ✅
-Phase 2, Task 5, Subtask 2: categories table COMPLETE ✅
-Next: Phase 2, Task 5, Subtask 3 - Create envelopes table (budget-scoped)
+**NEXT: Phase 2, Task 5, Subtask 3**
+Create envelopes table (budget-scoped) with auto-creation triggers
