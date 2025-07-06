@@ -143,12 +143,27 @@
   * Register endpoint: ✅ Validates input and handles domain restrictions
   * Error handling: ✅ Proper status codes and error messages
 
+## Password Reset Implementation
+- Added password reset endpoints to auth Edge Function:
+  * POST /auth/reset-password - Initiates reset email (public endpoint, uses anon key)
+  * POST /auth/update-password - Updates password with recovery token (uses recovery token from email)
+- Created password reset request page at /auth/request-reset.html
+- Enhanced reset.html with:
+  * Password reveal toggles (👁️/🙈)
+  * Proper recovery token handling via setSession
+  * Better error messages
+- Fixed "Auth session missing!" error by properly establishing session with recovery token
+- Complete flow tested and working:
+  * Request reset → Email sent → Click link → Update password → Login with new password ✅
+- Test user password updated to: Test1234!
+
 ## Current Status
 - Project initialized with core planning documents
 - Requirements clarified and understood
 - Phase 1, Task 1 COMPLETED: All environment setup subtasks finished
 - Phase 1, Task 2 COMPLETED: Simple authentication test implemented
-- Phase 1, Task 3 IN PROGRESS: Authentication Foundation (enhanced error handling and CORS complete)
-- Auth endpoints: /auth/register, /auth/login, /auth/logout, /auth/refresh, /auth/profile
+- Phase 1, Task 3 IN PROGRESS: Authentication Foundation (4/6 subtasks complete)
+- Auth endpoints: /auth/register, /auth/login, /auth/logout, /auth/refresh, /auth/profile, /auth/reset-password, /auth/update-password
 - JWT token validation working correctly with refresh token support
-- Next: Complete individual endpoint testing (Task 3 subtask 3)
+- Password reset flow fully implemented and tested
+- Next: Add request validation and input sanitization (Task 3 subtask 5)

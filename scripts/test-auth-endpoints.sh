@@ -61,13 +61,13 @@ print_test "Test 2: Login with confirmed user"
 echo "curl -X POST \"${API_BASE_URL}/auth/login\" \\"
 echo "  -H \"Content-Type: application/json\" \\"
 echo "  -H \"Authorization: Bearer \${SUPABASE_ANON_KEY}\" \\"
-echo "  -d '{\"email\": \"larryjrutledge@gmail.com\", \"password\": \"securepass123\"}'"
+echo "  -d '{\"email\": \"larryjrutledge@gmail.com\", \"password\": \"Test1234!\"}'"
 echo ""
 
 LOGIN_RESPONSE=$(curl -s -X POST "${API_BASE_URL}/auth/login" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
-  -d '{"email": "larryjrutledge@gmail.com", "password": "securepass123"}')
+  -d '{"email": "larryjrutledge@gmail.com", "password": "Test1234!"}')
 
 if [[ $LOGIN_RESPONSE == *"success"* ]]; then
     print_success "Login successful"
@@ -193,7 +193,7 @@ echo "Getting fresh tokens for refresh test..."
 FRESH_LOGIN=$(curl -s -X POST "${API_BASE_URL}/auth/login" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
-  -d '{"email": "larryjrutledge@gmail.com", "password": "securepass123"}')
+  -d '{"email": "larryjrutledge@gmail.com", "password": "Test1234!"}')
 
 if [[ $FRESH_LOGIN == *"refresh_token"* ]]; then
     REFRESH_TOKEN=$(echo "$FRESH_LOGIN" | python3 -c "import sys, json; data=json.load(sys.stdin); print(data['session']['refresh_token'])" 2>/dev/null)

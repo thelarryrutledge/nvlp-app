@@ -281,6 +281,115 @@ serve(async (req) => {
         return createErrorResponse('Invalid request body', 'INVALID_JSON', 400)
       }
     }
+    
+    else if (path === '/auth/reset-password' && method === 'POST') {
+      try {
+        const { email } = await req.json()
+        
+        if (!email) {
+          return createErrorResponse('Email is required', 'MISSING_EMAIL', 400)
+        }
+
+        // Basic email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        if (!emailRegex.test(email)) {
+          return createErrorResponse('Invalid email format', 'INVALID_EMAIL', 400)
+        }
+
+        console.log(`[AUTH RESET] Initiating password reset for: ${email}`)
+
+        // Send password reset email
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: 'https://nvlp.app/auth/reset.html'
+        })
+
+        if (error) {
+          console.error(`[AUTH RESET ERROR] ${error.message}`)
+          return createErrorResponse(error.message, 'RESET_FAILED', 400)
+        }
+
+        console.log(`[AUTH SUCCESS] Password reset email sent to: ${email}`)
+
+        // Always return success to prevent email enumeration
+        return createSuccessResponse({
+          success: true,
+          message: 'If an account with that email exists, a password reset link has been sent.'
+        })
+      } catch (parseError) {
+        console.error('[AUTH ERROR] Failed to parse reset request:', parseError)
+        return createErrorResponse('Invalid request body', 'INVALID_JSON', 400)
+      }
+    }
+    
+    else if (path === '/auth/update-password' && method === 'POST') {
+      try {
+        const { password } = await req.json()
+        
+        if (!password) {
+          return createErrorResponse('Password is required', 'MISSING_PASSWORD', 400)
+        }
+
+        // Password validation
+        if (password.length < 6) {
+          return createErrorResponse('Password must be at least 6 characters', 'WEAK_PASSWORD', 400)
+        }
+
+        // Get the authorization header
+        const authHeader = req.headers.get('authorization')
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+          return createErrorResponse('Missing or invalid authorization header', 'UNAUTHORIZED', 401)
+        }
+
+        const token = authHeader.replace('Bearer ', '')
+        
+        console.log(`[AUTH UPDATE PASSWORD] Attempting password update with recovery token`)
+
+        // Create a new Supabase client with the recovery token
+        const authClient = createClient(
+          Deno.env.get('SUPABASE_URL') ?? '',
+          Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+          {
+            global: {
+              headers: {
+                Authorization: `Bearer ${token}`
+              }
+            }
+          }
+        )
+
+        // Set the session with the recovery token
+        const { data: sessionData, error: sessionError } = await authClient.auth.setSession({
+          access_token: token,
+          refresh_token: token
+        })
+
+        if (sessionError) {
+          console.error(`[AUTH UPDATE PASSWORD ERROR] Session error: ${sessionError.message}`)
+          return createErrorResponse('Invalid or expired recovery token', 'INVALID_RECOVERY_TOKEN', 401)
+        }
+
+        // Update user password
+        const { error } = await authClient.auth.updateUser({
+          password: password
+        })
+
+        if (error) {
+          console.error(`[AUTH UPDATE PASSWORD ERROR] ${error.message}`)
+          return createErrorResponse(error.message, 'UPDATE_PASSWORD_FAILED', 400)
+        }
+
+        const userEmail = sessionData?.user?.email || 'unknown'
+        console.log(`[AUTH SUCCESS] Password updated for user: ${userEmail}`)
+
+        return createSuccessResponse({
+          success: true,
+          message: 'Password updated successfully'
+        })
+      } catch (parseError) {
+        console.error('[AUTH ERROR] Failed to parse update password request:', parseError)
+        return createErrorResponse('Invalid request body', 'INVALID_JSON', 400)
+      }
+    }
 
     // Handle unsupported routes
     console.log(`[AUTH ERROR] Route not found: ${method} ${path}`)
@@ -294,7 +403,9 @@ serve(async (req) => {
           'POST /auth/login - Authenticate and get tokens',
           'POST /auth/logout - Invalidate session (protected)',
           'POST /auth/refresh - Refresh access token',
-          'GET /auth/profile - Get user info (protected)'
+          'GET /auth/profile - Get user info (protected)',
+          'POST /auth/reset-password - Send password reset email',
+          'POST /auth/update-password - Update user password (protected)'
         ]
       }
     )
