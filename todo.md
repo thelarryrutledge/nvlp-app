@@ -59,10 +59,10 @@
 ### Task 7: Profile & Budget APIs
 - [x] Create user profile CRUD endpoints
 - [x] Create budget CRUD endpoints
-- [ ] Test each endpoint with curl/Postman before moving on
-- [ ] Verify authentication works for each endpoint
-- [ ] Add proper error messages and validation
-- [ ] Test edge cases and error conditions
+- [x] Test each endpoint with curl/Postman before moving on
+- [x] Verify authentication works for each endpoint
+- [x] Add proper error messages and validation
+- [x] Test edge cases and error conditions
 
 ### Task 8: Core Business APIs
 - [ ] Create income sources CRUD endpoints
