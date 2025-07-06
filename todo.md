@@ -34,7 +34,7 @@
 - [x] Create budgets table with user relationship
 - [x] Test database tables with direct SQL queries
 - [x] Add Row Level Security (RLS) policies
-- [ ] Test RLS policies with multiple test users
+- [x] Test RLS policies with multiple test users
 - [ ] Create default budget automation
 
 ### Task 5: Business Logic Tables
