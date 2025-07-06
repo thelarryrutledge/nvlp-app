@@ -299,6 +299,160 @@ curl $AUTH_HEADERS "$REST_URL/transactions?budget_id=eq.$BUDGET_ID&select=*,paye
 4. **Test validation**: Use the validation functions
 5. **Test business logic**: Create transactions and verify balance updates
 
+## Handling Cold Starts and Timeouts
+
+Supabase Edge Functions may have "cold starts" after periods of inactivity, causing initial requests to timeout. This is normal serverless behavior.
+
+### Retry Logic for Frontend Applications
+
+```javascript
+// Basic retry with exponential backoff
+async function apiCallWithRetry(url, options = {}, maxRetries = 2) {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 
+        attempt === 0 ? 10000 : 30000); // 10s first try, 30s retry
+      
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      return response;
+    } catch (error) {
+      if (attempt === maxRetries || 
+          (error.name !== 'AbortError' && !error.message.includes('timeout'))) {
+        throw error;
+      }
+      
+      // Wait before retry with exponential backoff
+      const delay = Math.min(1000 * Math.pow(2, attempt), 5000);
+      await new Promise(resolve => setTimeout(resolve, delay));
+      
+      console.log(`API call failed, retrying... (attempt ${attempt + 2}/${maxRetries + 1})`);
+    }
+  }
+}
+
+// Usage example
+async function getUserProfile() {
+  try {
+    const response = await apiCallWithRetry('https://api.nvlp.app/profile', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to fetch profile after retries:', error);
+    throw error;
+  }
+}
+
+// React hook example with loading states
+function useApiCall(url, options) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  
+  const execute = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await apiCallWithRetry(url, options);
+      const result = await response.json();
+      setData(result);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [url, options]);
+  
+  return { data, loading, error, execute };
+}
+```
+
+### Optimistic Updates
+
+For better user experience, update the UI immediately and handle failures gracefully:
+
+```javascript
+// Optimistic update example
+async function updateBudgetName(budgetId, newName) {
+  // 1. Update UI immediately (optimistic)
+  updateBudgetInState(budgetId, { name: newName });
+  
+  try {
+    // 2. Make API call
+    const response = await apiCallWithRetry(`https://api.nvlp.app/budgets?id=${budgetId}`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ name: newName })
+    });
+    
+    // 3. Update with server response (in case server modified the data)
+    const updatedBudget = await response.json();
+    updateBudgetInState(budgetId, updatedBudget);
+    
+  } catch (error) {
+    // 4. Revert optimistic update on failure
+    revertBudgetInState(budgetId);
+    showErrorMessage('Failed to update budget name');
+    throw error;
+  }
+}
+```
+
+### Bash Retry Logic for Testing
+
+```bash
+# Function to retry curl commands
+retry_curl() {
+    local max_attempts=3
+    local delay=2
+    local attempt=1
+    local description="$1"
+    shift # Remove description, rest are curl args
+    
+    while [ $attempt -le $max_attempts ]; do
+        echo -n "  Testing: $description (attempt $attempt/$max_attempts)... "
+        
+        if output=$(curl --max-time 30 --connect-timeout 10 "$@" 2>/dev/null); then
+            echo "✓"
+            echo "$output"
+            return 0
+        else
+            if [ $attempt -eq $max_attempts ]; then
+                echo "✗ (failed after $max_attempts attempts)"
+                return 1
+            else
+                echo "timeout, retrying..."
+                sleep $delay
+                delay=$((delay * 2)) # Exponential backoff
+            fi
+        fi
+        
+        attempt=$((attempt + 1))
+    done
+}
+
+# Usage
+retry_curl "GET profile" -H "Authorization: Bearer $(cat .token)" https://api.nvlp.app/profile
+```
+
 ## Troubleshooting
 
 ### Token Expired

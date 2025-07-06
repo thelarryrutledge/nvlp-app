@@ -22,51 +22,76 @@ API_BASE_URL="https://api.nvlp.app"
 CREATED_BUDGET_ID=""
 DEFAULT_BUDGET_ID=""
 
-# Helper function to run curl and check results
-test_endpoint() {
+# Helper function to retry curl commands with exponential backoff
+retry_curl() {
+    local max_attempts=3
+    local delay=2
+    local attempt=1
     local description="$1"
     local method="$2"
     local endpoint="$3"
     local data="$4"
     local expected_status="$5"
     
-    echo -n "  Testing: $description... "
-    
-    if [ -n "$data" ]; then
-        response=$(curl -s -w "HTTPSTATUS:%{http_code}" \
-            -H "Authorization: Bearer $(cat .token)" \
-            -H "Content-Type: application/json" \
-            -X "$method" \
-            "$API_BASE_URL$endpoint" \
-            -d "$data")
-    else
-        response=$(curl -s -w "HTTPSTATUS:%{http_code}" \
-            -H "Authorization: Bearer $(cat .token)" \
-            -X "$method" \
-            "$API_BASE_URL$endpoint")
-    fi
-    
-    body=$(echo "$response" | sed -E 's/HTTPSTATUS:[0-9]{3}$//')
-    status=$(echo "$response" | grep -o '[0-9]*$')
-    
-    if [ "$status" = "$expected_status" ]; then
-        echo -e "${GREEN}✓${NC} (HTTP $status)"
+    while [ $attempt -le $max_attempts ]; do
+        echo -n "  Testing: $description (attempt $attempt/$max_attempts)... "
         
-        # Store created budget ID for later tests
-        if [ "$method" = "POST" ] && [ "$status" = "201" ]; then
-            CREATED_BUDGET_ID=$(echo "$body" | jq -r '.id')
-            echo "    Created budget ID: $CREATED_BUDGET_ID"
+        if [ -n "$data" ]; then
+            response=$(curl -s -w "HTTPSTATUS:%{http_code}" \
+                --max-time 30 --connect-timeout 10 \
+                -H "Authorization: Bearer $(cat .token)" \
+                -H "Content-Type: application/json" \
+                -X "$method" \
+                "$API_BASE_URL$endpoint" \
+                -d "$data" 2>/dev/null)
+        else
+            response=$(curl -s -w "HTTPSTATUS:%{http_code}" \
+                --max-time 30 --connect-timeout 10 \
+                -H "Authorization: Bearer $(cat .token)" \
+                -X "$method" \
+                "$API_BASE_URL$endpoint" 2>/dev/null)
         fi
         
-        if [ -n "$body" ] && [ "$body" != "{}" ]; then
-            echo "    Response: $body" | jq '.' 2>/dev/null || echo "    Response: $body"
+        if [ $? -eq 0 ]; then
+            body=$(echo "$response" | sed -E 's/HTTPSTATUS:[0-9]{3}$//')
+            status=$(echo "$response" | grep -o '[0-9]*$')
+            
+            if [ "$status" = "$expected_status" ]; then
+                echo -e "${GREEN}✓${NC} (HTTP $status)"
+                
+                # Store created budget ID for later tests
+                if [ "$method" = "POST" ] && [ "$status" = "201" ]; then
+                    CREATED_BUDGET_ID=$(echo "$body" | jq -r '.id')
+                    echo "    Created budget ID: $CREATED_BUDGET_ID"
+                fi
+                
+                if [ -n "$body" ] && [ "$body" != "{}" ]; then
+                    echo "    Response: $body" | jq '.' 2>/dev/null || echo "    Response: $body"
+                fi
+                return 0
+            else
+                echo -e "${RED}✗${NC} (Expected HTTP $expected_status, got $status)"
+                echo "    Response: $body"
+                return 1
+            fi
+        else
+            if [ $attempt -eq $max_attempts ]; then
+                echo -e "${RED}✗${NC} (failed after $max_attempts attempts - cold start timeout)"
+                return 1
+            else
+                echo -e "${YELLOW}timeout, retrying...${NC}"
+                sleep $delay
+                delay=$((delay * 2)) # Exponential backoff
+            fi
         fi
-        return 0
-    else
-        echo -e "${RED}✗${NC} (Expected HTTP $expected_status, got $status)"
-        echo "    Response: $body"
-        return 1
-    fi
+        
+        attempt=$((attempt + 1))
+    done
+}
+
+# Wrapper function for backward compatibility
+test_endpoint() {
+    retry_curl "$1" "$2" "$3" "$4" "$5"
 }
 
 # Ensure we have a valid token
@@ -77,9 +102,38 @@ fi
 
 # Get default budget ID for tests
 echo -e "\n${BLUE}🔧 Setup: Getting default budget ID${NC}"
-response=$(curl -s -H "Authorization: Bearer $(cat .token)" "$API_BASE_URL/budgets")
-DEFAULT_BUDGET_ID=$(echo "$response" | jq -r '.[0].id')
-echo "Default budget ID: $DEFAULT_BUDGET_ID"
+echo -n "  Getting budgets... "
+
+# Use retry logic for setup as well
+max_attempts=3
+delay=2
+attempt=1
+
+while [ $attempt -le $max_attempts ]; do
+    response=$(curl -s --max-time 30 --connect-timeout 10 \
+        -H "Authorization: Bearer $(cat .token)" \
+        "$API_BASE_URL/budgets" 2>/dev/null)
+    
+    if [ $? -eq 0 ] && [ -n "$response" ]; then
+        DEFAULT_BUDGET_ID=$(echo "$response" | jq -r '.[0].id' 2>/dev/null)
+        if [ -n "$DEFAULT_BUDGET_ID" ] && [ "$DEFAULT_BUDGET_ID" != "null" ]; then
+            echo -e "${GREEN}✓${NC}"
+            echo "Default budget ID: $DEFAULT_BUDGET_ID"
+            break
+        fi
+    fi
+    
+    if [ $attempt -eq $max_attempts ]; then
+        echo -e "${RED}✗${NC} (failed to get budget ID after $max_attempts attempts)"
+        exit 1
+    else
+        echo -e "${YELLOW}timeout, retrying...${NC}"
+        sleep $delay
+        delay=$((delay * 2))
+    fi
+    
+    attempt=$((attempt + 1))
+done
 
 echo -e "\n${BLUE}📋 Test 1: Valid Operations${NC}"
 

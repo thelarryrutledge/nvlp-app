@@ -168,12 +168,47 @@ This document outlines the detailed implementation plan for the NVLP (Virtual En
 6. Audit logging and edit tracking
 7. Soft delete and recovery
 
+## Frontend Integration Patterns
+
+### API Client Implementation
+- **Retry Logic with Exponential Backoff**: All API calls should implement retry logic to handle serverless cold starts
+  - First request timeout: 10 seconds
+  - Retry timeout: 30 seconds
+  - Maximum 2-3 retry attempts
+  - Exponential backoff between retries (2s, 4s, 8s)
+- **Connection Timeout Handling**: Graceful handling of Edge Function cold starts
+- **Error State Management**: Proper error messages for different failure scenarios
+
+### User Experience Patterns
+- **Optimistic Updates**: Update UI immediately for non-critical operations
+  - ✅ Use for: Name changes, description updates, toggle settings, reordering
+  - ❌ Avoid for: Financial transactions, creating new records, critical operations
+  - Always implement rollback on failure
+- **Loading States**: Show appropriate loading indicators during API calls
+- **Offline Support**: Cache frequently accessed data (user profile, budgets, recent transactions)
+
+### Performance Optimization
+- **Request Batching**: Group multiple operations where possible
+- **Caching Strategy**: Cache user profile and budget list on authentication
+- **Progressive Loading**: Load critical data first, then secondary data
+- **Keep-Alive Strategy**: Optional periodic API calls to keep Edge Functions warm
+
+### Frontend Authentication Flow
+```
+1. User logs in → Store JWT + profile data
+2. Cache default budget ID from profile
+3. Use cached data for immediate UI updates
+4. Refresh tokens before expiration
+5. Handle auth failures gracefully
+```
+
 ## Risk Mitigation
 
 ### Technical Risks
 - **Database Performance**: Implement proper indexing and query optimization
 - **Data Consistency**: Use database transactions and validation
 - **API Reliability**: Implement proper error handling and retries
+- **Serverless Cold Starts**: Implement retry logic and user-friendly loading states
 - **Security**: Thorough RLS testing and security audits
 
 ### Development Risks
