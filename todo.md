@@ -38,7 +38,7 @@
 - [x] Create default budget automation
 
 ### Task 5: Business Logic Tables
-- [ ] Create income_sources table (budget-scoped)
+- [x] Create income_sources table (budget-scoped)
 - [ ] Create categories table (budget-scoped) 
 - [ ] Create envelopes table (budget-scoped)
 - [ ] Create payees table (budget-scoped)

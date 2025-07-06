@@ -98,8 +98,18 @@ Comprehensive automation system implemented and verified:
 - Tested: Existing users verified, constraint testing successful ✅
 - Documented: Complete automation documentation in docs/ ✅
 
+## Business Logic Tables (Phase 2, Task 5)
+income_sources table created successfully:
+- Migration: supabase/migrations/20250706155458_create_income_sources.sql
+- Budget-scoped: income sources belong to specific budgets ✅
+- RLS policies: users can only access income sources in their own budgets ✅
+- Auto-creation trigger: default income sources created for new budgets ✅
+- Constraints: unique name per budget, positive amounts ✅
+- Tested: complete CRUD operations and data isolation working ✅
+- Features: name, description, expected_monthly_amount, is_active ✅
+
 ## Next Steps
 Phase 1: AUTHENTICATION FOUNDATION COMPLETE ✅
 Phase 2, Task 4: CORE TABLES CREATION COMPLETE ✅
-All subtasks 1-6 completed: user_profiles, budgets, testing, RLS, multi-user RLS, automation
-Next: Phase 2, Task 5 - Business Logic Tables
+Phase 2, Task 5, Subtask 1: income_sources table COMPLETE ✅
+Next: Phase 2, Task 5, Subtask 2 - Create categories table (budget-scoped)
