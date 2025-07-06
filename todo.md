@@ -20,8 +20,8 @@
 - [x] Document exact request/response format
 
 ### Task 3: Authentication Foundation
-- [ ] Implement complete auth endpoints (register, logout, profile, refresh)
-- [ ] Add proper error handling and CORS support
+- [x] Implement complete auth endpoints (register, logout, profile, refresh)
+- [x] Add proper error handling and CORS support
 - [ ] Test each endpoint individually with curl
 - [ ] Verify password reset flow works
 - [ ] Add request validation and input sanitization
