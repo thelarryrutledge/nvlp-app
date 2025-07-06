@@ -108,8 +108,19 @@ income_sources table created successfully:
 - Tested: complete CRUD operations and data isolation working ✅
 - Features: name, description, expected_monthly_amount, is_active ✅
 
+categories table created successfully:
+- Migration: supabase/migrations/20250706162931_create_categories.sql
+- Budget-scoped: categories belong to specific budgets ✅
+- RLS policies: users can only access categories in their own budgets ✅
+- Auto-creation trigger: default categories created for new budgets ✅
+- Constraints: unique name per budget, color format validation, positive sort_order ✅
+- Tested: comprehensive CRUD operations and constraint validation working ✅
+- Features: name, description, color, icon, category_type, is_active, sort_order ✅
+- Default categories: 8 expense + 2 income categories auto-created ✅
+
 ## Next Steps
 Phase 1: AUTHENTICATION FOUNDATION COMPLETE ✅
 Phase 2, Task 4: CORE TABLES CREATION COMPLETE ✅
 Phase 2, Task 5, Subtask 1: income_sources table COMPLETE ✅
-Next: Phase 2, Task 5, Subtask 2 - Create categories table (budget-scoped)
+Phase 2, Task 5, Subtask 2: categories table COMPLETE ✅
+Next: Phase 2, Task 5, Subtask 3 - Create envelopes table (budget-scoped)
