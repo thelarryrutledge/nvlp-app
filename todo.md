@@ -35,7 +35,7 @@
 - [x] Test database tables with direct SQL queries
 - [x] Add Row Level Security (RLS) policies
 - [x] Test RLS policies with multiple test users
-- [ ] Create default budget automation
+- [x] Create default budget automation
 
 ### Task 5: Business Logic Tables
 - [ ] Create income_sources table (budget-scoped)
