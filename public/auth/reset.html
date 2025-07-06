@@ -158,8 +158,6 @@
         const access_token = hashParams.get('access_token') || searchParams.get('access_token');
         const type = hashParams.get('type') || searchParams.get('type');
         
-        console.log('Token info:', { access_token: access_token ? 'present' : 'missing', type });
-        
         // Check if we have a valid reset token
         if (!access_token || type !== 'recovery') {
             document.getElementById('reset-form').style.display = 'none';
