@@ -50,9 +50,18 @@ user_profiles table created successfully:
 - Extends auth.users with display_name, timezone, currency_code, date_format
 - Includes RLS policies: users can only access own profile
 - Auto-creation trigger: handle_new_user() VERIFIED WORKING ✅
-- Tested: new user registration auto-creates profile with defaults
+
+budgets table created successfully:
+- Migration: supabase/migrations/20250706145134_create_budgets.sql  
+- Links to user_profiles via user_id foreign key
+- Includes name, description, is_default, is_active fields
+- RLS policies: users can only access own budgets
+- Auto-creation trigger: create_default_budget_for_user() VERIFIED WORKING ✅
+- Tested: new user registration creates profile + default budget automatically
+- Foreign key link: user_profiles.default_budget_id → budgets.id
 
 ## Next Steps
 Phase 1: AUTHENTICATION FOUNDATION COMPLETE ✅
-Phase 2, Task 4, Subtask 1: user_profiles table COMPLETE ✅
-Next: Phase 2, Task 4, Subtask 2 - Create budgets table
+Phase 2, Task 4, Subtask 1: user_profiles table COMPLETE ✅  
+Phase 2, Task 4, Subtask 2: budgets table COMPLETE ✅
+Next: Phase 2, Task 4, Subtask 3 - Test database tables with direct SQL queries
