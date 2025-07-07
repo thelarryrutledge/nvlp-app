@@ -1,0 +1,1560 @@
+openapi: 3.0.3
+info:
+  title: NVLP API
+  description: |
+    No-Vendor Ledger Platform (NVLP) API for envelope budgeting and personal finance management.
+    
+    ## API Architecture
+    
+    The NVLP API uses a hybrid architecture:
+    - **PostgREST Direct**: Fast CRUD operations for simple data access
+    - **Edge Functions**: Complex business logic, validation, and advanced features
+    
+    ## Base URLs
+    
+    - **Custom Domain (PostgREST)**: `https://api.nvlp.app`
+    - **Supabase Edge Functions**: `https://qnpatlosomopoimtsmsr.supabase.co/functions/v1`
+    
+    ## Authentication
+    
+    All endpoints require JWT authentication using the `Authorization: Bearer <token>` header.
+    Tokens are obtained through the authentication endpoints and expire after a configurable period.
+    
+    ## Data Security
+    
+    - Row Level Security (RLS) ensures users can only access their own data
+    - All sensitive operations are logged in the audit trail
+    - Multi-tenant architecture with complete data isolation
+    
+  version: 1.0.0
+  contact:
+    name: NVLP Support
+    email: support@nvlp.app
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.nvlp.app
+    description: Custom Domain (PostgREST Direct)
+  - url: https://qnpatlosomopoimtsmsr.supabase.co/functions/v1
+    description: Supabase Edge Functions
+
+security:
+  - BearerAuth: []
+
+paths:
+  # Authentication Endpoints (Edge Functions)
+  /auth/register:
+    post:
+      tags: [Authentication]
+      summary: Register new user
+      description: Create a new user account with email and password
+      servers:
+        - url: https://qnpatlosomopoimtsmsr.supabase.co/functions/v1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  minLength: 8
+                  example: securepassword123
+                full_name:
+                  type: string
+                  example: John Doe
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /auth/login:
+    post:
+      tags: [Authentication]
+      summary: User login
+      description: Authenticate user and return JWT token
+      servers:
+        - url: https://qnpatlosomopoimtsmsr.supabase.co/functions/v1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/logout:
+    post:
+      tags: [Authentication]
+      summary: User logout
+      description: Invalidate current session
+      servers:
+        - url: https://qnpatlosomopoimtsmsr.supabase.co/functions/v1
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /auth/refresh:
+    post:
+      tags: [Authentication]
+      summary: Refresh token
+      description: Refresh JWT token before expiration
+      servers:
+        - url: https://qnpatlosomopoimtsmsr.supabase.co/functions/v1
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+
+  # Profile Endpoints (PostgREST Direct)
+  /user_profiles:
+    get:
+      tags: [Profile]
+      summary: Get user profile
+      description: Retrieve current user's profile information
+      servers:
+        - url: https://api.nvlp.app
+      responses:
+        '200':
+          description: Profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserProfile'
+
+    patch:
+      tags: [Profile]
+      summary: Update user profile
+      description: Update current user's profile information
+      servers:
+        - url: https://api.nvlp.app
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                full_name:
+                  type: string
+                avatar_url:
+                  type: string
+                timezone:
+                  type: string
+                notification_preferences:
+                  type: object
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+
+  # Budget Endpoints (PostgREST Direct)
+  /budgets:
+    get:
+      tags: [Budgets]
+      summary: List budgets
+      description: Get all budgets for the current user
+      servers:
+        - url: https://api.nvlp.app
+      parameters:
+        - name: select
+          in: query
+          schema:
+            type: string
+          description: Columns to select
+          example: "id,name,description,is_default"
+      responses:
+        '200':
+          description: Budgets retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Budget'
+
+    post:
+      tags: [Budgets]
+      summary: Create budget
+      description: Create a new budget
+      servers:
+        - url: https://api.nvlp.app
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [user_id, name]
+              properties:
+                user_id:
+                  type: string
+                  format: uuid
+                name:
+                  type: string
+                description:
+                  type: string
+                is_default:
+                  type: boolean
+      responses:
+        '201':
+          description: Budget created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Budget'
+
+  /budgets/{id}:
+    get:
+      tags: [Budgets]
+      summary: Get budget by ID
+      servers:
+        - url: https://api.nvlp.app
+      parameters:
+        - $ref: '#/components/parameters/BudgetId'
+      responses:
+        '200':
+          description: Budget retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Budget'
+
+    patch:
+      tags: [Budgets]
+      summary: Update budget
+      servers:
+        - url: https://api.nvlp.app
+      parameters:
+        - $ref: '#/components/parameters/BudgetId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                is_default:
+                  type: boolean
+      responses:
+        '200':
+          description: Budget updated successfully
+
+    delete:
+      tags: [Budgets]
+      summary: Delete budget
+      servers:
+        - url: https://api.nvlp.app
+      parameters:
+        - $ref: '#/components/parameters/BudgetId'
+      responses:
+        '204':
+          description: Budget deleted successfully
+
+  # Categories Endpoints (PostgREST Direct)
+  /categories:
+    get:
+      tags: [Categories]
+      summary: List categories
+      servers:
+        - url: https://api.nvlp.app
+      parameters:
+        - name: budget_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Categories retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+
+    post:
+      tags: [Categories]
+      summary: Create category
+      servers:
+        - url: https://api.nvlp.app
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryCreate'
+      responses:
+        '201':
+          description: Category created successfully
+
+  # Envelopes Endpoints (PostgREST Direct)
+  /envelopes:
+    get:
+      tags: [Envelopes]
+      summary: List envelopes
+      servers:
+        - url: https://api.nvlp.app
+      parameters:
+        - name: budget_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: select
+          in: query
+          schema:
+            type: string
+          example: "*,categories(name)"
+      responses:
+        '200':
+          description: Envelopes retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Envelope'
+
+    post:
+      tags: [Envelopes]
+      summary: Create envelope
+      servers:
+        - url: https://api.nvlp.app
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnvelopeCreate'
+      responses:
+        '201':
+          description: Envelope created successfully
+
+  # Income Sources Endpoints (PostgREST Direct)
+  /income_sources:
+    get:
+      tags: [Income Sources]
+      summary: List income sources
+      servers:
+        - url: https://api.nvlp.app
+      parameters:
+        - name: budget_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Income sources retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/IncomeSource'
+
+    post:
+      tags: [Income Sources]
+      summary: Create income source
+      servers:
+        - url: https://api.nvlp.app
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IncomeSourceCreate'
+      responses:
+        '201':
+          description: Income source created successfully
+
+  # Payees Endpoints (PostgREST Direct)
+  /payees:
+    get:
+      tags: [Payees]
+      summary: List payees
+      servers:
+        - url: https://api.nvlp.app
+      parameters:
+        - name: budget_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Payees retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Payee'
+
+    post:
+      tags: [Payees]
+      summary: Create payee
+      servers:
+        - url: https://api.nvlp.app
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PayeeCreate'
+      responses:
+        '201':
+          description: Payee created successfully
+
+  # Transaction Endpoints (Edge Functions)
+  /transactions:
+    get:
+      tags: [Transactions]
+      summary: List transactions
+      description: Get transactions with optional filtering
+      servers:
+        - url: https://qnpatlosomopoimtsmsr.supabase.co/functions/v1
+      parameters:
+        - name: budget_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: transaction_type
+          in: query
+          schema:
+            type: string
+            enum: [income, allocation, expense, transfer, debt_payment]
+      responses:
+        '200':
+          description: Transactions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      transactions:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Transaction'
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'
+
+    post:
+      tags: [Transactions]
+      summary: Create transaction
+      description: Create a new transaction with validation
+      servers:
+        - url: https://qnpatlosomopoimtsmsr.supabase.co/functions/v1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransactionCreate'
+      responses:
+        '201':
+          description: Transaction created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  transaction:
+                    $ref: '#/components/schemas/Transaction'
+
+  # Dashboard Endpoint (Edge Functions)
+  /dashboard:
+    get:
+      tags: [Dashboard]
+      summary: Get dashboard data
+      description: Retrieve comprehensive dashboard information for a budget
+      servers:
+        - url: https://qnpatlosomopoimtsmsr.supabase.co/functions/v1
+      parameters:
+        - name: budget_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: days
+          in: query
+          schema:
+            type: integer
+            default: 30
+          description: Number of days for spending analysis
+      responses:
+        '200':
+          description: Dashboard data retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/DashboardData'
+
+  # Reports Endpoints (Edge Functions)
+  /reports/transactions:
+    get:
+      tags: [Reports]
+      summary: Transaction history report
+      servers:
+        - url: https://qnpatlosomopoimtsmsr.supabase.co/functions/v1
+      parameters:
+        - name: budget_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: transaction_type
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Transaction report generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportResponse'
+
+  /reports/category-trends:
+    get:
+      tags: [Reports]
+      summary: Category spending trends
+      servers:
+        - url: https://qnpatlosomopoimtsmsr.supabase.co/functions/v1
+      parameters:
+        - name: budget_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: group_by
+          in: query
+          schema:
+            type: string
+            enum: [day, week, month]
+            default: month
+      responses:
+        '200':
+          description: Category trends report generated successfully
+
+  /reports/income-expense:
+    get:
+      tags: [Reports]
+      summary: Income vs expense analysis
+      servers:
+        - url: https://qnpatlosomopoimtsmsr.supabase.co/functions/v1
+      parameters:
+        - name: budget_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: group_by
+          in: query
+          schema:
+            type: string
+            enum: [day, week, month]
+            default: month
+      responses:
+        '200':
+          description: Income vs expense report generated successfully
+
+  # Export Endpoints (Edge Functions)
+  /export/transactions:
+    get:
+      tags: [Export]
+      summary: Export transactions
+      description: Export transaction data in CSV or JSON format
+      servers:
+        - url: https://qnpatlosomopoimtsmsr.supabase.co/functions/v1
+      parameters:
+        - name: budget_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [csv, json]
+            default: csv
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: transaction_type
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Export file generated successfully
+          content:
+            text/csv:
+              schema:
+                type: string
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+
+  /export/budget:
+    get:
+      tags: [Export]
+      summary: Export complete budget
+      description: Export all budget data including envelopes, categories, payees, etc.
+      servers:
+        - url: https://qnpatlosomopoimtsmsr.supabase.co/functions/v1
+      parameters:
+        - name: budget_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [csv, json]
+            default: csv
+      responses:
+        '200':
+          description: Budget export generated successfully
+
+  # Audit Endpoints (Edge Functions)
+  /audit/events:
+    get:
+      tags: [Audit]
+      summary: Get audit events
+      description: Retrieve transaction audit trail events
+      servers:
+        - url: https://qnpatlosomopoimtsmsr.supabase.co/functions/v1
+      parameters:
+        - name: budget_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: event_type
+          in: query
+          schema:
+            type: string
+            enum: [created, updated, deleted, restored]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Audit events retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditResponse'
+
+  /audit/summary:
+    get:
+      tags: [Audit]
+      summary: Get audit summary
+      description: Get summary of audit events by type
+      servers:
+        - url: https://qnpatlosomopoimtsmsr.supabase.co/functions/v1
+      parameters:
+        - name: budget_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Audit summary retrieved successfully
+
+  # Notifications Endpoints (Edge Functions)
+  /notifications:
+    get:
+      tags: [Notifications]
+      summary: Get notifications
+      description: Retrieve active notifications for user
+      servers:
+        - url: https://qnpatlosomopoimtsmsr.supabase.co/functions/v1
+      parameters:
+        - name: budget_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+          description: Filter to specific budget (optional)
+        - name: timezone
+          in: query
+          schema:
+            type: string
+          description: User's timezone for date calculations
+          example: "America/New_York"
+      responses:
+        '200':
+          description: Notifications retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      notifications:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Notification'
+                      total_count:
+                        type: integer
+                      today:
+                        type: string
+                        format: date
+                      budget_filter:
+                        type: string
+
+  /notifications/acknowledge:
+    post:
+      tags: [Notifications]
+      summary: Acknowledge notifications
+      description: Mark notifications as seen to prevent re-notification
+      servers:
+        - url: https://qnpatlosomopoimtsmsr.supabase.co/functions/v1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [notification_ids]
+              properties:
+                notification_ids:
+                  type: array
+                  items:
+                    type: string
+                  example: ["income_source_due_abc123_2025-07-07"]
+      responses:
+        '200':
+          description: Notifications acknowledged successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      acknowledged_count:
+                        type: integer
+                      notification_ids:
+                        type: array
+                        items:
+                          type: string
+
+  /notifications/clear:
+    delete:
+      tags: [Notifications]
+      summary: Clear acknowledgments
+      description: Clear notification acknowledgments to allow re-notification
+      servers:
+        - url: https://qnpatlosomopoimtsmsr.supabase.co/functions/v1
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                budget_ids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                notification_types:
+                  type: array
+                  items:
+                    type: string
+                    enum: [income_source_due, income_source_overdue, envelope_date_due, envelope_amount_threshold, envelope_overbudget, transaction_uncleared]
+      responses:
+        '200':
+          description: Acknowledgments cleared successfully
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    BudgetId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Budget identifier
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    Conflict:
+      description: Conflict
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    # Base Schemas
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        code:
+          type: string
+        details:
+          type: object
+
+    Pagination:
+      type: object
+      properties:
+        limit:
+          type: integer
+        offset:
+          type: integer
+        count:
+          type: integer
+
+    # Authentication Schemas
+    AuthResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            email:
+              type: string
+              format: email
+            full_name:
+              type: string
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+
+    # Entity Schemas
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        full_name:
+          type: string
+        avatar_url:
+          type: string
+        timezone:
+          type: string
+          default: UTC
+        notification_preferences:
+          type: object
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Budget:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        is_default:
+          type: boolean
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Category:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        budget_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        color:
+          type: string
+          pattern: '^#[0-9A-Fa-f]{6}$'
+        icon:
+          type: string
+        is_active:
+          type: boolean
+        sort_order:
+          type: integer
+        category_type:
+          type: string
+          enum: [income, expense]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CategoryCreate:
+      type: object
+      required: [budget_id, user_id, name]
+      properties:
+        budget_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        color:
+          type: string
+          pattern: '^#[0-9A-Fa-f]{6}$'
+        category_type:
+          type: string
+          enum: [income, expense]
+
+    Envelope:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        budget_id:
+          type: string
+          format: uuid
+        category_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        color:
+          type: string
+        current_balance:
+          type: number
+          format: decimal
+        target_amount:
+          type: number
+          format: decimal
+        should_notify:
+          type: boolean
+        notify_date:
+          type: string
+          format: date
+        notify_amount:
+          type: number
+          format: decimal
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+    EnvelopeCreate:
+      type: object
+      required: [budget_id, user_id, name]
+      properties:
+        budget_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        category_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        target_amount:
+          type: number
+          format: decimal
+        should_notify:
+          type: boolean
+        notify_date:
+          type: string
+          format: date
+        notify_amount:
+          type: number
+          format: decimal
+
+    IncomeSource:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        budget_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        expected_monthly_amount:
+          type: number
+          format: decimal
+        is_active:
+          type: boolean
+        should_notify:
+          type: boolean
+        frequency:
+          type: string
+          enum: [weekly, bi_weekly, twice_monthly, monthly, annually, custom, one_time]
+        custom_day:
+          type: integer
+          minimum: 1
+          maximum: 31
+        next_expected_date:
+          type: string
+          format: date
+        created_at:
+          type: string
+          format: date-time
+
+    IncomeSourceCreate:
+      type: object
+      required: [budget_id, user_id, name]
+      properties:
+        budget_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        expected_monthly_amount:
+          type: number
+          format: decimal
+        frequency:
+          type: string
+          enum: [weekly, bi_weekly, twice_monthly, monthly, annually, custom, one_time]
+        should_notify:
+          type: boolean
+
+    Payee:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        budget_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        payee_type:
+          type: string
+          enum: [business, person, organization, utility, service, other]
+        contact_email:
+          type: string
+          format: email
+        contact_phone:
+          type: string
+        contact_address:
+          type: string
+        website_url:
+          type: string
+        notes:
+          type: string
+        is_active:
+          type: boolean
+        total_paid:
+          type: number
+          format: decimal
+        last_payment_date:
+          type: string
+          format: date
+        last_payment_amount:
+          type: number
+          format: decimal
+        created_at:
+          type: string
+          format: date-time
+
+    PayeeCreate:
+      type: object
+      required: [budget_id, user_id, name]
+      properties:
+        budget_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        payee_type:
+          type: string
+          enum: [business, person, organization, utility, service, other]
+        contact_email:
+          type: string
+          format: email
+
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        budget_id:
+          type: string
+          format: uuid
+        transaction_type:
+          type: string
+          enum: [income, allocation, expense, transfer, debt_payment]
+        amount:
+          type: number
+          format: decimal
+        description:
+          type: string
+        transaction_date:
+          type: string
+          format: date
+        from_envelope_id:
+          type: string
+          format: uuid
+        to_envelope_id:
+          type: string
+          format: uuid
+        payee_id:
+          type: string
+          format: uuid
+        income_source_id:
+          type: string
+          format: uuid
+        reference_number:
+          type: string
+        notes:
+          type: string
+        is_cleared:
+          type: boolean
+        is_reconciled:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+    TransactionCreate:
+      type: object
+      required: [budget_id, transaction_type, amount, description, transaction_date]
+      properties:
+        budget_id:
+          type: string
+          format: uuid
+        transaction_type:
+          type: string
+          enum: [income, allocation, expense, transfer, debt_payment]
+        amount:
+          type: number
+          format: decimal
+          minimum: 0.01
+        description:
+          type: string
+          minLength: 1
+        transaction_date:
+          type: string
+          format: date
+        from_envelope_id:
+          type: string
+          format: uuid
+        to_envelope_id:
+          type: string
+          format: uuid
+        payee_id:
+          type: string
+          format: uuid
+        income_source_id:
+          type: string
+          format: uuid
+        notes:
+          type: string
+
+    DashboardData:
+      type: object
+      properties:
+        budget_overview:
+          type: object
+          properties:
+            budget:
+              type: object
+              properties:
+                id:
+                  type: string
+                name:
+                  type: string
+                description:
+                  type: string
+            available_amount:
+              type: number
+            total_allocated:
+              type: number
+            total_budget:
+              type: number
+        envelopes_summary:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+              balance:
+                type: number
+              category:
+                type: string
+        recent_transactions:
+          type: array
+          items:
+            type: object
+        spending_by_category:
+          type: array
+          items:
+            type: object
+        income_vs_expenses:
+          type: object
+        generated_at:
+          type: string
+          format: date-time
+
+    ReportResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+
+    AuditResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            events:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  transaction_id:
+                    type: string
+                  event_type:
+                    type: string
+                  event_description:
+                    type: string
+                  event_data:
+                    type: object
+                  created_at:
+                    type: string
+                  created_by:
+                    type: string
+            pagination:
+              $ref: '#/components/schemas/Pagination'
+
+    Notification:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique notification identifier
+        type:
+          type: string
+          enum: [income_source_due, income_source_overdue, envelope_date_due, envelope_amount_threshold, envelope_overbudget, transaction_uncleared]
+        priority:
+          type: string
+          enum: [high, medium, low]
+        title:
+          type: string
+        message:
+          type: string
+        budget_id:
+          type: string
+          format: uuid
+        budget_name:
+          type: string
+        related_entity_type:
+          type: string
+          enum: [income_source, envelope, transaction]
+        related_entity_id:
+          type: string
+          format: uuid
+        notification_date:
+          type: string
+          format: date
+        metadata:
+          type: object
+          description: Additional context specific to notification type
+
+tags:
+  - name: Authentication
+    description: User authentication and session management
+  - name: Profile
+    description: User profile management
+  - name: Budgets
+    description: Budget management operations
+  - name: Categories
+    description: Category management for envelope grouping
+  - name: Envelopes
+    description: Envelope budgeting operations
+  - name: Income Sources
+    description: Income source tracking and management
+  - name: Payees
+    description: Payee management for transactions
+  - name: Transactions
+    description: Financial transaction operations with validation
+  - name: Dashboard
+    description: Dashboard data aggregation
+  - name: Reports
+    description: Financial reporting and analytics
+  - name: Export
+    description: Data export functionality
+  - name: Audit
+    description: Audit trail and transaction history
+  - name: Notifications
+    description: Smart notification system
