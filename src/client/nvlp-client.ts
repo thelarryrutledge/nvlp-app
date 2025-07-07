@@ -23,17 +23,20 @@ import {
   UpdateEnvelopeInput,
   CreatePayeeInput,
   UpdatePayeeInput,
-  QueryParams
+  QueryParams,
+  PersistedAuthData
 } from './types';
 
 import { PostgRESTTransport } from './transports/postgrest-transport';
 import { EdgeFunctionTransport } from './transports/edge-function-transport';
 import { AuthenticationError } from './errors';
+import { TokenManager } from './token-manager';
 
 export class NVLPClient {
   private postgrestTransport: PostgRESTTransport;
   private edgeFunctionTransport: EdgeFunctionTransport;
   private primaryTransport: Transport;
+  private tokenManager: TokenManager;
   private authState: AuthState = {
     accessToken: null,
     refreshToken: null,
@@ -45,8 +48,18 @@ export class NVLPClient {
     this.postgrestTransport = new PostgRESTTransport(config);
     this.edgeFunctionTransport = new EdgeFunctionTransport(config);
     
+    // Initialize token manager
+    this.tokenManager = new TokenManager(
+      config.tokenStorageKey,
+      config.persistTokens !== false, // Default true
+      config.autoRefresh !== false    // Default true
+    );
+    
     // Default to PostgREST for CRUD operations
     this.primaryTransport = this.postgrestTransport;
+    
+    // Try to restore session on initialization
+    this.restoreSession();
   }
 
   // ===========================================
@@ -54,23 +67,58 @@ export class NVLPClient {
   // ===========================================
 
   /**
-   * Set authentication state
+   * Restore session from persisted tokens
    */
-  setAuth(accessToken: string, refreshToken?: string, user?: any): void {
+  private restoreSession(): void {
+    const persistedAuth = this.tokenManager.loadTokens();
+    if (persistedAuth) {
+      this.setAuthFromPersisted(persistedAuth);
+    }
+  }
+
+  /**
+   * Set authentication state from persisted data
+   */
+  private setAuthFromPersisted(persistedAuth: PersistedAuthData): void {
+    this.authState.accessToken = persistedAuth.accessToken;
+    this.authState.refreshToken = persistedAuth.refreshToken;
+    this.authState.expiresAt = persistedAuth.expiresAt;
+    this.authState.user = persistedAuth.user;
+
+    // Update transport authentication
+    this.postgrestTransport.setAuth(persistedAuth.accessToken);
+    this.edgeFunctionTransport.setAuth(persistedAuth.accessToken);
+  }
+
+  /**
+   * Set authentication state and persist tokens
+   */
+  setAuth(accessToken: string, refreshToken?: string, user?: any, expiresIn?: number): void {
+    // Parse expiration from JWT if not provided
+    let actualExpiresIn = expiresIn;
+    if (!actualExpiresIn) {
+      const jwtExpiration = this.tokenManager.parseJWTExpiration(accessToken);
+      actualExpiresIn = jwtExpiration ? Math.floor((jwtExpiration - Date.now()) / 1000) : 3600;
+    }
+
     this.authState.accessToken = accessToken;
     this.authState.refreshToken = refreshToken || null;
     this.authState.user = user || null;
-    
-    // Set token expiration (default 1 hour if not provided)
-    this.authState.expiresAt = Date.now() + (60 * 60 * 1000);
+    this.authState.expiresAt = Date.now() + (actualExpiresIn * 1000);
+    this.authState.expiresIn = actualExpiresIn;
 
     // Update transport authentication
     this.postgrestTransport.setAuth(accessToken);
     this.edgeFunctionTransport.setAuth(accessToken);
+
+    // Persist tokens if user provided
+    if (user) {
+      this.tokenManager.saveTokens(accessToken, refreshToken || null, actualExpiresIn, user);
+    }
   }
 
   /**
-   * Clear authentication state
+   * Clear authentication state and remove persisted tokens
    */
   clearAuth(): void {
     this.authState = {
@@ -82,6 +130,7 @@ export class NVLPClient {
 
     this.postgrestTransport.setAuth(null);
     this.edgeFunctionTransport.setAuth(null);
+    this.tokenManager.clearTokens();
   }
 
   /**
@@ -94,6 +143,14 @@ export class NVLPClient {
   }
 
   /**
+   * Check if token needs refresh
+   */
+  needsTokenRefresh(): boolean {
+    return !!(this.authState.expiresAt && 
+              this.tokenManager.needsRefresh(this.authState.expiresAt));
+  }
+
+  /**
    * Get current authentication state
    */
   getAuthState(): AuthState {
@@ -103,9 +160,20 @@ export class NVLPClient {
   /**
    * Ensure authentication or throw error
    */
-  private requireAuth(): void {
+  private async requireAuth(): Promise<void> {
     if (!this.isAuthenticated()) {
       throw new AuthenticationError('Authentication required');
+    }
+
+    // Auto-refresh token if needed
+    if (this.needsTokenRefresh() && this.authState.refreshToken) {
+      try {
+        await this.refreshToken();
+      } catch (error) {
+        // If refresh fails, clear auth and throw
+        this.clearAuth();
+        throw new AuthenticationError('Token refresh failed - please login again');
+      }
     }
   }
 
@@ -114,7 +182,7 @@ export class NVLPClient {
   // ===========================================
 
   async getProfile(): Promise<UserProfile> {
-    this.requireAuth();
+    await this.requireAuth();
     const response = await this.postgrestTransport.get<UserProfile[]>('user_profiles', {
       select: '*'
     });
@@ -127,7 +195,7 @@ export class NVLPClient {
   }
 
   async updateProfile(updates: Partial<UserProfile>): Promise<UserProfile> {
-    this.requireAuth();
+    await this.requireAuth();
     const response = await this.postgrestTransport.patch<UserProfile[]>(
       'user_profiles',
       updates
@@ -146,7 +214,7 @@ export class NVLPClient {
   // ===========================================
 
   async getBudgets(params?: QueryParams): Promise<Budget[]> {
-    this.requireAuth();
+    await this.requireAuth();
     const response = await this.postgrestTransport.get<Budget[]>('budgets', {
       select: '*',
       ...params
@@ -155,7 +223,7 @@ export class NVLPClient {
   }
 
   async getBudget(id: string): Promise<Budget> {
-    this.requireAuth();
+    await this.requireAuth();
     const response = await this.postgrestTransport.get<Budget[]>('budgets', {
       id: `eq.${id}`,
       select: '*'
@@ -169,7 +237,7 @@ export class NVLPClient {
   }
 
   async createBudget(input: CreateBudgetInput): Promise<Budget> {
-    this.requireAuth();
+    await this.requireAuth();
     const response = await this.postgrestTransport.post<Budget[]>('budgets', input);
     
     if (!response.data || response.data.length === 0) {
@@ -180,13 +248,13 @@ export class NVLPClient {
   }
 
   async updateBudget(id: string, updates: UpdateBudgetInput): Promise<Budget> {
-    this.requireAuth();
+    await this.requireAuth();
     await this.postgrestTransport.patch(`budgets?id=eq.${id}`, updates);
     return this.getBudget(id);
   }
 
   async deleteBudget(id: string): Promise<void> {
-    this.requireAuth();
+    await this.requireAuth();
     await this.postgrestTransport.delete(`budgets?id=eq.${id}`);
   }
 
@@ -195,7 +263,7 @@ export class NVLPClient {
   // ===========================================
 
   async getIncomeSources(budgetId?: string, params?: QueryParams): Promise<IncomeSource[]> {
-    this.requireAuth();
+    await this.requireAuth();
     const filters: any = { select: '*', ...params };
     if (budgetId) {
       filters.budget_id = `eq.${budgetId}`;
@@ -206,7 +274,7 @@ export class NVLPClient {
   }
 
   async getIncomeSource(id: string): Promise<IncomeSource> {
-    this.requireAuth();
+    await this.requireAuth();
     const response = await this.postgrestTransport.get<IncomeSource[]>('income_sources', {
       id: `eq.${id}`,
       select: '*'
@@ -220,7 +288,7 @@ export class NVLPClient {
   }
 
   async createIncomeSource(input: CreateIncomeSourceInput): Promise<IncomeSource> {
-    this.requireAuth();
+    await this.requireAuth();
     const response = await this.postgrestTransport.post<IncomeSource[]>('income_sources', input);
     
     if (!response.data || response.data.length === 0) {
@@ -231,13 +299,13 @@ export class NVLPClient {
   }
 
   async updateIncomeSource(id: string, updates: UpdateIncomeSourceInput): Promise<IncomeSource> {
-    this.requireAuth();
+    await this.requireAuth();
     await this.postgrestTransport.patch(`income_sources?id=eq.${id}`, updates);
     return this.getIncomeSource(id);
   }
 
   async deleteIncomeSource(id: string): Promise<void> {
-    this.requireAuth();
+    await this.requireAuth();
     await this.postgrestTransport.delete(`income_sources?id=eq.${id}`);
   }
 
@@ -246,7 +314,7 @@ export class NVLPClient {
   // ===========================================
 
   async getCategories(budgetId?: string, params?: QueryParams): Promise<Category[]> {
-    this.requireAuth();
+    await this.requireAuth();
     const filters: any = { select: '*', ...params };
     if (budgetId) {
       filters.budget_id = `eq.${budgetId}`;
@@ -257,7 +325,7 @@ export class NVLPClient {
   }
 
   async getCategory(id: string): Promise<Category> {
-    this.requireAuth();
+    await this.requireAuth();
     const response = await this.postgrestTransport.get<Category[]>('categories', {
       id: `eq.${id}`,
       select: '*'
@@ -271,7 +339,7 @@ export class NVLPClient {
   }
 
   async createCategory(input: CreateCategoryInput): Promise<Category> {
-    this.requireAuth();
+    await this.requireAuth();
     const response = await this.postgrestTransport.post<Category[]>('categories', input);
     
     if (!response.data || response.data.length === 0) {
@@ -282,13 +350,13 @@ export class NVLPClient {
   }
 
   async updateCategory(id: string, updates: UpdateCategoryInput): Promise<Category> {
-    this.requireAuth();
+    await this.requireAuth();
     await this.postgrestTransport.patch(`categories?id=eq.${id}`, updates);
     return this.getCategory(id);
   }
 
   async deleteCategory(id: string): Promise<void> {
-    this.requireAuth();
+    await this.requireAuth();
     await this.postgrestTransport.delete(`categories?id=eq.${id}`);
   }
 
@@ -297,7 +365,7 @@ export class NVLPClient {
   // ===========================================
 
   async getEnvelopes(budgetId?: string, params?: QueryParams): Promise<Envelope[]> {
-    this.requireAuth();
+    await this.requireAuth();
     const filters: any = { select: '*', ...params };
     if (budgetId) {
       filters.budget_id = `eq.${budgetId}`;
@@ -308,7 +376,7 @@ export class NVLPClient {
   }
 
   async getEnvelope(id: string): Promise<Envelope> {
-    this.requireAuth();
+    await this.requireAuth();
     const response = await this.postgrestTransport.get<Envelope[]>('envelopes', {
       id: `eq.${id}`,
       select: '*'
@@ -322,7 +390,7 @@ export class NVLPClient {
   }
 
   async createEnvelope(input: CreateEnvelopeInput): Promise<Envelope> {
-    this.requireAuth();
+    await this.requireAuth();
     const response = await this.postgrestTransport.post<Envelope[]>('envelopes', input);
     
     if (!response.data || response.data.length === 0) {
@@ -333,13 +401,13 @@ export class NVLPClient {
   }
 
   async updateEnvelope(id: string, updates: UpdateEnvelopeInput): Promise<Envelope> {
-    this.requireAuth();
+    await this.requireAuth();
     await this.postgrestTransport.patch(`envelopes?id=eq.${id}`, updates);
     return this.getEnvelope(id);
   }
 
   async deleteEnvelope(id: string): Promise<void> {
-    this.requireAuth();
+    await this.requireAuth();
     await this.postgrestTransport.delete(`envelopes?id=eq.${id}`);
   }
 
@@ -348,7 +416,7 @@ export class NVLPClient {
   // ===========================================
 
   async getPayees(budgetId?: string, params?: QueryParams): Promise<Payee[]> {
-    this.requireAuth();
+    await this.requireAuth();
     const filters: any = { select: '*', ...params };
     if (budgetId) {
       filters.budget_id = `eq.${budgetId}`;
@@ -359,7 +427,7 @@ export class NVLPClient {
   }
 
   async getPayee(id: string): Promise<Payee> {
-    this.requireAuth();
+    await this.requireAuth();
     const response = await this.postgrestTransport.get<Payee[]>('payees', {
       id: `eq.${id}`,
       select: '*'
@@ -373,7 +441,7 @@ export class NVLPClient {
   }
 
   async createPayee(input: CreatePayeeInput): Promise<Payee> {
-    this.requireAuth();
+    await this.requireAuth();
     const response = await this.postgrestTransport.post<Payee[]>('payees', input);
     
     if (!response.data || response.data.length === 0) {
@@ -384,13 +452,13 @@ export class NVLPClient {
   }
 
   async updatePayee(id: string, updates: UpdatePayeeInput): Promise<Payee> {
-    this.requireAuth();
+    await this.requireAuth();
     await this.postgrestTransport.patch(`payees?id=eq.${id}`, updates);
     return this.getPayee(id);
   }
 
   async deletePayee(id: string): Promise<void> {
-    this.requireAuth();
+    await this.requireAuth();
     await this.postgrestTransport.delete(`payees?id=eq.${id}`);
   }
 
@@ -398,6 +466,9 @@ export class NVLPClient {
   // Authentication Methods (Edge Functions)
   // ===========================================
 
+  /**
+   * Login with email and password
+   */
   async login(email: string, password: string): Promise<{ user: any, session: any }> {
     const response = await this.edgeFunctionTransport.auth('login', {
       email,
@@ -408,20 +479,32 @@ export class NVLPClient {
       this.setAuth(
         response.data.session.access_token,
         response.data.session.refresh_token,
-        response.data.user
+        response.data.user,
+        response.data.session.expires_in
       );
     }
 
     return response.data;
   }
 
+  /**
+   * Logout and clear all authentication state
+   */
   async logout(): Promise<void> {
     if (this.authState.accessToken) {
-      await this.edgeFunctionTransport.auth('logout', {});
+      try {
+        await this.edgeFunctionTransport.auth('logout', {});
+      } catch (error) {
+        // Continue with logout even if server call fails
+        console.warn('Logout server call failed:', error);
+      }
     }
     this.clearAuth();
   }
 
+  /**
+   * Register new user
+   */
   async register(email: string, password: string, displayName?: string): Promise<{ user: any }> {
     const response = await this.edgeFunctionTransport.auth('register', {
       email,
@@ -430,6 +513,47 @@ export class NVLPClient {
     });
 
     return response.data;
+  }
+
+  /**
+   * Refresh access token using refresh token
+   */
+  async refreshToken(): Promise<{ session: any }> {
+    if (!this.authState.refreshToken) {
+      throw new AuthenticationError('No refresh token available');
+    }
+
+    const response = await this.edgeFunctionTransport.auth('refresh', {
+      refresh_token: this.authState.refreshToken
+    });
+
+    if (response.data && response.data.session) {
+      this.setAuth(
+        response.data.session.access_token,
+        response.data.session.refresh_token || this.authState.refreshToken,
+        this.authState.user,
+        response.data.session.expires_in
+      );
+    }
+
+    return response.data;
+  }
+
+  /**
+   * Reset password via email
+   */
+  async resetPassword(email: string): Promise<void> {
+    await this.edgeFunctionTransport.auth('reset', { email });
+  }
+
+  /**
+   * Update password (requires current authentication)
+   */
+  async updatePassword(newPassword: string): Promise<void> {
+    await this.requireAuth();
+    await this.edgeFunctionTransport.auth('update-password', {
+      password: newPassword
+    });
   }
 
   // ===========================================

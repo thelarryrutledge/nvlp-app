@@ -6,6 +6,7 @@
  */
 
 export { NVLPClient } from './nvlp-client';
+export { TokenManager } from './token-manager';
 export { PostgRESTTransport } from './transports/postgrest-transport';
 export { EdgeFunctionTransport } from './transports/edge-function-transport';
 

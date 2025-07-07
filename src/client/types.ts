@@ -9,6 +9,10 @@ export interface NVLPClientConfig {
   transport?: 'postgrest' | 'edge-function' | 'hybrid';
   timeout?: number;
   retries?: number;
+  // Token persistence options
+  persistTokens?: boolean; // Default: true
+  tokenStorageKey?: string; // Default: 'nvlp_auth_tokens'
+  autoRefresh?: boolean; // Default: true
 }
 
 // Authentication state
@@ -17,6 +21,16 @@ export interface AuthState {
   refreshToken: string | null;
   expiresAt: number | null;
   user: User | null;
+  expiresIn?: number; // seconds until expiration
+}
+
+// Persisted auth data
+export interface PersistedAuthData {
+  accessToken: string;
+  refreshToken: string | null;
+  expiresAt: number;
+  user: User;
+  createdAt: number;
 }
 
 export interface User {
