@@ -30,9 +30,10 @@ test-profile-postgrest.sh, test-budgets-postgrest.sh, test-budget-constraint-fix
 
 ## Completed ✅
 **Income Sources API**: Complete CRUD documentation + test script (17/17 tests pass)
-- API_INCOME_SOURCES_POSTGREST.md with full PostgREST patterns
-- test-income-sources-postgrest.sh validates all operations
+**Categories API**: Complete CRUD documentation + test script (19/19 tests pass)
+- API docs with full PostgREST patterns, validation constraints, RLS
+- Test scripts validate CRUD, constraints, types, filtering, color validation
+- Category types (income/expense/transfer) and auto-creation working
 - Prefer: return=representation header for ID retrieval
-- Frequency-based date calculations working
 
-## Next: Task 9 - Categories CRUD (PostgREST)
+## Next: Task 9 - Envelopes CRUD (PostgREST)
