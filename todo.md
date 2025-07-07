@@ -103,6 +103,7 @@
 - [x] Create reporting APIs
 - [x] Create data export functionality
 - [x] Add audit trail endpoints
+- [x] Add notifications endpoint
 - [ ] Test performance with larger datasets
 - [ ] Add caching where appropriate
 

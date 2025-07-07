@@ -130,6 +130,17 @@ test-profile-postgrest.sh, test-budgets-postgrest.sh, test-budget-constraint-fix
 - **Features**: Date range filtering, event type filtering, user filtering, pagination
 - **Performance**: Efficient queries with user email lookup caching
 
+## Notifications Endpoint (Edge Function) ✅
+- **Notification Types**: Income source due/overdue, envelope date/amount notifications, overbudget alerts, old uncleared transactions
+- **Smart Filtering**: Only shows valid notifications (timezone-aware, date-based)
+- **Acknowledgment System**: Track shown notifications to prevent re-notification
+- **Budget Filtering**: Get notifications for all budgets or specific budget
+- **Timezone Support**: Configurable timezone for "today" calculation
+- **Notification Management**: Acknowledge notifications, clear acknowledgments for re-notification
+- **Database Schema**: New notification_acknowledgments table with RLS
+- **Testing**: Core functionality validated with real notification data
+- **Features**: Priority levels, detailed metadata, comprehensive error handling
+
 ## Status: Task 12 Advanced Features In Progress
-**Completed**: Dashboard API, Reporting APIs, Data Export, Audit Trail
+**Completed**: Dashboard API, Reporting APIs, Data Export, Audit Trail, Notifications
 **Next**: Test performance with larger datasets
