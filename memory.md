@@ -70,12 +70,16 @@ test-profile-postgrest.sh, test-budgets-postgrest.sh, test-budget-constraint-fix
 - src/client/transports/postgrest-transport.ts (PostgREST direct API)
 - src/client/transports/edge-function-transport.ts (Edge Function wrapper)
 - src/client/README.md (comprehensive documentation)
-- test-client-auth.js (authentication flow testing)
-- example-client-usage.js (usage examples)
+- test-auth-flow.js (working authentication flow testing)
 
 **Key Features**: 
 - Cross-platform token storage (~/.nvlp/auth.json or localStorage)
 - Automatic session restoration on client initialization  
 - Built-in token refresh with 5-minute buffer
 - Complete auth flow: login/logout/register/reset/update password
+- Working Edge Function integration with api.nvlp.app
 - No dependency on external token files - self-contained authentication
+- End-to-end testing validated (login → API calls → logout)
+
+## Status: Task 10 Complete ✅
+**Ready for Task 11**: Transaction System (Edge Functions for Complex Logic)
