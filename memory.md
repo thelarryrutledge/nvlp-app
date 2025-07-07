@@ -28,4 +28,11 @@ Types: income, allocation, expense, transfer, debt_payment
 ## Test Scripts (Essential 5)
 test-profile-postgrest.sh, test-budgets-postgrest.sh, test-budget-constraint-fix.sh, test-budget-multi-user.sh, login-and-save-token.sh
 
-## Next: Task 9 - Income Sources CRUD (PostgREST)
+## Completed ✅
+**Income Sources API**: Complete CRUD documentation + test script (17/17 tests pass)
+- API_INCOME_SOURCES_POSTGREST.md with full PostgREST patterns
+- test-income-sources-postgrest.sh validates all operations
+- Prefer: return=representation header for ID retrieval
+- Frequency-based date calculations working
+
+## Next: Task 9 - Categories CRUD (PostgREST)

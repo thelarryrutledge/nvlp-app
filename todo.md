@@ -74,7 +74,7 @@
 - [x] **COMPLETED**: Fix database constraint `UNIQUE (user_id, is_default)` to allow multiple non-default budgets
 
 ### Task 9: Core Business APIs (Direct PostgREST)
-- [ ] Create income sources CRUD documentation (PostgREST)
+- [x] Create income sources CRUD documentation (PostgREST)
 - [ ] Create categories CRUD documentation (PostgREST)
 - [ ] Create envelopes CRUD documentation (PostgREST)
 - [ ] Create payees CRUD documentation (PostgREST)
