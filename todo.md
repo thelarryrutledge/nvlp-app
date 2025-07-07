@@ -76,7 +76,7 @@
 ### Task 9: Core Business APIs (Direct PostgREST)
 - [x] Create income sources CRUD documentation (PostgREST)
 - [x] Create categories CRUD documentation (PostgREST)
-- [ ] Create envelopes CRUD documentation (PostgREST)
+- [x] Create envelopes CRUD documentation (PostgREST)
 - [ ] Create payees CRUD documentation (PostgREST)
 - [ ] Test each API module completely before next
 - [ ] Verify data isolation between users
