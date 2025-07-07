@@ -491,14 +491,20 @@ export class NVLPClient {
    * Logout and clear all authentication state
    */
   async logout(): Promise<void> {
-    if (this.authState.accessToken) {
+    // Store the token before clearing (needed for server logout call)
+    const currentToken = this.authState.accessToken;
+    
+    if (currentToken) {
       try {
+        // Logout from server first
         await this.edgeFunctionTransport.auth('logout', {});
       } catch (error) {
-        // Continue with logout even if server call fails
+        // Continue with local logout even if server call fails
         console.warn('Logout server call failed:', error);
       }
     }
+    
+    // Clear local authentication state
     this.clearAuth();
   }
 
