@@ -28,33 +28,52 @@ APIKEY_HEADER="apikey: $SUPABASE_ANON_KEY"
 TESTS_PASSED=0
 TESTS_FAILED=0
 
-# Test function
+# Test function with retry logic for Edge Function cold starts
 test_endpoint() {
     local test_name="$1"
     local method="$2"
     local endpoint="$3"
     local data="$4"
     local expected_status="$5"
+    local max_retries=3
+    local retry_delay=2
     
     echo -n "Testing $test_name... "
     
-    if [ -n "$data" ]; then
-        response=$(curl -s -w "\n%{http_code}" -X "$method" \
-            -H "Content-Type: application/json" \
-            -H "$HEADERS" \
-            -d "$data" \
-            "$API_BASE$endpoint")
-    else
-        response=$(curl -s -w "\n%{http_code}" -X "$method" \
-            -H "$HEADERS" \
-            "$API_BASE$endpoint")
-    fi
-    
-    status_code=$(echo "$response" | tail -n1)
-    response_body=$(echo "$response" | sed '$d')
+    for attempt in $(seq 1 $max_retries); do
+        if [ -n "$data" ]; then
+            response=$(curl -s -w "\n%{http_code}" -X "$method" \
+                -H "Content-Type: application/json" \
+                -H "$HEADERS" \
+                -d "$data" \
+                "$API_BASE$endpoint")
+        else
+            response=$(curl -s -w "\n%{http_code}" -X "$method" \
+                -H "$HEADERS" \
+                "$API_BASE$endpoint")
+        fi
+        
+        status_code=$(echo "$response" | tail -n1)
+        response_body=$(echo "$response" | sed '$d')
+        
+        # Check for Edge Function cold start timeout (504 or very slow response)
+        if [ "$status_code" = "504" ] || [ "$status_code" = "408" ] || echo "$response_body" | grep -q "timeout\|cold start\|function not ready"; then
+            if [ $attempt -lt $max_retries ]; then
+                echo -n "⏳ (cold start, retrying $attempt/$max_retries)... "
+                sleep $retry_delay
+                continue
+            fi
+        fi
+        
+        # Test passed or failed definitively
+        break
+    done
     
     if [ "$status_code" = "$expected_status" ]; then
         echo "✅ PASSED (HTTP $status_code)"
+        if [ $attempt -gt 1 ]; then
+            echo "   (Required $attempt attempts due to cold start)"
+        fi
         TESTS_PASSED=$((TESTS_PASSED + 1))
         
         # Extract and display relevant info
@@ -65,7 +84,7 @@ test_endpoint() {
             fi
         fi
     else
-        echo "❌ FAILED (Expected HTTP $expected_status, got $status_code)"
+        echo "❌ FAILED (Expected HTTP $expected_status, got $status_code after $attempt attempts)"
         echo "   Response: $response_body"
         TESTS_FAILED=$((TESTS_FAILED + 1))
     fi
