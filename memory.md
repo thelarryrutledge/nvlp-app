@@ -4,10 +4,12 @@
 - Supabase: qnpatlosomopoimtsmsr
 - Test users: larryjrutledge@gmail.com & larry@mariomurillo.org / Test1234!
 
-## Status: Phase 2 Complete ✅
+## Status: Phase 3 Complete ✅
 **Auth (Edge Function)**: 7 endpoints with full security 
 **Database**: 9 tables, RLS, triggers, automation (profiles→budgets→defaults)
 **APIs**: Profile + Budget endpoints converted to direct PostgREST (<50ms vs 2-10s cold start)
+**Client Library**: TypeScript client with dual transport layers (PostgREST + Edge Functions)
+**Transactions**: Complete Edge Function implementation with validation, CRUD, and balance tracking
 
 ## Architecture: PostgREST Direct
 - JWT + API key auth pattern
@@ -18,6 +20,14 @@
 ## Database Tables
 user_profiles, budgets, income_sources, categories, envelopes, payees, transactions, transaction_events, user_state
 - All have RLS + auto-creation triggers (except transactions)
+- Transactions have comprehensive validation constraints and balance update triggers
+
+## Transaction System (Edge Function)
+- **Validation**: Type-specific validation, resource ownership, balance checks
+- **Types**: income, allocation, expense, transfer, debt_payment with proper flow constraints
+- **CRUD**: Full create/read/update/delete with RLS enforcement
+- **Balance Tracking**: Automatic envelope balance updates via database triggers
+- **Testing**: 15 test cases with 100% pass rate
 - Budget constraint fixed: partial unique index for default budgets only
 - Multi-user tested ✅
 

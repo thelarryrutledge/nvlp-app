@@ -91,12 +91,12 @@
 - **Note**: TypeScript client available for future web/Node.js integrations
 
 ### Task 11: Transaction System (Edge Functions for Complex Logic)
-- [ ] Create transaction validation functions (Edge Function)
-- [ ] Create transaction CRUD endpoints (Edge Function)
-- [ ] Implement transaction types (income, expense, allocation, transfer)
-- [ ] Test transaction logic with real data
-- [ ] Add balance calculation and state updates
-- [ ] Test envelope balance tracking
+- [x] Create transaction validation functions (Edge Function)
+- [x] Create transaction CRUD endpoints (Edge Function)
+- [x] Implement transaction types (income, expense, allocation, transfer)
+- [x] Test transaction logic with real data
+- [x] Add balance calculation and state updates
+- [x] Test envelope balance tracking
 
 ### Task 12: Advanced Features
 - [ ] Create dashboard API endpoint
