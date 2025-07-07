@@ -265,6 +265,16 @@ Income Sources → available_amount (user_state) → Envelopes → Payees
 - URL query building for GET requests with filters
 - Prefer header support for POST/PATCH operations
 
+**Edge Function Transport Implementation**: ✅
+- Complete transaction system with CRUD operations
+- Dashboard API with budget overview, envelope summary, spending analysis
+- Reporting APIs (transaction reports, category trends, income vs expenses)
+- Export functionality (transactions, budget data) with CSV/JSON formats
+- Audit trail with event tracking and filtering
+- Notification system with acknowledgment support
+- All complex business logic operations via Edge Functions
+- Matches TypeScript client Edge Function patterns
+
 ## Environment
 - **Working Directory**: /Users/larryrutledge/Projects/nvlp-app
 - **Git Status**: Clean, ahead of origin by commits

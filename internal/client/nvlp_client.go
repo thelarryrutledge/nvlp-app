@@ -863,6 +863,542 @@ func (c *NVLPClient) DeletePayee(id string) error {
 }
 
 // ===========================================
+// Transaction Methods (Edge Functions)
+// ===========================================
+
+// Transaction represents a transaction for Edge Function operations
+type Transaction struct {
+	ID              string    `json:"id"`
+	BudgetID        string    `json:"budget_id"`
+	Type            string    `json:"type"`
+	Amount          float64   `json:"amount"`
+	Description     string    `json:"description"`
+	Date            time.Time `json:"date"`
+	FromEnvelopeID  *string   `json:"from_envelope_id"`
+	ToEnvelopeID    *string   `json:"to_envelope_id"`
+	PayeeID         *string   `json:"payee_id"`
+	IncomeSourceID  *string   `json:"income_source_id"`
+	CategoryID      *string   `json:"category_id"`
+	IsRecurring     bool      `json:"is_recurring"`
+	RecurrenceRule  *string   `json:"recurrence_rule"`
+	Tags            []string  `json:"tags"`
+	CreatedAt       time.Time `json:"created_at"`
+	UpdatedAt       time.Time `json:"updated_at"`
+}
+
+type CreateTransactionInput struct {
+	BudgetID        string    `json:"budget_id"`
+	Type            string    `json:"type"`
+	Amount          float64   `json:"amount"`
+	Description     string    `json:"description"`
+	Date            time.Time `json:"date"`
+	FromEnvelopeID  *string   `json:"from_envelope_id,omitempty"`
+	ToEnvelopeID    *string   `json:"to_envelope_id,omitempty"`
+	PayeeID         *string   `json:"payee_id,omitempty"`
+	IncomeSourceID  *string   `json:"income_source_id,omitempty"`
+	CategoryID      *string   `json:"category_id,omitempty"`
+	IsRecurring     *bool     `json:"is_recurring,omitempty"`
+	RecurrenceRule  *string   `json:"recurrence_rule,omitempty"`
+	Tags            []string  `json:"tags,omitempty"`
+}
+
+type UpdateTransactionInput struct {
+	Type            *string    `json:"type,omitempty"`
+	Amount          *float64   `json:"amount,omitempty"`
+	Description     *string    `json:"description,omitempty"`
+	Date            *time.Time `json:"date,omitempty"`
+	FromEnvelopeID  *string    `json:"from_envelope_id,omitempty"`
+	ToEnvelopeID    *string    `json:"to_envelope_id,omitempty"`
+	PayeeID         *string    `json:"payee_id,omitempty"`
+	IncomeSourceID  *string    `json:"income_source_id,omitempty"`
+	CategoryID      *string    `json:"category_id,omitempty"`
+	IsRecurring     *bool      `json:"is_recurring,omitempty"`
+	RecurrenceRule  *string    `json:"recurrence_rule,omitempty"`
+	Tags            []string   `json:"tags,omitempty"`
+}
+
+// GetTransactions retrieves transactions using Edge Function
+func (c *NVLPClient) GetTransactions(budgetID string, params map[string]interface{}) ([]Transaction, error) {
+	if err := c.requireAuth(); err != nil {
+		return nil, err
+	}
+	
+	requestData := map[string]interface{}{
+		"budget_id": budgetID,
+		"action":    "list",
+	}
+	
+	// Merge additional parameters
+	for k, v := range params {
+		requestData[k] = v
+	}
+	
+	response, err := c.edgeFunctionTransport.Transaction("", requestData)
+	if err != nil {
+		return nil, err
+	}
+	
+	var result struct {
+		Transactions []Transaction `json:"transactions"`
+	}
+	
+	if err := c.parseResponse(response, &result); err != nil {
+		return nil, err
+	}
+	
+	return result.Transactions, nil
+}
+
+// GetTransaction retrieves a specific transaction by ID
+func (c *NVLPClient) GetTransaction(id string) (*Transaction, error) {
+	if err := c.requireAuth(); err != nil {
+		return nil, err
+	}
+	
+	response, err := c.edgeFunctionTransport.Transaction("", map[string]interface{}{
+		"action": "get",
+		"id":     id,
+	})
+	
+	if err != nil {
+		return nil, err
+	}
+	
+	var result struct {
+		Transaction *Transaction `json:"transaction"`
+	}
+	
+	if err := c.parseResponse(response, &result); err != nil {
+		return nil, err
+	}
+	
+	return result.Transaction, nil
+}
+
+// CreateTransaction creates a new transaction
+func (c *NVLPClient) CreateTransaction(input *CreateTransactionInput) (*Transaction, error) {
+	if err := c.requireAuth(); err != nil {
+		return nil, err
+	}
+	
+	requestData := map[string]interface{}{
+		"action":      "create",
+		"transaction": input,
+	}
+	
+	response, err := c.edgeFunctionTransport.Transaction("", requestData)
+	if err != nil {
+		return nil, err
+	}
+	
+	var result struct {
+		Transaction *Transaction `json:"transaction"`
+	}
+	
+	if err := c.parseResponse(response, &result); err != nil {
+		return nil, err
+	}
+	
+	return result.Transaction, nil
+}
+
+// UpdateTransaction updates an existing transaction
+func (c *NVLPClient) UpdateTransaction(id string, updates *UpdateTransactionInput) (*Transaction, error) {
+	if err := c.requireAuth(); err != nil {
+		return nil, err
+	}
+	
+	requestData := map[string]interface{}{
+		"action":  "update",
+		"id":      id,
+		"updates": updates,
+	}
+	
+	response, err := c.edgeFunctionTransport.Transaction("", requestData)
+	if err != nil {
+		return nil, err
+	}
+	
+	var result struct {
+		Transaction *Transaction `json:"transaction"`
+	}
+	
+	if err := c.parseResponse(response, &result); err != nil {
+		return nil, err
+	}
+	
+	return result.Transaction, nil
+}
+
+// DeleteTransaction deletes a transaction
+func (c *NVLPClient) DeleteTransaction(id string) error {
+	if err := c.requireAuth(); err != nil {
+		return err
+	}
+	
+	_, err := c.edgeFunctionTransport.Transaction("", map[string]interface{}{
+		"action": "delete",
+		"id":     id,
+	})
+	
+	return err
+}
+
+// ===========================================
+// Dashboard Methods (Edge Functions)
+// ===========================================
+
+type DashboardData struct {
+	BudgetOverview    *BudgetOverview    `json:"budget_overview"`
+	EnvelopeSummary   []EnvelopeSummary  `json:"envelope_summary"`
+	RecentTransactions []Transaction     `json:"recent_transactions"`
+	SpendingAnalysis  *SpendingAnalysis  `json:"spending_analysis"`
+	IncomeVsExpenses  *IncomeVsExpenses  `json:"income_vs_expenses"`
+}
+
+type BudgetOverview struct {
+	BudgetID        string  `json:"budget_id"`
+	BudgetName      string  `json:"budget_name"`
+	TotalIncome     float64 `json:"total_income"`
+	TotalExpenses   float64 `json:"total_expenses"`
+	AvailableAmount float64 `json:"available_amount"`
+	LastUpdated     time.Time `json:"last_updated"`
+}
+
+type EnvelopeSummary struct {
+	EnvelopeID      string  `json:"envelope_id"`
+	Name            string  `json:"name"`
+	CurrentBalance  float64 `json:"current_balance"`
+	TargetAmount    float64 `json:"target_amount"`
+	PercentFull     float64 `json:"percent_full"`
+	CategoryName    string  `json:"category_name"`
+}
+
+type SpendingAnalysis struct {
+	TopCategories    []CategorySpending `json:"top_categories"`
+	MonthlyTrend     []MonthlySpending  `json:"monthly_trend"`
+	BudgetUtilization float64           `json:"budget_utilization"`
+}
+
+type CategorySpending struct {
+	CategoryID   string  `json:"category_id"`
+	CategoryName string  `json:"category_name"`
+	Amount       float64 `json:"amount"`
+	Percentage   float64 `json:"percentage"`
+}
+
+type MonthlySpending struct {
+	Month  string  `json:"month"`
+	Amount float64 `json:"amount"`
+}
+
+type IncomeVsExpenses struct {
+	TotalIncome   float64            `json:"total_income"`
+	TotalExpenses float64            `json:"total_expenses"`
+	NetAmount     float64            `json:"net_amount"`
+	IncomeBySource []IncomeBySource  `json:"income_by_source"`
+	ExpensesByCategory []CategorySpending `json:"expenses_by_category"`
+}
+
+type IncomeBySource struct {
+	SourceID   string  `json:"source_id"`
+	SourceName string  `json:"source_name"`
+	Amount     float64 `json:"amount"`
+}
+
+// GetDashboard retrieves dashboard data for a budget
+func (c *NVLPClient) GetDashboard(budgetID string, params map[string]interface{}) (*DashboardData, error) {
+	if err := c.requireAuth(); err != nil {
+		return nil, err
+	}
+	
+	response, err := c.edgeFunctionTransport.Dashboard(budgetID, params)
+	if err != nil {
+		return nil, err
+	}
+	
+	var dashboardData DashboardData
+	if err := c.parseResponse(response, &dashboardData); err != nil {
+		return nil, err
+	}
+	
+	return &dashboardData, nil
+}
+
+// ===========================================
+// Reporting Methods (Edge Functions)
+// ===========================================
+
+type ReportData struct {
+	ReportType   string                 `json:"report_type"`
+	GeneratedAt  time.Time              `json:"generated_at"`
+	Parameters   map[string]interface{} `json:"parameters"`
+	Data         interface{}            `json:"data"`
+}
+
+// GetTransactionReport generates a transaction report
+func (c *NVLPClient) GetTransactionReport(budgetID string, params map[string]interface{}) (*ReportData, error) {
+	if err := c.requireAuth(); err != nil {
+		return nil, err
+	}
+	
+	reportParams := map[string]interface{}{
+		"budget_id": budgetID,
+	}
+	
+	for k, v := range params {
+		reportParams[k] = v
+	}
+	
+	response, err := c.edgeFunctionTransport.Reports("transactions", reportParams)
+	if err != nil {
+		return nil, err
+	}
+	
+	var reportData ReportData
+	if err := c.parseResponse(response, &reportData); err != nil {
+		return nil, err
+	}
+	
+	return &reportData, nil
+}
+
+// GetCategoryTrendsReport generates a category trends report
+func (c *NVLPClient) GetCategoryTrendsReport(budgetID string, params map[string]interface{}) (*ReportData, error) {
+	if err := c.requireAuth(); err != nil {
+		return nil, err
+	}
+	
+	reportParams := map[string]interface{}{
+		"budget_id": budgetID,
+	}
+	
+	for k, v := range params {
+		reportParams[k] = v
+	}
+	
+	response, err := c.edgeFunctionTransport.Reports("category-trends", reportParams)
+	if err != nil {
+		return nil, err
+	}
+	
+	var reportData ReportData
+	if err := c.parseResponse(response, &reportData); err != nil {
+		return nil, err
+	}
+	
+	return &reportData, nil
+}
+
+// GetIncomeExpenseReport generates an income vs expense report
+func (c *NVLPClient) GetIncomeExpenseReport(budgetID string, params map[string]interface{}) (*ReportData, error) {
+	if err := c.requireAuth(); err != nil {
+		return nil, err
+	}
+	
+	reportParams := map[string]interface{}{
+		"budget_id": budgetID,
+	}
+	
+	for k, v := range params {
+		reportParams[k] = v
+	}
+	
+	response, err := c.edgeFunctionTransport.Reports("income-expense", reportParams)
+	if err != nil {
+		return nil, err
+	}
+	
+	var reportData ReportData
+	if err := c.parseResponse(response, &reportData); err != nil {
+		return nil, err
+	}
+	
+	return &reportData, nil
+}
+
+// ===========================================
+// Export Methods (Edge Functions)
+// ===========================================
+
+type ExportData struct {
+	ExportType  string    `json:"export_type"`
+	Format      string    `json:"format"`
+	GeneratedAt time.Time `json:"generated_at"`
+	Filename    string    `json:"filename"`
+	Data        interface{} `json:"data"`
+	DownloadURL *string   `json:"download_url,omitempty"`
+}
+
+// ExportTransactions exports transaction data
+func (c *NVLPClient) ExportTransactions(budgetID, format string, params map[string]interface{}) (*ExportData, error) {
+	if err := c.requireAuth(); err != nil {
+		return nil, err
+	}
+	
+	exportParams := map[string]interface{}{
+		"budget_id": budgetID,
+		"format":    format,
+	}
+	
+	for k, v := range params {
+		exportParams[k] = v
+	}
+	
+	response, err := c.edgeFunctionTransport.Export("transactions", exportParams)
+	if err != nil {
+		return nil, err
+	}
+	
+	var exportData ExportData
+	if err := c.parseResponse(response, &exportData); err != nil {
+		return nil, err
+	}
+	
+	return &exportData, nil
+}
+
+// ExportBudget exports complete budget data
+func (c *NVLPClient) ExportBudget(budgetID, format string, params map[string]interface{}) (*ExportData, error) {
+	if err := c.requireAuth(); err != nil {
+		return nil, err
+	}
+	
+	exportParams := map[string]interface{}{
+		"budget_id": budgetID,
+		"format":    format,
+	}
+	
+	for k, v := range params {
+		exportParams[k] = v
+	}
+	
+	response, err := c.edgeFunctionTransport.Export("budget", exportParams)
+	if err != nil {
+		return nil, err
+	}
+	
+	var exportData ExportData
+	if err := c.parseResponse(response, &exportData); err != nil {
+		return nil, err
+	}
+	
+	return &exportData, nil
+}
+
+// ===========================================
+// Audit Methods (Edge Functions)
+// ===========================================
+
+type AuditEvent struct {
+	ID           string                 `json:"id"`
+	BudgetID     string                 `json:"budget_id"`
+	UserID       string                 `json:"user_id"`
+	EventType    string                 `json:"event_type"`
+	ResourceType string                 `json:"resource_type"`
+	ResourceID   string                 `json:"resource_id"`
+	Action       string                 `json:"action"`
+	Changes      map[string]interface{} `json:"changes"`
+	Metadata     map[string]interface{} `json:"metadata"`
+	CreatedAt    time.Time              `json:"created_at"`
+}
+
+// GetAuditEvents retrieves audit events
+func (c *NVLPClient) GetAuditEvents(budgetID string, params map[string]interface{}) ([]AuditEvent, error) {
+	if err := c.requireAuth(); err != nil {
+		return nil, err
+	}
+	
+	auditParams := map[string]interface{}{
+		"budget_id": budgetID,
+	}
+	
+	for k, v := range params {
+		auditParams[k] = v
+	}
+	
+	response, err := c.edgeFunctionTransport.CallFunction("audit", auditParams)
+	if err != nil {
+		return nil, err
+	}
+	
+	var result struct {
+		Events []AuditEvent `json:"events"`
+	}
+	
+	if err := c.parseResponse(response, &result); err != nil {
+		return nil, err
+	}
+	
+	return result.Events, nil
+}
+
+// ===========================================
+// Notification Methods (Edge Functions)
+// ===========================================
+
+type Notification struct {
+	ID            string                 `json:"id"`
+	BudgetID      string                 `json:"budget_id"`
+	UserID        string                 `json:"user_id"`
+	Type          string                 `json:"type"`
+	Title         string                 `json:"title"`
+	Message       string                 `json:"message"`
+	Severity      string                 `json:"severity"`
+	ResourceType  *string                `json:"resource_type"`
+	ResourceID    *string                `json:"resource_id"`
+	Data          map[string]interface{} `json:"data"`
+	IsRead        bool                   `json:"is_read"`
+	IsAcknowledged bool                  `json:"is_acknowledged"`
+	CreatedAt     time.Time              `json:"created_at"`
+	ExpiresAt     *time.Time             `json:"expires_at"`
+}
+
+// GetNotifications retrieves notifications
+func (c *NVLPClient) GetNotifications(budgetID string, params map[string]interface{}) ([]Notification, error) {
+	if err := c.requireAuth(); err != nil {
+		return nil, err
+	}
+	
+	notificationParams := map[string]interface{}{
+		"budget_id": budgetID,
+	}
+	
+	for k, v := range params {
+		notificationParams[k] = v
+	}
+	
+	response, err := c.edgeFunctionTransport.CallFunction("notifications", notificationParams)
+	if err != nil {
+		return nil, err
+	}
+	
+	var result struct {
+		Notifications []Notification `json:"notifications"`
+	}
+	
+	if err := c.parseResponse(response, &result); err != nil {
+		return nil, err
+	}
+	
+	return result.Notifications, nil
+}
+
+// AcknowledgeNotification acknowledges a notification
+func (c *NVLPClient) AcknowledgeNotification(notificationID string) error {
+	if err := c.requireAuth(); err != nil {
+		return err
+	}
+	
+	_, err := c.edgeFunctionTransport.CallFunction("notifications", map[string]interface{}{
+		"action":          "acknowledge",
+		"notification_id": notificationID,
+	})
+	
+	return err
+}
+
+// ===========================================
 // Utility Methods
 // ===========================================
 
