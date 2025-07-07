@@ -111,7 +111,7 @@
 
 ### Task 11: Go Client Library (Port from TypeScript)
 - [x] Create Go client library project structure
-- [ ] Implement Go HTTP client for PostgREST transport
+- [x] Implement Go HTTP client for PostgREST transport
 - [ ] Implement Go HTTP client for Edge Function transport  
 - [ ] Port authentication management to Go (token persistence)
 - [ ] Port error handling and types to Go

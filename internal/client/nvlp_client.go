@@ -337,6 +337,532 @@ func (c *NVLPClient) UpdateProfile(updates map[string]interface{}) (*UserProfile
 }
 
 // ===========================================
+// Budget Methods (PostgREST)
+// ===========================================
+
+// GetBudgets retrieves all budgets for the authenticated user
+func (c *NVLPClient) GetBudgets(params QueryParams) ([]Budget, error) {
+	if err := c.requireAuth(); err != nil {
+		return nil, err
+	}
+	
+	queryParams := QueryParams{"select": "*"}
+	for k, v := range params {
+		queryParams[k] = v
+	}
+	
+	response, err := c.postgrestTransport.Get("budgets", queryParams)
+	if err != nil {
+		return nil, err
+	}
+	
+	var budgets []Budget
+	if err := c.parseResponse(response, &budgets); err != nil {
+		return nil, err
+	}
+	
+	return budgets, nil
+}
+
+// GetBudget retrieves a specific budget by ID
+func (c *NVLPClient) GetBudget(id string) (*Budget, error) {
+	if err := c.requireAuth(); err != nil {
+		return nil, err
+	}
+	
+	response, err := c.postgrestTransport.Get("budgets", QueryParams{
+		"id":     "eq." + id,
+		"select": "*",
+	})
+	
+	if err != nil {
+		return nil, err
+	}
+	
+	var budgets []Budget
+	if err := c.parseResponse(response, &budgets); err != nil {
+		return nil, err
+	}
+	
+	if len(budgets) == 0 {
+		return nil, NewNotFoundError("Budget not found")
+	}
+	
+	return &budgets[0], nil
+}
+
+// CreateBudget creates a new budget
+func (c *NVLPClient) CreateBudget(input *CreateBudgetInput) (*Budget, error) {
+	if err := c.requireAuth(); err != nil {
+		return nil, err
+	}
+	
+	response, err := c.postgrestTransport.Post("budgets", input)
+	if err != nil {
+		return nil, err
+	}
+	
+	var budgets []Budget
+	if err := c.parseResponse(response, &budgets); err != nil {
+		return nil, err
+	}
+	
+	if len(budgets) == 0 {
+		return nil, fmt.Errorf("failed to create budget")
+	}
+	
+	return &budgets[0], nil
+}
+
+// UpdateBudget updates an existing budget
+func (c *NVLPClient) UpdateBudget(id string, updates *UpdateBudgetInput) (*Budget, error) {
+	if err := c.requireAuth(); err != nil {
+		return nil, err
+	}
+	
+	_, err := c.postgrestTransport.Patch("budgets?id=eq."+id, updates)
+	if err != nil {
+		return nil, err
+	}
+	
+	return c.GetBudget(id)
+}
+
+// DeleteBudget deletes a budget
+func (c *NVLPClient) DeleteBudget(id string) error {
+	if err := c.requireAuth(); err != nil {
+		return err
+	}
+	
+	_, err := c.postgrestTransport.Delete("budgets?id=eq." + id)
+	return err
+}
+
+// ===========================================
+// Income Source Methods (PostgREST)
+// ===========================================
+
+// GetIncomeSources retrieves income sources, optionally filtered by budget
+func (c *NVLPClient) GetIncomeSources(budgetID string, params QueryParams) ([]IncomeSource, error) {
+	if err := c.requireAuth(); err != nil {
+		return nil, err
+	}
+	
+	queryParams := QueryParams{"select": "*"}
+	if budgetID != "" {
+		queryParams["budget_id"] = "eq." + budgetID
+	}
+	
+	for k, v := range params {
+		queryParams[k] = v
+	}
+	
+	response, err := c.postgrestTransport.Get("income_sources", queryParams)
+	if err != nil {
+		return nil, err
+	}
+	
+	var incomeSources []IncomeSource
+	if err := c.parseResponse(response, &incomeSources); err != nil {
+		return nil, err
+	}
+	
+	return incomeSources, nil
+}
+
+// GetIncomeSource retrieves a specific income source by ID
+func (c *NVLPClient) GetIncomeSource(id string) (*IncomeSource, error) {
+	if err := c.requireAuth(); err != nil {
+		return nil, err
+	}
+	
+	response, err := c.postgrestTransport.Get("income_sources", QueryParams{
+		"id":     "eq." + id,
+		"select": "*",
+	})
+	
+	if err != nil {
+		return nil, err
+	}
+	
+	var incomeSources []IncomeSource
+	if err := c.parseResponse(response, &incomeSources); err != nil {
+		return nil, err
+	}
+	
+	if len(incomeSources) == 0 {
+		return nil, NewNotFoundError("Income source not found")
+	}
+	
+	return &incomeSources[0], nil
+}
+
+// CreateIncomeSource creates a new income source
+func (c *NVLPClient) CreateIncomeSource(input *CreateIncomeSourceInput) (*IncomeSource, error) {
+	if err := c.requireAuth(); err != nil {
+		return nil, err
+	}
+	
+	response, err := c.postgrestTransport.Post("income_sources", input)
+	if err != nil {
+		return nil, err
+	}
+	
+	var incomeSources []IncomeSource
+	if err := c.parseResponse(response, &incomeSources); err != nil {
+		return nil, err
+	}
+	
+	if len(incomeSources) == 0 {
+		return nil, fmt.Errorf("failed to create income source")
+	}
+	
+	return &incomeSources[0], nil
+}
+
+// UpdateIncomeSource updates an existing income source
+func (c *NVLPClient) UpdateIncomeSource(id string, updates *UpdateIncomeSourceInput) (*IncomeSource, error) {
+	if err := c.requireAuth(); err != nil {
+		return nil, err
+	}
+	
+	_, err := c.postgrestTransport.Patch("income_sources?id=eq."+id, updates)
+	if err != nil {
+		return nil, err
+	}
+	
+	return c.GetIncomeSource(id)
+}
+
+// DeleteIncomeSource deletes an income source
+func (c *NVLPClient) DeleteIncomeSource(id string) error {
+	if err := c.requireAuth(); err != nil {
+		return err
+	}
+	
+	_, err := c.postgrestTransport.Delete("income_sources?id=eq." + id)
+	return err
+}
+
+// ===========================================
+// Category Methods (PostgREST)
+// ===========================================
+
+// GetCategories retrieves categories, optionally filtered by budget
+func (c *NVLPClient) GetCategories(budgetID string, params QueryParams) ([]Category, error) {
+	if err := c.requireAuth(); err != nil {
+		return nil, err
+	}
+	
+	queryParams := QueryParams{"select": "*"}
+	if budgetID != "" {
+		queryParams["budget_id"] = "eq." + budgetID
+	}
+	
+	for k, v := range params {
+		queryParams[k] = v
+	}
+	
+	response, err := c.postgrestTransport.Get("categories", queryParams)
+	if err != nil {
+		return nil, err
+	}
+	
+	var categories []Category
+	if err := c.parseResponse(response, &categories); err != nil {
+		return nil, err
+	}
+	
+	return categories, nil
+}
+
+// GetCategory retrieves a specific category by ID
+func (c *NVLPClient) GetCategory(id string) (*Category, error) {
+	if err := c.requireAuth(); err != nil {
+		return nil, err
+	}
+	
+	response, err := c.postgrestTransport.Get("categories", QueryParams{
+		"id":     "eq." + id,
+		"select": "*",
+	})
+	
+	if err != nil {
+		return nil, err
+	}
+	
+	var categories []Category
+	if err := c.parseResponse(response, &categories); err != nil {
+		return nil, err
+	}
+	
+	if len(categories) == 0 {
+		return nil, NewNotFoundError("Category not found")
+	}
+	
+	return &categories[0], nil
+}
+
+// CreateCategory creates a new category
+func (c *NVLPClient) CreateCategory(input *CreateCategoryInput) (*Category, error) {
+	if err := c.requireAuth(); err != nil {
+		return nil, err
+	}
+	
+	response, err := c.postgrestTransport.Post("categories", input)
+	if err != nil {
+		return nil, err
+	}
+	
+	var categories []Category
+	if err := c.parseResponse(response, &categories); err != nil {
+		return nil, err
+	}
+	
+	if len(categories) == 0 {
+		return nil, fmt.Errorf("failed to create category")
+	}
+	
+	return &categories[0], nil
+}
+
+// UpdateCategory updates an existing category
+func (c *NVLPClient) UpdateCategory(id string, updates *UpdateCategoryInput) (*Category, error) {
+	if err := c.requireAuth(); err != nil {
+		return nil, err
+	}
+	
+	_, err := c.postgrestTransport.Patch("categories?id=eq."+id, updates)
+	if err != nil {
+		return nil, err
+	}
+	
+	return c.GetCategory(id)
+}
+
+// DeleteCategory deletes a category
+func (c *NVLPClient) DeleteCategory(id string) error {
+	if err := c.requireAuth(); err != nil {
+		return err
+	}
+	
+	_, err := c.postgrestTransport.Delete("categories?id=eq." + id)
+	return err
+}
+
+// ===========================================
+// Envelope Methods (PostgREST)
+// ===========================================
+
+// GetEnvelopes retrieves envelopes, optionally filtered by budget
+func (c *NVLPClient) GetEnvelopes(budgetID string, params QueryParams) ([]Envelope, error) {
+	if err := c.requireAuth(); err != nil {
+		return nil, err
+	}
+	
+	queryParams := QueryParams{"select": "*"}
+	if budgetID != "" {
+		queryParams["budget_id"] = "eq." + budgetID
+	}
+	
+	for k, v := range params {
+		queryParams[k] = v
+	}
+	
+	response, err := c.postgrestTransport.Get("envelopes", queryParams)
+	if err != nil {
+		return nil, err
+	}
+	
+	var envelopes []Envelope
+	if err := c.parseResponse(response, &envelopes); err != nil {
+		return nil, err
+	}
+	
+	return envelopes, nil
+}
+
+// GetEnvelope retrieves a specific envelope by ID
+func (c *NVLPClient) GetEnvelope(id string) (*Envelope, error) {
+	if err := c.requireAuth(); err != nil {
+		return nil, err
+	}
+	
+	response, err := c.postgrestTransport.Get("envelopes", QueryParams{
+		"id":     "eq." + id,
+		"select": "*",
+	})
+	
+	if err != nil {
+		return nil, err
+	}
+	
+	var envelopes []Envelope
+	if err := c.parseResponse(response, &envelopes); err != nil {
+		return nil, err
+	}
+	
+	if len(envelopes) == 0 {
+		return nil, NewNotFoundError("Envelope not found")
+	}
+	
+	return &envelopes[0], nil
+}
+
+// CreateEnvelope creates a new envelope
+func (c *NVLPClient) CreateEnvelope(input *CreateEnvelopeInput) (*Envelope, error) {
+	if err := c.requireAuth(); err != nil {
+		return nil, err
+	}
+	
+	response, err := c.postgrestTransport.Post("envelopes", input)
+	if err != nil {
+		return nil, err
+	}
+	
+	var envelopes []Envelope
+	if err := c.parseResponse(response, &envelopes); err != nil {
+		return nil, err
+	}
+	
+	if len(envelopes) == 0 {
+		return nil, fmt.Errorf("failed to create envelope")
+	}
+	
+	return &envelopes[0], nil
+}
+
+// UpdateEnvelope updates an existing envelope
+func (c *NVLPClient) UpdateEnvelope(id string, updates *UpdateEnvelopeInput) (*Envelope, error) {
+	if err := c.requireAuth(); err != nil {
+		return nil, err
+	}
+	
+	_, err := c.postgrestTransport.Patch("envelopes?id=eq."+id, updates)
+	if err != nil {
+		return nil, err
+	}
+	
+	return c.GetEnvelope(id)
+}
+
+// DeleteEnvelope deletes an envelope
+func (c *NVLPClient) DeleteEnvelope(id string) error {
+	if err := c.requireAuth(); err != nil {
+		return err
+	}
+	
+	_, err := c.postgrestTransport.Delete("envelopes?id=eq." + id)
+	return err
+}
+
+// ===========================================
+// Payee Methods (PostgREST)
+// ===========================================
+
+// GetPayees retrieves payees, optionally filtered by budget
+func (c *NVLPClient) GetPayees(budgetID string, params QueryParams) ([]Payee, error) {
+	if err := c.requireAuth(); err != nil {
+		return nil, err
+	}
+	
+	queryParams := QueryParams{"select": "*"}
+	if budgetID != "" {
+		queryParams["budget_id"] = "eq." + budgetID
+	}
+	
+	for k, v := range params {
+		queryParams[k] = v
+	}
+	
+	response, err := c.postgrestTransport.Get("payees", queryParams)
+	if err != nil {
+		return nil, err
+	}
+	
+	var payees []Payee
+	if err := c.parseResponse(response, &payees); err != nil {
+		return nil, err
+	}
+	
+	return payees, nil
+}
+
+// GetPayee retrieves a specific payee by ID
+func (c *NVLPClient) GetPayee(id string) (*Payee, error) {
+	if err := c.requireAuth(); err != nil {
+		return nil, err
+	}
+	
+	response, err := c.postgrestTransport.Get("payees", QueryParams{
+		"id":     "eq." + id,
+		"select": "*",
+	})
+	
+	if err != nil {
+		return nil, err
+	}
+	
+	var payees []Payee
+	if err := c.parseResponse(response, &payees); err != nil {
+		return nil, err
+	}
+	
+	if len(payees) == 0 {
+		return nil, NewNotFoundError("Payee not found")
+	}
+	
+	return &payees[0], nil
+}
+
+// CreatePayee creates a new payee
+func (c *NVLPClient) CreatePayee(input *CreatePayeeInput) (*Payee, error) {
+	if err := c.requireAuth(); err != nil {
+		return nil, err
+	}
+	
+	response, err := c.postgrestTransport.Post("payees", input)
+	if err != nil {
+		return nil, err
+	}
+	
+	var payees []Payee
+	if err := c.parseResponse(response, &payees); err != nil {
+		return nil, err
+	}
+	
+	if len(payees) == 0 {
+		return nil, fmt.Errorf("failed to create payee")
+	}
+	
+	return &payees[0], nil
+}
+
+// UpdatePayee updates an existing payee
+func (c *NVLPClient) UpdatePayee(id string, updates *UpdatePayeeInput) (*Payee, error) {
+	if err := c.requireAuth(); err != nil {
+		return nil, err
+	}
+	
+	_, err := c.postgrestTransport.Patch("payees?id=eq."+id, updates)
+	if err != nil {
+		return nil, err
+	}
+	
+	return c.GetPayee(id)
+}
+
+// DeletePayee deletes a payee
+func (c *NVLPClient) DeletePayee(id string) error {
+	if err := c.requireAuth(); err != nil {
+		return err
+	}
+	
+	_, err := c.postgrestTransport.Delete("payees?id=eq." + id)
+	return err
+}
+
+// ===========================================
 // Utility Methods
 // ===========================================
 

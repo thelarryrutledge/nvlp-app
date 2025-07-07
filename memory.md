@@ -256,6 +256,15 @@ Income Sources → available_amount (user_state) → Envelopes → Payees
 
 **Token Storage**: `~/.nvlp/auth.json` (same pattern as TypeScript client)
 
+**PostgREST Transport Implementation**: ✅
+- Complete CRUD operations for all resource types (profiles, budgets, income sources, categories, envelopes, payees)
+- Query parameter handling with PostgREST filtering (eq., select, limit, order)
+- Authentication via Bearer token + apikey headers
+- Error handling with HTTP status code mapping
+- JSON request/response parsing with proper type conversion
+- URL query building for GET requests with filters
+- Prefer header support for POST/PATCH operations
+
 ## Environment
 - **Working Directory**: /Users/larryrutledge/Projects/nvlp-app
 - **Git Status**: Clean, ahead of origin by commits
