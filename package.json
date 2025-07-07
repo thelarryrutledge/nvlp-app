@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "dev": "vercel dev",
-    "deploy": "vercel --prod"
+    "deploy": "vercel --prod",
+    "build": "tsc",
+    "build:watch": "tsc --watch"
   },
   "keywords": [
     "budgeting",
@@ -28,5 +30,8 @@
   "bugs": {
     "url": "https://github.com/thelarryrutledge/nvlp-app/issues"
   },
-  "homepage": "https://github.com/thelarryrutledge/nvlp-app#readme"
+  "homepage": "https://github.com/thelarryrutledge/nvlp-app#readme",
+  "dependencies": {
+    "dotenv": "^17.0.1"
+  }
 }
