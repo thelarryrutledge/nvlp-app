@@ -13,6 +13,8 @@ export interface NVLPClientConfig {
   persistTokens?: boolean; // Default: true
   tokenStorageKey?: string; // Default: 'nvlp_auth_tokens'
   autoRefresh?: boolean; // Default: true
+  // Custom API endpoints
+  apiBaseUrl?: string; // Default: derived from supabaseUrl, but can override for custom domains
 }
 
 // Authentication state

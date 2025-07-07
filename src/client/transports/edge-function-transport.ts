@@ -14,7 +14,8 @@ export class EdgeFunctionTransport implements Transport {
   private accessToken: string | null = null;
 
   constructor(config: NVLPClientConfig) {
-    this.baseUrl = `${config.supabaseUrl}/functions/v1`;
+    // Use custom API base URL if provided, otherwise use supabase functions URL
+    this.baseUrl = config.apiBaseUrl || `${config.supabaseUrl}/functions/v1`;
     this.anonKey = config.supabaseAnonKey;
     this.timeout = config.timeout || 60000; // 60 second default for complex operations
   }
@@ -48,7 +49,7 @@ export class EdgeFunctionTransport implements Transport {
 
     // Add user authentication if available
     if (this.accessToken) {
-      headers['X-User-Token'] = this.accessToken;
+      headers['Authorization'] = `Bearer ${this.accessToken}`;
     }
 
     // Setup abort controller for timeout
@@ -107,7 +108,25 @@ export class EdgeFunctionTransport implements Transport {
    * Call authentication Edge Function
    */
   async auth(action: string, data: any, options?: RequestOptions): Promise<ApiResponse<any>> {
-    return this.request('POST', 'auth', { action, ...data }, options);
+    // Map actions to actual auth endpoints
+    const endpointMap: Record<string, string> = {
+      'login': 'auth/login',
+      'logout': 'auth/logout', 
+      'refresh': 'auth/refresh',
+      'register': 'auth/register',
+      'reset': 'auth/reset-password',
+      'update-password': 'auth/update-password',
+      'profile': 'auth/profile'
+    };
+
+    const endpoint = endpointMap[action];
+    if (!endpoint) {
+      throw new Error(`Unknown auth action: ${action}`);
+    }
+
+    // For profile endpoint, use GET method
+    const method = action === 'profile' ? 'GET' : 'POST';
+    return this.request(method, endpoint, method === 'GET' ? undefined : data, options);
   }
 
   /**
