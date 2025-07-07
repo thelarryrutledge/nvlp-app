@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
+import { invalidateBudgetCache } from "../_shared/cache.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -465,6 +466,9 @@ serve(async (req) => {
         }
         
         console.log(`[TRANSACTIONS SUCCESS] Transaction created: ${transaction.id}`)
+        
+        // Invalidate cache for this budget since data has changed
+        invalidateBudgetCache(body.budget_id)
         
         return createSuccessResponse({
           success: true,

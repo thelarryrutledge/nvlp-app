@@ -98,14 +98,14 @@
 - [x] Add balance calculation and state updates
 - [x] Test envelope balance tracking
 
-### Task 12: Advanced Features
+### Task 12: Advanced Features ✅
 - [x] Create dashboard API endpoint
 - [x] Create reporting APIs
 - [x] Create data export functionality
 - [x] Add audit trail endpoints
 - [x] Add notifications endpoint
 - [x] Test performance with larger datasets
-- [ ] Add caching where appropriate
+- [x] Add caching where appropriate
 
 ## Phase 4: CLI Development (Build & Test Incrementally) - **Go Implementation**
 

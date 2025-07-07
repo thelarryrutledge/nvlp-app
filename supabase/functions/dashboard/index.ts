@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
+import cache, { withCache, cleanupCache } from "../_shared/cache.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -37,17 +38,24 @@ function createErrorResponse(error: string, code: string, status: number = 400, 
 }
 
 // Helper function for consistent success responses
-function createSuccessResponse(data: any, status: number = 200) {
+function createSuccessResponse(data: any, status: number = 200, cacheInfo?: { hit: boolean; ttl?: number }) {
+  const headers = { 
+    ...corsHeaders, 
+    ...securityHeaders,
+    'Content-Type': 'application/json'
+  }
+  
+  // Add cache headers if cache info is provided
+  if (cacheInfo) {
+    headers['X-Cache'] = cacheInfo.hit ? 'HIT' : 'MISS'
+    if (cacheInfo.ttl) {
+      headers['Cache-Control'] = `private, max-age=${cacheInfo.ttl}`
+    }
+  }
+  
   return new Response(
     JSON.stringify(data),
-    { 
-      status, 
-      headers: { 
-        ...corsHeaders, 
-        ...securityHeaders,
-        'Content-Type': 'application/json' 
-      } 
-    }
+    { status, headers }
   )
 }
 
@@ -253,6 +261,11 @@ const DashboardQueries = {
 
 console.log("Dashboard function started")
 
+// Clean up expired cache entries periodically
+setInterval(() => {
+  cleanupCache()
+}, 300000) // Every 5 minutes
+
 serve(async (req) => {
   const startTime = Date.now()
   const method = req.method
@@ -303,33 +316,44 @@ serve(async (req) => {
 
         console.log(`[DASHBOARD] Generating dashboard for budget: ${budgetId}, user: ${user.email}`)
 
-        // Fetch all dashboard data in parallel
-        const [
-          budgetOverview,
-          envelopesSummary,
-          recentTransactions,
-          spendingByCategory,
-          incomeVsExpenses
-        ] = await Promise.all([
-          DashboardQueries.getBudgetOverview(authenticatedSupabase, budgetId),
-          DashboardQueries.getEnvelopesSummary(authenticatedSupabase, budgetId),
-          DashboardQueries.getRecentTransactions(authenticatedSupabase, budgetId, 10),
-          DashboardQueries.getSpendingByCategory(authenticatedSupabase, budgetId, days),
-          DashboardQueries.getIncomeVsExpenses(authenticatedSupabase, budgetId, days)
-        ])
+        // Use cache for dashboard data (5 minutes TTL)
+        const cacheKey = cache.createKey('dashboard', budgetId, days.toString())
+        
+        const dashboardData = await withCache(
+          cacheKey,
+          async () => {
+            // Fetch all dashboard data in parallel
+            const [
+              budgetOverview,
+              envelopesSummary,
+              recentTransactions,
+              spendingByCategory,
+              incomeVsExpenses
+            ] = await Promise.all([
+              DashboardQueries.getBudgetOverview(authenticatedSupabase, budgetId),
+              DashboardQueries.getEnvelopesSummary(authenticatedSupabase, budgetId),
+              DashboardQueries.getRecentTransactions(authenticatedSupabase, budgetId, 10),
+              DashboardQueries.getSpendingByCategory(authenticatedSupabase, budgetId, days),
+              DashboardQueries.getIncomeVsExpenses(authenticatedSupabase, budgetId, days)
+            ])
+
+            return {
+              budget_overview: budgetOverview,
+              envelopes_summary: envelopesSummary,
+              recent_transactions: recentTransactions,
+              spending_by_category: spendingByCategory,
+              income_vs_expenses: incomeVsExpenses,
+              generated_at: new Date().toISOString()
+            }
+          },
+          300 // 5 minutes cache
+        )
 
         console.log(`[DASHBOARD SUCCESS] Dashboard generated for user: ${user.email}`)
 
         return createSuccessResponse({
           success: true,
-          data: {
-            budget_overview: budgetOverview,
-            envelopes_summary: envelopesSummary,
-            recent_transactions: recentTransactions,
-            spending_by_category: spendingByCategory,
-            income_vs_expenses: incomeVsExpenses,
-            generated_at: new Date().toISOString()
-          }
+          data: dashboardData
         })
 
       } catch (queryError: any) {
@@ -352,7 +376,11 @@ serve(async (req) => {
           return createErrorResponse('budget_id parameter is required', 'MISSING_BUDGET_ID', 400)
         }
 
-        const data = await DashboardQueries.getBudgetOverview(authenticatedSupabase, budgetId)
+        const data = await withCache(
+          cache.createKey('budget-overview', budgetId),
+          () => DashboardQueries.getBudgetOverview(authenticatedSupabase, budgetId),
+          180 // 3 minutes cache
+        )
         return createSuccessResponse({ success: true, data })
 
       } catch (error: any) {
@@ -370,7 +398,11 @@ serve(async (req) => {
           return createErrorResponse('budget_id parameter is required', 'MISSING_BUDGET_ID', 400)
         }
 
-        const data = await DashboardQueries.getEnvelopesSummary(authenticatedSupabase, budgetId)
+        const data = await withCache(
+          cache.createKey('envelopes-summary', budgetId),
+          () => DashboardQueries.getEnvelopesSummary(authenticatedSupabase, budgetId),
+          120 // 2 minutes cache
+        )
         return createSuccessResponse({ success: true, data })
 
       } catch (error: any) {

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
+import cache, { withCache, cleanupCache } from "../_shared/cache.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -520,7 +521,13 @@ serve(async (req) => {
           offset: urlParams.get('offset') || '0'
         }
 
-        const data = await ReportQueries.getTransactionReport(authenticatedSupabase, budgetId, options)
+        // Cache transaction reports for 10 minutes
+        const cacheKey = cache.createKey('report-transactions', budgetId, JSON.stringify(options))
+        const data = await withCache(
+          cacheKey,
+          () => ReportQueries.getTransactionReport(authenticatedSupabase, budgetId, options),
+          600 // 10 minutes cache
+        )
         return createSuccessResponse({ success: true, data })
 
       } catch (error: any) {
@@ -539,7 +546,13 @@ serve(async (req) => {
           group_by: urlParams.get('group_by') || 'month'
         }
 
-        const data = await ReportQueries.getCategorySpendingTrends(authenticatedSupabase, budgetId, options)
+        // Cache category trends for 15 minutes (less frequent changes)
+        const cacheKey = cache.createKey('report-category-trends', budgetId, JSON.stringify(options))
+        const data = await withCache(
+          cacheKey,
+          () => ReportQueries.getCategorySpendingTrends(authenticatedSupabase, budgetId, options),
+          900 // 15 minutes cache
+        )
         return createSuccessResponse({ success: true, data })
 
       } catch (error: any) {
@@ -558,7 +571,13 @@ serve(async (req) => {
           group_by: urlParams.get('group_by') || 'month'
         }
 
-        const data = await ReportQueries.getIncomeExpenseReport(authenticatedSupabase, budgetId, options)
+        // Cache income/expense reports for 15 minutes
+        const cacheKey = cache.createKey('report-income-expense', budgetId, JSON.stringify(options))
+        const data = await withCache(
+          cacheKey,
+          () => ReportQueries.getIncomeExpenseReport(authenticatedSupabase, budgetId, options),
+          900 // 15 minutes cache
+        )
         return createSuccessResponse({ success: true, data })
 
       } catch (error: any) {
