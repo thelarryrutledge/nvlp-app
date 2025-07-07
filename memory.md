@@ -109,5 +109,17 @@ test-profile-postgrest.sh, test-budgets-postgrest.sh, test-budget-constraint-fix
 - **Features**: Date range filtering, transaction type filtering, envelope-specific reports
 - **Performance**: Parallel queries, authenticated access, comprehensive error handling
 
-## Status: Task 12 Complete ✅
-**Ready for Phase 4**: Go CLI Development
+## Data Export Functionality (Edge Function) ✅
+- **Export Formats**: Support for both CSV and JSON export formats
+- **Transaction Export**: Export transactions with date range and type filtering
+- **Complete Budget Export**: Export entire budget snapshot including all related data
+- **Individual Exports**: Categories, envelopes, payees, income sources with proper formatting
+- **CSV Features**: Proper escaping, headers, comma/quote handling
+- **JSON Features**: Pretty-printed, structured data with relationships
+- **File Naming**: Automatic filename generation with budget name and timestamp
+- **Testing**: 19 test cases with 100% pass rate
+- **Performance**: Efficient queries with proper authentication
+
+## Status: Task 12 Advanced Features In Progress
+**Completed**: Dashboard API, Reporting APIs, Data Export
+**Next**: Audit trail endpoints
