@@ -26,7 +26,7 @@ This directory contains essential utility and testing scripts for the NVLP proje
   - Includes retry logic for Edge Function cold starts
   - Tests all transaction types: income, allocation, expense, transfer, debt_payment
   - Validates resource ownership and balance constraints
-  - 15 comprehensive test cases with 100% success rate
+  - 18 comprehensive test cases with 100% success rate
 
 ### Security Testing
 - **test-multi-user-rls.sh**: Verifies Row Level Security policies prevent data leakage between users

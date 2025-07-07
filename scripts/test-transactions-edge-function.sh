@@ -198,10 +198,31 @@ test_endpoint "Validate transfer (insufficient funds)" "POST" "/transactions/val
         \"to_envelope_id\": \"$ENVELOPE_2_ID\"
     }" "400"
 
+# Test 7: Validate debt payment transaction
+test_endpoint "Validate debt payment transaction" "POST" "/transactions/validate" \
+    "{
+        \"budget_id\": \"$DEFAULT_BUDGET_ID\",
+        \"transaction_type\": \"debt_payment\",
+        \"amount\": 200.00,
+        \"description\": \"Test debt payment\",
+        \"from_envelope_id\": \"$ENVELOPE_1_ID\",
+        \"payee_id\": \"$PAYEE_ID\"
+    }" "200"
+
+# Test 8: Validate invalid debt payment (missing payee)
+test_endpoint "Validate invalid debt payment (missing payee)" "POST" "/transactions/validate" \
+    "{
+        \"budget_id\": \"$DEFAULT_BUDGET_ID\",
+        \"transaction_type\": \"debt_payment\",
+        \"amount\": 200.00,
+        \"description\": \"Test debt payment\",
+        \"from_envelope_id\": \"$ENVELOPE_1_ID\"
+    }" "400"
+
 echo ""
 echo "=== Transaction CRUD Tests ==="
 
-# Test 7: Create income transaction
+# Test 9: Create income transaction
 test_endpoint "Create income transaction" "POST" "/transactions" \
     "{
         \"budget_id\": \"$DEFAULT_BUDGET_ID\",
@@ -212,7 +233,7 @@ test_endpoint "Create income transaction" "POST" "/transactions" \
         \"transaction_date\": \"$(date +%Y-%m-%d)\"
     }" "201"
 
-# Test 8: Create allocation transaction
+# Test 10: Create allocation transaction
 test_endpoint "Create allocation transaction" "POST" "/transactions" \
     "{
         \"budget_id\": \"$DEFAULT_BUDGET_ID\",
@@ -223,7 +244,7 @@ test_endpoint "Create allocation transaction" "POST" "/transactions" \
         \"transaction_date\": \"$(date +%Y-%m-%d)\"
     }" "201"
 
-# Test 9: Create expense transaction
+# Test 11: Create expense transaction
 test_endpoint "Create expense transaction" "POST" "/transactions" \
     "{
         \"budget_id\": \"$DEFAULT_BUDGET_ID\",
@@ -235,16 +256,28 @@ test_endpoint "Create expense transaction" "POST" "/transactions" \
         \"transaction_date\": \"$(date +%Y-%m-%d)\"
     }" "201"
 
-# Test 10: List transactions
+# Test 12: Create debt payment transaction
+test_endpoint "Create debt payment transaction" "POST" "/transactions" \
+    "{
+        \"budget_id\": \"$DEFAULT_BUDGET_ID\",
+        \"transaction_type\": \"debt_payment\",
+        \"amount\": 150.00,
+        \"description\": \"Test debt payment transaction\",
+        \"from_envelope_id\": \"$ENVELOPE_1_ID\",
+        \"payee_id\": \"$PAYEE_ID\",
+        \"transaction_date\": \"$(date +%Y-%m-%d)\"
+    }" "201"
+
+# Test 13: List transactions
 test_endpoint "List transactions" "GET" "/transactions?budget_id=$DEFAULT_BUDGET_ID&limit=10" "" "200"
 
-# Test 11: List transactions by type
+# Test 14: List transactions by type
 test_endpoint "List income transactions" "GET" "/transactions?budget_id=$DEFAULT_BUDGET_ID&transaction_type=income" "" "200"
 
 echo ""
 echo "=== Error Handling Tests ==="
 
-# Test 12: Invalid transaction type
+# Test 15: Invalid transaction type
 test_endpoint "Invalid transaction type" "POST" "/transactions/validate" \
     "{
         \"budget_id\": \"$DEFAULT_BUDGET_ID\",
@@ -253,14 +286,14 @@ test_endpoint "Invalid transaction type" "POST" "/transactions/validate" \
         \"description\": \"Test\"
     }" "400"
 
-# Test 13: Missing required data
+# Test 16: Missing required data
 test_endpoint "Missing required data" "POST" "/transactions/validate" \
     "{
         \"transaction_type\": \"income\",
         \"amount\": 100.00
     }" "400"
 
-# Test 14: Invalid amount
+# Test 17: Invalid amount
 test_endpoint "Invalid amount (negative)" "POST" "/transactions/validate" \
     "{
         \"budget_id\": \"$DEFAULT_BUDGET_ID\",
@@ -270,7 +303,7 @@ test_endpoint "Invalid amount (negative)" "POST" "/transactions/validate" \
         \"income_source_id\": \"$INCOME_SOURCE_ID\"
     }" "400"
 
-# Test 15: Unauthorized access (invalid token)
+# Test 18: Unauthorized access (invalid token)
 echo -n "Testing unauthorized access... "
 response=$(curl -s -w "\n%{http_code}" -X "POST" \
     -H "Content-Type: application/json" \
