@@ -30,11 +30,12 @@ test-profile-postgrest.sh, test-budgets-postgrest.sh, test-budget-constraint-fix
 
 ## Completed ✅
 **Income Sources API**: Complete CRUD documentation + test script (17/17 tests pass)
-**Categories API**: Complete CRUD documentation + test script (19/19 tests pass)
+**Categories API**: Complete CRUD documentation + test script (19/19 tests pass)  
 **Envelopes API**: Complete CRUD documentation + test script (23/23 tests pass)
+**Payees API**: Complete CRUD documentation + test script (24/24 tests pass)
 - API docs with full PostgREST patterns, validation constraints, RLS
-- Balance management, notification features (date/amount), target amounts
-- Auto-creation of 8 default envelopes, filtering, sorting
-- Comprehensive validation (color, notifications, constraints)
+- 6 payee types (business/person/organization/utility/service/other)
+- Contact info, payment tracking, auto-creation of 12 defaults
+- Comprehensive validation (email, color, address length, constraints)
 
-## Next: Task 9 - Payees CRUD (PostgREST)
+## Next: Task 9 - Test all API modules completely
