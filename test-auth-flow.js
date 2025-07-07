@@ -19,14 +19,20 @@ const config = {
   autoRefresh: true
 };
 
-const rl = readline.createInterface({
+let rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
 });
 
 function askQuestion(question) {
   return new Promise((resolve) => {
-    rl.question(question, (answer) => {
+    // Use the current rl instance
+    const currentRl = rl || readline.createInterface({
+      input: process.stdin,
+      output: process.stdout
+    });
+    
+    currentRl.question(question, (answer) => {
       resolve(answer);
     });
   });
@@ -34,48 +40,28 @@ function askQuestion(question) {
 
 function hidePassword(question) {
   return new Promise((resolve) => {
-    const stdin = process.stdin;
-    const stdout = process.stdout;
-    
-    stdout.write(question);
-    stdin.setRawMode(true);
-    stdin.resume();
-    stdin.setEncoding('utf8');
-    
-    let password = '';
-    const onData = function(char) {
-      char = char + '';
-      
-      switch (char) {
-        case '\n':
-        case '\r':
-        case '\u0004':
-          stdin.setRawMode(false);
-          stdin.pause();
-          stdin.removeListener('data', onData);
-          stdout.write('\n');
-          resolve(password);
-          break;
-        case '\u0003':
-          stdin.removeListener('data', onData);
-          process.exit();
-          break;
-        case '\u007f': // Backspace
-          if (password.length > 0) {
-            password = password.slice(0, -1);
-            stdout.write('\b \b'); // Erase the last asterisk
-          }
-          break;
-        default:
-          if (char >= ' ' && char <= '~') { // Printable characters only
-            password += char;
-            stdout.write('*');
-          }
-          break;
+    const mutableStdout = new (require('stream').Writable)();
+    mutableStdout._write = function (chunk, encoding, callback) {
+      if (!this.muted) {
+        process.stdout.write(chunk, encoding);
       }
+      callback();
     };
     
-    stdin.on('data', onData);
+    mutableStdout.muted = false;
+    
+    const passwordRl = readline.createInterface({
+      input: process.stdin,
+      output: mutableStdout,
+      terminal: true
+    });
+    
+    passwordRl.question(question, (answer) => {
+      passwordRl.close();
+      resolve(answer);
+    });
+    
+    mutableStdout.muted = true;
   });
 }
 
