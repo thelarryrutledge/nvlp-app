@@ -80,5 +80,13 @@ All database tables, functions, triggers, and validation complete
 ✅ Removed obsolete test scripts and API documentation 
 ✅ Kept auth Edge Function (still needed for authentication)
 
-**NEXT: Phase 3, Task 10**
-Create abstract client library wrapper
+**COMPLETED ✅ Database Constraint Fix**
+✅ Fixed restrictive UNIQUE (user_id, is_default) constraint on budgets table
+✅ Migration 20250707000000_fix_budget_default_constraint.sql applied
+✅ New partial unique index allows unlimited non-default budgets per user
+✅ Maintains requirement for exactly one default budget per user
+✅ Multi-user testing verified: different users can have budgets with same names
+✅ All constraint tests passing (6/6 tests)
+
+**NEXT: Phase 3, Task 9**
+Create income sources CRUD documentation (PostgREST)
