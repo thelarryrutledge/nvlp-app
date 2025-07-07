@@ -81,13 +81,14 @@
 - [x] Test each API module completely before next
 - [x] Verify data isolation between users
 
-### Task 10: Abstract Client Library ✅
+### Task 10: Abstract Client Library ✅ (TypeScript)
 - [x] Create abstract client library wrapper (Task 10a)
 - [x] Implement PostgREST transport layer
 - [x] Implement Edge Function transport layer (for complex operations)
 - [x] Create consistent error handling across transports
 - [x] Add authentication management for both transports
 - [x] Test client library with both transport options
+- **Note**: TypeScript client available for future web/Node.js integrations
 
 ### Task 11: Transaction System (Edge Functions for Complex Logic)
 - [ ] Create transaction validation functions (Edge Function)
@@ -105,35 +106,45 @@
 - [ ] Test performance with larger datasets
 - [ ] Add caching where appropriate
 
-## Phase 4: CLI Development (Build & Test Incrementally)
+## Phase 4: CLI Development (Build & Test Incrementally) - **Go Implementation**
 
-### Task 11: CLI Foundation
-- [ ] Set up CLI project structure
-- [ ] Create simple HTTP client for API calls
+### Task 11: Go Client Library (Port from TypeScript)
+- [ ] Create Go client library project structure
+- [ ] Implement Go HTTP client for PostgREST transport
+- [ ] Implement Go HTTP client for Edge Function transport  
+- [ ] Port authentication management to Go (token persistence)
+- [ ] Port error handling and types to Go
+- [ ] Test Go client library with existing APIs
+- [ ] Document Go client library usage
+
+### Task 12: CLI Foundation (Go)
+- [ ] Set up Go CLI project structure (cobra/viper framework)
+- [ ] Integrate Go client library
 - [ ] Test API client with auth endpoints
-- [ ] Implement configuration management
-- [ ] Test auth token storage and retrieval
-- [ ] Verify token persistence between commands
+- [ ] Implement configuration management (config files + env vars)
+- [ ] Test auth token storage and retrieval (~/.nvlp/ directory)
+- [ ] Verify token persistence between CLI commands
 
-### Task 12: Basic CLI Commands
+### Task 13: Basic CLI Commands (Go)
 - [ ] Implement auth commands (login, logout, status)
 - [ ] Test each command works with real API
 - [ ] Implement config commands (show, set, validate)
-- [ ] Add colored output and error handling
+- [ ] Add colored output and error handling (cobra styling)
 - [ ] Test complete auth flow end-to-end
 - [ ] Fix any auth persistence issues
 
-### Task 13: Business Logic CLI Commands
-- [ ] Implement budget management commands
-- [ ] Implement transaction commands (income, expense)
+### Task 14: Business Logic CLI Commands (Go)
+- [ ] Implement budget management commands (list, create, switch)
+- [ ] Implement envelope commands (list, create, transfer)
+- [ ] Implement transaction commands (income, expense, transfer)
 - [ ] Implement dashboard command
 - [ ] Test each command with real API data
-- [ ] Add interactive prompts where appropriate
+- [ ] Add interactive prompts where appropriate (survey package)
 - [ ] Test error handling and edge cases
 
 ## Phase 5: Integration & Testing
 
-### Task 14: End-to-End Testing
+### Task 15: End-to-End Testing
 - [ ] Test complete user journey (register → login → create budget → add transactions)
 - [ ] Test CLI commands work with real backend data
 - [ ] Test error scenarios (network failures, invalid tokens, etc.)
@@ -141,7 +152,7 @@
 - [ ] Performance test with realistic data volumes
 - [ ] Test all edge cases and error conditions
 
-### Task 15: Documentation & Polish
+### Task 16: Documentation & Polish
 - [ ] Create comprehensive API documentation
 - [ ] Document CLI commands and usage
 - [ ] Create setup and deployment guides
@@ -151,7 +162,7 @@
 
 ## Phase 6: Advanced Features (Optional)
 
-### Task 16: Additional Features
+### Task 17: Additional Features
 - [ ] Add notification support
 - [ ] Implement data import/export
 - [ ] Add advanced reporting features
