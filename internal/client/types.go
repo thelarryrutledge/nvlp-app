@@ -2,6 +2,8 @@ package client
 
 import (
 	"time"
+	
+	"github.com/thelarryrutledge/nvlp-app/internal/types"
 )
 
 // NVLPClientConfig represents the configuration for the NVLP client
@@ -19,30 +21,10 @@ type NVLPClientConfig struct {
 	APIBaseURL string
 }
 
-// AuthState represents the current authentication state
-type AuthState struct {
-	AccessToken  string    `json:"access_token"`
-	RefreshToken string    `json:"refresh_token"`
-	ExpiresAt    time.Time `json:"expires_at"`
-	User         *User     `json:"user"`
-	ExpiresIn    int       `json:"expires_in"` // seconds until expiration
-}
-
-// PersistedAuthData represents the auth data stored persistently
-type PersistedAuthData struct {
-	AccessToken  string    `json:"access_token"`
-	RefreshToken string    `json:"refresh_token"`
-	ExpiresAt    time.Time `json:"expires_at"`
-	User         *User     `json:"user"`
-	CreatedAt    time.Time `json:"created_at"`
-}
-
-// User represents a user in the system
-type User struct {
-	ID             string `json:"id"`
-	Email          string `json:"email"`
-	EmailConfirmed bool   `json:"email_confirmed"`
-}
+// Import shared auth types
+type AuthState = types.AuthState
+type PersistedAuthData = types.PersistedAuthData  
+type User = types.User
 
 // Transport interface for abstraction
 type Transport interface {

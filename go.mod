@@ -3,11 +3,11 @@ module github.com/thelarryrutledge/nvlp-app
 go 1.21
 
 require (
+	github.com/AlecAivazis/survey/v2 v2.3.7
+	github.com/fatih/color v1.16.0
+	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.18.2
-	github.com/fatih/color v1.16.0
-	github.com/AlecAivazis/survey/v2 v2.3.7
-	github.com/golang-jwt/jwt/v5 v5.2.0
 )
 
 require (

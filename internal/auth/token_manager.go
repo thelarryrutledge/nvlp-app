@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/thelarryrutledge/nvlp-app/internal/client"
+	"github.com/thelarryrutledge/nvlp-app/internal/types"
 )
 
 // TokenManager handles token persistence and refresh logic
@@ -35,12 +35,12 @@ func NewTokenManager(storageKey string, persistTokens, autoRefresh bool) *TokenM
 }
 
 // SaveTokens saves tokens to persistent storage
-func (tm *TokenManager) SaveTokens(accessToken, refreshToken string, expiresIn int, user *client.User) error {
+func (tm *TokenManager) SaveTokens(accessToken, refreshToken string, expiresIn int, user *types.User) error {
 	if !tm.persistTokens {
 		return nil
 	}
 
-	authData := &client.PersistedAuthData{
+	authData := &types.PersistedAuthData{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 		ExpiresAt:    time.Now().Add(time.Duration(expiresIn) * time.Second),
@@ -68,7 +68,7 @@ func (tm *TokenManager) SaveTokens(accessToken, refreshToken string, expiresIn i
 }
 
 // LoadTokens loads tokens from persistent storage
-func (tm *TokenManager) LoadTokens() (*client.PersistedAuthData, error) {
+func (tm *TokenManager) LoadTokens() (*types.PersistedAuthData, error) {
 	if !tm.persistTokens {
 		return nil, nil
 	}
@@ -87,7 +87,7 @@ func (tm *TokenManager) LoadTokens() (*client.PersistedAuthData, error) {
 	}
 
 	// Parse JSON
-	var authData client.PersistedAuthData
+	var authData types.PersistedAuthData
 	if err := json.Unmarshal(data, &authData); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal auth data: %w", err)
 	}

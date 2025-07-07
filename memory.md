@@ -275,6 +275,16 @@ Income Sources → available_amount (user_state) → Envelopes → Payees
 - All complex business logic operations via Edge Functions
 - Matches TypeScript client Edge Function patterns
 
+**Authentication Management & Token Persistence**: ✅
+- Token storage in `~/.nvlp/auth.json` with secure permissions (0600)
+- JWT token parsing and validation using `github.com/golang-jwt/jwt/v5`
+- Automatic token refresh detection (5-minute threshold)
+- Cross-platform home directory detection
+- Complete error handling and recovery
+- Session restoration on client initialization
+- Shared type system in `/internal/types/` to avoid import cycles
+- Full compatibility with TypeScript client authentication patterns
+
 ## Environment
 - **Working Directory**: /Users/larryrutledge/Projects/nvlp-app
 - **Git Status**: Clean, ahead of origin by commits

@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/thelarryrutledge/nvlp-app/internal/client"
+	"github.com/thelarryrutledge/nvlp-app/internal/types"
 )
 
 // PostgRESTTransport implements the Transport interface for PostgREST
@@ -22,7 +22,7 @@ type PostgRESTTransport struct {
 }
 
 // NewPostgRESTTransport creates a new PostgREST transport
-func NewPostgRESTTransport(config *client.NVLPClientConfig) *PostgRESTTransport {
+func NewPostgRESTTransport(config *types.NVLPClientConfig) *PostgRESTTransport {
 	baseURL := config.SupabaseURL + "/rest/v1"
 	if config.APIBaseURL != "" {
 		baseURL = config.APIBaseURL + "/rest/v1"
