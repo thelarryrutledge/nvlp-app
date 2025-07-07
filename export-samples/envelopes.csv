@@ -1,0 +1,9 @@
+id,name,description,current_balance,target_amount,is_active,category,created_at,updated_at
+95b22db6-3718-469f-9b36-57525dfbc6f5,Emergency Fund,Emergency fund for unexpected expenses,0,1000,true,,2025-07-07T02:01:07.627839+00:00,2025-07-07T02:01:07.627839+00:00
+c489d5d8-108a-4958-a024-89f6725f38a7,Entertainment,"Movies, dining out, fun activities",0,150,true,,2025-07-07T02:01:07.627839+00:00,2025-07-07T02:01:07.627839+00:00
+e174e145-545e-4720-bcfb-5c1cbd9007d5,Groceries,Monthly grocery budget,0,400,true,,2025-07-07T02:01:07.627839+00:00,2025-07-07T02:01:07.627839+00:00
+43f6fe94-0997-4ce2-a343-6eb2329c109c,Miscellaneous,Other expenses and flexible spending,0,200,true,,2025-07-07T02:01:07.627839+00:00,2025-07-07T02:01:07.627839+00:00
+28f847a4-3ba9-4fdd-b45f-f795c90ff000,Personal Care,"Clothing, haircuts, personal items",0,100,true,,2025-07-07T02:01:07.627839+00:00,2025-07-07T02:01:07.627839+00:00
+b741cef6-8e01-4eb8-85ee-abca9e3645bf,Savings Goals,Long-term savings and goals,0,500,true,,2025-07-07T02:01:07.627839+00:00,2025-07-07T02:01:07.627839+00:00
+0d795831-012f-4055-b0e7-8664fc2bf195,Transportation,"Gas, public transit, car expenses",0,200,true,,2025-07-07T02:01:07.627839+00:00,2025-07-07T02:01:07.627839+00:00
+49ea3ee5-a1b8-4a7e-9418-3f04c3b93b5b,Utilities,"Electricity, water, internet, phone bills",0,300,true,,2025-07-07T02:01:07.627839+00:00,2025-07-07T02:01:07.627839+00:00

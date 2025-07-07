@@ -1,0 +1,13 @@
+id,budget_id,name,description,color,icon,is_active,sort_order,payee_type,address,phone,email,website,preferred_payment_method,account_number,total_paid,last_payment_date,last_payment_amount,created_at,updated_at
+a5205de9-1582-4bd0-aa70-fdadac8c13f3,741fac4e-6439-4018-ab5e-b49d23a0352f,Bank,Loan payments and fees,#607D8B,,true,6,business,,,,,,,0,,,2025-07-07T02:01:07.627839+00:00,2025-07-07T02:01:07.627839+00:00
+8dc1c47e-fe06-4142-a738-d1950c6dde6c,741fac4e-6439-4018-ab5e-b49d23a0352f,Cash Withdrawal,ATM and cash transactions,#009688,,true,11,other,,,,,,,0,,,2025-07-07T02:01:07.627839+00:00,2025-07-07T02:01:07.627839+00:00
+47357b28-2547-483b-8491-69e5bee535c9,741fac4e-6439-4018-ab5e-b49d23a0352f,Doctor/Healthcare,Medical expenses,#F44336,,true,8,service,,,,,,,0,,,2025-07-07T02:01:07.627839+00:00,2025-07-07T02:01:07.627839+00:00
+05b79e3a-fd35-4b12-a61f-f62bbf738d53,741fac4e-6439-4018-ab5e-b49d23a0352f,Electric Company,Monthly electricity bills,#FFC107,,true,3,utility,,,,,,,0,,,2025-07-07T02:01:07.627839+00:00,2025-07-07T02:01:07.627839+00:00
+75b2e985-6458-43a1-b7d9-709a98a539aa,741fac4e-6439-4018-ab5e-b49d23a0352f,Gas Station,Fuel and gas purchases,#FF9800,,true,2,business,,,,,,,0,,,2025-07-07T02:01:07.627839+00:00,2025-07-07T02:01:07.627839+00:00
+b4207bc2-41c1-475c-ba58-6f2944d6b41b,741fac4e-6439-4018-ab5e-b49d23a0352f,Grocery Store,Regular grocery shopping,#4CAF50,,true,1,business,,,,,,,0,,,2025-07-07T02:01:07.627839+00:00,2025-07-07T02:01:07.627839+00:00
+467356c5-73b3-445a-acc9-ebac6697f407,741fac4e-6439-4018-ab5e-b49d23a0352f,Insurance Company,Insurance premiums,#9C27B0,,true,5,business,,,,,,,0,,,2025-07-07T02:01:07.627839+00:00,2025-07-07T02:01:07.627839+00:00
+5709a775-6c9d-482e-90db-1f8bd2649cf8,741fac4e-6439-4018-ab5e-b49d23a0352f,Internet Provider,Monthly internet service,#2196F3,,true,4,service,,,,,,,0,,,2025-07-07T02:01:07.627839+00:00,2025-07-07T02:01:07.627839+00:00
+d7c39cf3-e0eb-43ca-84fb-3345f8119451,741fac4e-6439-4018-ab5e-b49d23a0352f,Landlord/Mortgage,Rent or mortgage payments,#795548,,true,7,person,,,,,,,0,,,2025-07-07T02:01:07.627839+00:00,2025-07-07T02:01:07.627839+00:00
+a09df665-ec44-4991-ab28-db2517bab593,741fac4e-6439-4018-ab5e-b49d23a0352f,Online Store,Online purchases,#3F51B5,,true,10,business,,,,,,,0,,,2025-07-07T02:01:07.627839+00:00,2025-07-07T02:01:07.627839+00:00
+e15da3a0-4c91-4564-b968-2b12a20376aa,741fac4e-6439-4018-ab5e-b49d23a0352f,Other Payee,Miscellaneous payments,#9E9E9E,,true,12,other,,,,,,,0,,,2025-07-07T02:01:07.627839+00:00,2025-07-07T02:01:07.627839+00:00
+10f502b7-a5e6-4a15-bf33-4a7dc27a8b8e,741fac4e-6439-4018-ab5e-b49d23a0352f,Restaurant,Dining out expenses,#E91E63,,true,9,business,,,,,,,0,,,2025-07-07T02:01:07.627839+00:00,2025-07-07T02:01:07.627839+00:00

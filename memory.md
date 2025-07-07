@@ -120,6 +120,16 @@ test-profile-postgrest.sh, test-budgets-postgrest.sh, test-budget-constraint-fix
 - **Testing**: 19 test cases with 100% pass rate
 - **Performance**: Efficient queries with proper authentication
 
+## Audit Trail Endpoints (Edge Function) ✅
+- **Audit Events**: Query transaction event history with filtering and pagination
+- **Audit Summary**: Event type breakdown and counts for analysis
+- **User Activity**: Track user actions and activity patterns
+- **Transaction History**: Complete audit trail for specific transactions
+- **Recent Events**: Real-time monitoring of recent changes (configurable time window)
+- **Testing**: 14 test cases with 100% pass rate
+- **Features**: Date range filtering, event type filtering, user filtering, pagination
+- **Performance**: Efficient queries with user email lookup caching
+
 ## Status: Task 12 Advanced Features In Progress
-**Completed**: Dashboard API, Reporting APIs, Data Export
-**Next**: Audit trail endpoints
+**Completed**: Dashboard API, Reporting APIs, Data Export, Audit Trail
+**Next**: Test performance with larger datasets
