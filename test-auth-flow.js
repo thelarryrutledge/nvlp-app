@@ -38,31 +38,9 @@ function askQuestion(question) {
   });
 }
 
-function hidePassword(question) {
-  return new Promise((resolve) => {
-    const mutableStdout = new (require('stream').Writable)();
-    mutableStdout._write = function (chunk, encoding, callback) {
-      if (!this.muted) {
-        process.stdout.write(chunk, encoding);
-      }
-      callback();
-    };
-    
-    mutableStdout.muted = false;
-    
-    const passwordRl = readline.createInterface({
-      input: process.stdin,
-      output: mutableStdout,
-      terminal: true
-    });
-    
-    passwordRl.question(question, (answer) => {
-      passwordRl.close();
-      resolve(answer);
-    });
-    
-    mutableStdout.muted = true;
-  });
+// Simplified password input for testing - just use regular input
+function askPassword(question) {
+  return askQuestion(question);
 }
 
 function showTokenCacheLocation() {
@@ -125,7 +103,7 @@ async function testAuthFlow() {
     console.log('📝 Step 2: Perform login...');
     
     const email = await askQuestion('   Email: ');
-    const password = await hidePassword('   Password: ');
+    const password = await askPassword('   Password: ');
     
     try {
       console.log('\n   🔑 Logging in via api.nvlp.app...');
