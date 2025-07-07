@@ -99,5 +99,15 @@ test-profile-postgrest.sh, test-budgets-postgrest.sh, test-budget-constraint-fix
 - No dependency on external token files - self-contained authentication
 - End-to-end testing validated (login → API calls → logout)
 
-## Status: Task 10 Complete ✅
-**Ready for Task 11**: Transaction System (Edge Functions for Complex Logic)
+## Reporting APIs (Edge Function) ✅
+- **Transaction History**: Comprehensive transaction reporting with filtering and pagination
+- **Category Spending Trends**: Time-based category analysis with configurable grouping (day/week/month)
+- **Income vs Expense Analysis**: Financial flow reporting with net calculations
+- **Envelope Balance History**: Track envelope balance changes over time
+- **Budget Performance**: Envelope target analysis and budget health metrics
+- **Testing**: 13 test cases with 100% pass rate
+- **Features**: Date range filtering, transaction type filtering, envelope-specific reports
+- **Performance**: Parallel queries, authenticated access, comprehensive error handling
+
+## Status: Task 12 Complete ✅
+**Ready for Phase 4**: Go CLI Development

@@ -100,7 +100,7 @@
 
 ### Task 12: Advanced Features
 - [x] Create dashboard API endpoint
-- [ ] Create reporting APIs
+- [x] Create reporting APIs
 - [ ] Create data export functionality
 - [ ] Add audit trail endpoints
 - [ ] Test performance with larger datasets
