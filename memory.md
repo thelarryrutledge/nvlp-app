@@ -1,92 +1,31 @@
 # NVLP Project Memory
 
 ## Core Setup
-- Supabase project: qnpatlosomopoimtsmsr
-- API URL: https://api.nvlp.app (via Vercel proxy)
+- Supabase: qnpatlosomopoimtsmsr
 - Test users: larryjrutledge@gmail.com & larry@mariomurillo.org / Test1234!
-- All Edge Functions require wrapping PostgREST calls
 
-## Authentication System (COMPLETE ✅)
-7 endpoints implemented with full security:
-- POST /auth/register, /auth/login (anon key)
-- POST /auth/logout, GET /auth/profile (JWT required)
-- POST /auth/refresh (anon key + refresh_token)
-- POST /auth/reset-password, /auth/update-password (recovery flow)
+## Status: Phase 2 Complete ✅
+**Auth (Edge Function)**: 7 endpoints with full security 
+**Database**: 9 tables, RLS, triggers, automation (profiles→budgets→defaults)
+**APIs**: Profile + Budget endpoints converted to direct PostgREST (<50ms vs 2-10s cold start)
 
-Security features: email normalization, input validation, CORS, CSP headers, generic error messages
+## Architecture: PostgREST Direct
+- JWT + API key auth pattern
+- Database constraints replace Edge Function validation  
+- Status codes: 200/201/204 vs 400/409
+- Must include user_id in POST for RLS
 
-## Money Flow Model
-Income → available_amount → Envelopes → Payees (exit)
-Transaction types: income(NULL→NULL), allocation(NULL→envelope), expense(envelope→NULL+payee), transfer(envelope→envelope)
+## Database Tables
+user_profiles, budgets, income_sources, categories, envelopes, payees, transactions, transaction_events, user_state
+- All have RLS + auto-creation triggers (except transactions)
+- Budget constraint fixed: partial unique index for default budgets only
+- Multi-user tested ✅
 
-## Database Schema (COMPLETE ✅)
-Core tables implemented with full RLS security and automation:
+## Money Flow
+Income → available_amount → Envelopes → Payees
+Types: income, allocation, expense, transfer, debt_payment
 
-**user_profiles**: Extends auth.users with display_name, timezone, currency_code, date_format
-**budgets**: Budget management with user relationship and default budget automation  
-**income_sources**: Budget-scoped income tracking with auto-creation of defaults
-**categories**: Budget-scoped categories with 8 expense + 2 income defaults auto-created
-**envelopes**: Budget-scoped envelopes with notification features (notify_date, notify_amount)
-**payees**: Budget-scoped payees with 6 types (business, person, organization, utility, service, other)
-**transactions**: Money flow tracking with 5 transaction types (income, allocation, expense, transfer, debt_payment)
-**transaction_events**: Audit trail for all transaction modifications with event logging triggers
-**user_state**: Available amount tracking and user preferences per budget with automatic triggers
+## Test Scripts (Essential 5)
+test-profile-postgrest.sh, test-budgets-postgrest.sh, test-budget-constraint-fix.sh, test-budget-multi-user.sh, login-and-save-token.sh
 
-All tables feature:
-- Complete RLS policies enforcing user data isolation
-- Auto-creation triggers for new users/budgets (except transactions)
-- Comprehensive constraint validation
-- Multi-user testing verified ✅
-- Automatic balance calculations via database triggers
-
-## Testing & Scripts
-- Comprehensive test scripts in `/scripts` directory (cleaned up from 20+ to 5 essential scripts)
-- Modern testing pattern established with `test-envelopes-table.sh`
-- Complete CRUD, constraint, and RLS validation for all tables
-
-## Current Status & Next Steps
-**COMPLETED ✅**
-- Phase 1: Authentication Foundation (7 endpoints, full security)
-- Phase 2: Core Tables (user_profiles, budgets, income_sources, categories, envelopes, payees, transactions, transaction_events, user_state)
-- Money flow model implementation with automatic balance tracking
-- Audit trail system with comprehensive event logging for all transaction modifications
-- Available amount tracking with automatic triggers for income/allocation transactions
-- Comprehensive calculation functions for budget analysis, reporting, and health scoring
-- Automatic update triggers for cache maintenance, payee tracking, and data consistency
-- Multi-user RLS testing and automation verification
-- Complete automation chain: user registration → profile → budget → income_sources + categories + envelopes + payees + user_state
-- Comprehensive data validation with integrity checks, transaction constraints, and automated fix functions
-
-**COMPLETED ✅ Phase 2: Database Schema**
-All database tables, functions, triggers, and validation complete
-
-**ARCHITECTURAL PIVOT ✅ - Direct PostgREST + Abstract Layer**
-✅ Pivoted from Edge Function wrappers to direct PostgREST calls for performance
-✅ Documentation updated with new architecture patterns and rationale
-✅ PostgREST API guide created with authentication patterns and endpoints
-✅ Profile API converted to direct PostgREST calls (GET, PATCH with database validation)
-✅ Budget API converted to direct PostgREST calls (GET, POST, PATCH, DELETE with constraints)
-✅ Test scripts created for both PostgREST endpoints with proper authentication
-✅ Performance improvement: <50ms PostgREST vs 2-10s Edge Function cold starts
-
-**KEY LEARNINGS:**
-- PostgREST requires explicit user_id in POST requests for RLS compliance
-- Database constraints handle validation instead of Edge Function validation
-- JWT + API key authentication pattern for PostgREST calls
-- Status codes: 200 (GET), 201 (POST), 204 (PATCH/DELETE), 400/409 (errors)
-
-**COMPLETED ✅ Edge Function Cleanup**
-✅ Removed obsolete Edge Function wrappers (profile, budgets, hello)
-✅ Removed obsolete test scripts and API documentation 
-✅ Kept auth Edge Function (still needed for authentication)
-
-**COMPLETED ✅ Database Constraint Fix**
-✅ Fixed restrictive UNIQUE (user_id, is_default) constraint on budgets table
-✅ Migration 20250707000000_fix_budget_default_constraint.sql applied
-✅ New partial unique index allows unlimited non-default budgets per user
-✅ Maintains requirement for exactly one default budget per user
-✅ Multi-user testing verified: different users can have budgets with same names
-✅ All constraint tests passing (6/6 tests)
-
-**NEXT: Phase 3, Task 9**
-Create income sources CRUD documentation (PostgREST)
+## Next: Task 9 - Income Sources CRUD (PostgREST)
