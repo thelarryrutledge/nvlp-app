@@ -70,7 +70,7 @@
 - [x] Update testing scripts to use direct PostgREST calls
 - [x] Document PostgREST API patterns and authentication
 - [x] Validate and fix PostgREST test scripts (profile: 15/15 tests pass, budgets: 15/15 tests pass)
-- [ ] Remove Edge Function wrappers for profile and budgets (cleanup)
+- [x] Remove Edge Function wrappers for profile and budgets (cleanup)
 - [ ] **FUTURE**: Fix database constraint `UNIQUE (user_id, is_default)` to allow multiple non-default budgets
 
 ### Task 9: Core Business APIs (Direct PostgREST)

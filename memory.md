@@ -75,5 +75,10 @@ All database tables, functions, triggers, and validation complete
 - JWT + API key authentication pattern for PostgREST calls
 - Status codes: 200 (GET), 201 (POST), 204 (PATCH/DELETE), 400/409 (errors)
 
-**NEXT: Phase 3, Task 8**
-Remove Edge Function wrappers and create abstract client library
+**COMPLETED ✅ Edge Function Cleanup**
+✅ Removed obsolete Edge Function wrappers (profile, budgets, hello)
+✅ Removed obsolete test scripts and API documentation 
+✅ Kept auth Edge Function (still needed for authentication)
+
+**NEXT: Phase 3, Task 10**
+Create abstract client library wrapper
