@@ -99,7 +99,7 @@
 - [x] Test envelope balance tracking
 
 ### Task 12: Advanced Features
-- [ ] Create dashboard API endpoint
+- [x] Create dashboard API endpoint
 - [ ] Create reporting APIs
 - [ ] Create data export functionality
 - [ ] Add audit trail endpoints

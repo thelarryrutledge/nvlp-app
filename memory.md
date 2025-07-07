@@ -27,7 +27,15 @@ user_profiles, budgets, income_sources, categories, envelopes, payees, transacti
 - **Types**: income, allocation, expense, transfer, debt_payment with proper flow constraints
 - **CRUD**: Full create/read/update/delete with RLS enforcement
 - **Balance Tracking**: Automatic envelope balance updates via database triggers
-- **Testing**: 15 test cases with 100% pass rate
+- **Testing**: 18 test cases with 100% pass rate
+
+## Dashboard API (Edge Function)
+- **Budget Overview**: Available amount, total allocated, budget totals
+- **Envelope Summary**: All envelope balances with category grouping
+- **Recent Transactions**: Latest transaction activity with full details
+- **Spending Analysis**: Category-based spending breakdown (configurable period)
+- **Income vs Expenses**: Financial flow summary with net calculations
+- **Performance**: Parallel data fetching, authenticated queries, error handling
 - Budget constraint fixed: partial unique index for default budgets only
 - Multi-user tested ✅
 
