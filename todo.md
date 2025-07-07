@@ -78,8 +78,8 @@
 - [x] Create categories CRUD documentation (PostgREST)
 - [x] Create envelopes CRUD documentation (PostgREST)
 - [x] Create payees CRUD documentation (PostgREST)
-- [ ] Test each API module completely before next
-- [ ] Verify data isolation between users
+- [x] Test each API module completely before next
+- [x] Verify data isolation between users
 
 ### Task 10: Abstract Client Library
 - [ ] Create abstract client library wrapper (Task 10a)
