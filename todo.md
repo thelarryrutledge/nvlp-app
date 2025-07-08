@@ -115,8 +115,8 @@
 - [x] Implement Go HTTP client for Edge Function transport  
 - [x] Port authentication management to Go (token persistence)
 - [x] Port error handling and types to Go
-- [ ] Test Go client library with existing APIs
-- [ ] Document Go client library usage
+- [x] Test Go client library with existing APIs
+- [x] Document Go client library usage
 
 ### Task 12: CLI Foundation (Go)
 - [ ] Set up Go CLI project structure (cobra/viper framework)
