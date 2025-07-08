@@ -6,19 +6,28 @@ info:
     
     ## API Architecture
     
-    The NVLP API uses a hybrid architecture:
-    - **PostgREST Direct**: Fast CRUD operations for simple data access
-    - **Edge Functions**: Complex business logic, validation, and advanced features
+    The NVLP API uses a hybrid architecture with custom domain routing:
+    - **PostgREST Direct** (`db-api.nvlp.app`): Fast CRUD operations for simple data access
+    - **Edge Functions** (`edge-api.nvlp.app`): Complex business logic, validation, and advanced features
+    
+    This dual-domain approach provides optimized routing and performance for different operation types.
     
     ## Base URLs
     
-    - **Custom Domain (PostgREST)**: `https://api.nvlp.app`
-    - **Supabase Edge Functions**: `https://qnpatlosomopoimtsmsr.supabase.co/functions/v1`
+    - **Custom Domain (PostgREST)**: `https://db-api.nvlp.app`
+    - **Custom Domain (Edge Functions)**: `https://edge-api.nvlp.app`
+    - **Fallback PostgREST**: `https://qnpatlosomopoimtsmsr.supabase.co/rest/v1`
+    - **Fallback Edge Functions**: `https://qnpatlosomopoimtsmsr.supabase.co/functions/v1`
     
     ## Authentication
     
     All endpoints require JWT authentication using the `Authorization: Bearer <token>` header.
     Tokens are obtained through the authentication endpoints and expire after a configurable period.
+    
+    ### Authentication Headers
+    
+    - **Edge Functions**: `Authorization: Bearer <token>`
+    - **PostgREST**: `Authorization: Bearer <token>` + `apikey: <anon_key>`
     
     ## Data Security
     
@@ -35,10 +44,14 @@ info:
     url: https://opensource.org/licenses/MIT
 
 servers:
-  - url: https://api.nvlp.app
+  - url: https://db-api.nvlp.app
     description: Custom Domain (PostgREST Direct)
+  - url: https://edge-api.nvlp.app
+    description: Custom Domain (Edge Functions)
+  - url: https://qnpatlosomopoimtsmsr.supabase.co/rest/v1
+    description: Fallback PostgREST Direct
   - url: https://qnpatlosomopoimtsmsr.supabase.co/functions/v1
-    description: Supabase Edge Functions
+    description: Fallback Edge Functions
 
 security:
   - BearerAuth: []
@@ -51,7 +64,7 @@ paths:
       summary: Register new user
       description: Create a new user account with email and password
       servers:
-        - url: https://qnpatlosomopoimtsmsr.supabase.co/functions/v1
+        - url: https://edge-api.nvlp.app
       requestBody:
         required: true
         content:
@@ -89,7 +102,7 @@ paths:
       summary: User login
       description: Authenticate user and return JWT token
       servers:
-        - url: https://qnpatlosomopoimtsmsr.supabase.co/functions/v1
+        - url: https://edge-api.nvlp.app
       requestBody:
         required: true
         content:
@@ -119,7 +132,7 @@ paths:
       summary: User logout
       description: Invalidate current session
       servers:
-        - url: https://qnpatlosomopoimtsmsr.supabase.co/functions/v1
+        - url: https://edge-api.nvlp.app
       responses:
         '200':
           description: Logout successful
@@ -134,7 +147,7 @@ paths:
       summary: Refresh token
       description: Refresh JWT token before expiration
       servers:
-        - url: https://qnpatlosomopoimtsmsr.supabase.co/functions/v1
+        - url: https://edge-api.nvlp.app
       responses:
         '200':
           description: Token refreshed successfully
@@ -150,7 +163,7 @@ paths:
       summary: Get user profile
       description: Retrieve current user's profile information
       servers:
-        - url: https://api.nvlp.app
+        - url: https://db-api.nvlp.app
       responses:
         '200':
           description: Profile retrieved successfully
@@ -166,7 +179,7 @@ paths:
       summary: Update user profile
       description: Update current user's profile information
       servers:
-        - url: https://api.nvlp.app
+        - url: https://db-api.nvlp.app
       requestBody:
         required: true
         content:
@@ -197,7 +210,7 @@ paths:
       summary: List budgets
       description: Get all budgets for the current user
       servers:
-        - url: https://api.nvlp.app
+        - url: https://db-api.nvlp.app
       parameters:
         - name: select
           in: query
@@ -220,7 +233,7 @@ paths:
       summary: Create budget
       description: Create a new budget
       servers:
-        - url: https://api.nvlp.app
+        - url: https://db-api.nvlp.app
       requestBody:
         required: true
         content:
@@ -251,7 +264,7 @@ paths:
       tags: [Budgets]
       summary: Get budget by ID
       servers:
-        - url: https://api.nvlp.app
+        - url: https://db-api.nvlp.app
       parameters:
         - $ref: '#/components/parameters/BudgetId'
       responses:
@@ -266,7 +279,7 @@ paths:
       tags: [Budgets]
       summary: Update budget
       servers:
-        - url: https://api.nvlp.app
+        - url: https://db-api.nvlp.app
       parameters:
         - $ref: '#/components/parameters/BudgetId'
       requestBody:
@@ -290,7 +303,7 @@ paths:
       tags: [Budgets]
       summary: Delete budget
       servers:
-        - url: https://api.nvlp.app
+        - url: https://db-api.nvlp.app
       parameters:
         - $ref: '#/components/parameters/BudgetId'
       responses:
@@ -303,7 +316,7 @@ paths:
       tags: [Categories]
       summary: List categories
       servers:
-        - url: https://api.nvlp.app
+        - url: https://db-api.nvlp.app
       parameters:
         - name: budget_id
           in: query
@@ -325,7 +338,7 @@ paths:
       tags: [Categories]
       summary: Create category
       servers:
-        - url: https://api.nvlp.app
+        - url: https://db-api.nvlp.app
       requestBody:
         required: true
         content:
@@ -342,7 +355,7 @@ paths:
       tags: [Envelopes]
       summary: List envelopes
       servers:
-        - url: https://api.nvlp.app
+        - url: https://db-api.nvlp.app
       parameters:
         - name: budget_id
           in: query
@@ -369,7 +382,7 @@ paths:
       tags: [Envelopes]
       summary: Create envelope
       servers:
-        - url: https://api.nvlp.app
+        - url: https://db-api.nvlp.app
       requestBody:
         required: true
         content:
@@ -386,7 +399,7 @@ paths:
       tags: [Income Sources]
       summary: List income sources
       servers:
-        - url: https://api.nvlp.app
+        - url: https://db-api.nvlp.app
       parameters:
         - name: budget_id
           in: query
@@ -408,7 +421,7 @@ paths:
       tags: [Income Sources]
       summary: Create income source
       servers:
-        - url: https://api.nvlp.app
+        - url: https://db-api.nvlp.app
       requestBody:
         required: true
         content:
@@ -425,7 +438,7 @@ paths:
       tags: [Payees]
       summary: List payees
       servers:
-        - url: https://api.nvlp.app
+        - url: https://db-api.nvlp.app
       parameters:
         - name: budget_id
           in: query
@@ -447,7 +460,7 @@ paths:
       tags: [Payees]
       summary: Create payee
       servers:
-        - url: https://api.nvlp.app
+        - url: https://db-api.nvlp.app
       requestBody:
         required: true
         content:
@@ -465,7 +478,7 @@ paths:
       summary: List transactions
       description: Get transactions with optional filtering
       servers:
-        - url: https://qnpatlosomopoimtsmsr.supabase.co/functions/v1
+        - url: https://edge-api.nvlp.app
       parameters:
         - name: budget_id
           in: query
@@ -513,7 +526,7 @@ paths:
       summary: Create transaction
       description: Create a new transaction with validation
       servers:
-        - url: https://qnpatlosomopoimtsmsr.supabase.co/functions/v1
+        - url: https://edge-api.nvlp.app
       requestBody:
         required: true
         content:
@@ -542,7 +555,7 @@ paths:
       summary: Get dashboard data
       description: Retrieve comprehensive dashboard information for a budget
       servers:
-        - url: https://qnpatlosomopoimtsmsr.supabase.co/functions/v1
+        - url: https://edge-api.nvlp.app
       parameters:
         - name: budget_id
           in: query
@@ -575,7 +588,7 @@ paths:
       tags: [Reports]
       summary: Transaction history report
       servers:
-        - url: https://qnpatlosomopoimtsmsr.supabase.co/functions/v1
+        - url: https://edge-api.nvlp.app
       parameters:
         - name: budget_id
           in: query
@@ -620,7 +633,7 @@ paths:
       tags: [Reports]
       summary: Category spending trends
       servers:
-        - url: https://qnpatlosomopoimtsmsr.supabase.co/functions/v1
+        - url: https://edge-api.nvlp.app
       parameters:
         - name: budget_id
           in: query
@@ -653,7 +666,7 @@ paths:
       tags: [Reports]
       summary: Income vs expense analysis
       servers:
-        - url: https://qnpatlosomopoimtsmsr.supabase.co/functions/v1
+        - url: https://edge-api.nvlp.app
       parameters:
         - name: budget_id
           in: query
@@ -688,7 +701,7 @@ paths:
       summary: Export transactions
       description: Export transaction data in CSV or JSON format
       servers:
-        - url: https://qnpatlosomopoimtsmsr.supabase.co/functions/v1
+        - url: https://edge-api.nvlp.app
       parameters:
         - name: budget_id
           in: query
@@ -735,7 +748,7 @@ paths:
       summary: Export complete budget
       description: Export all budget data including envelopes, categories, payees, etc.
       servers:
-        - url: https://qnpatlosomopoimtsmsr.supabase.co/functions/v1
+        - url: https://edge-api.nvlp.app
       parameters:
         - name: budget_id
           in: query
@@ -760,7 +773,7 @@ paths:
       summary: Get audit events
       description: Retrieve transaction audit trail events
       servers:
-        - url: https://qnpatlosomopoimtsmsr.supabase.co/functions/v1
+        - url: https://edge-api.nvlp.app
       parameters:
         - name: budget_id
           in: query
@@ -807,7 +820,7 @@ paths:
       summary: Get audit summary
       description: Get summary of audit events by type
       servers:
-        - url: https://qnpatlosomopoimtsmsr.supabase.co/functions/v1
+        - url: https://edge-api.nvlp.app
       parameters:
         - name: budget_id
           in: query
@@ -836,7 +849,7 @@ paths:
       summary: Get notifications
       description: Retrieve active notifications for user
       servers:
-        - url: https://qnpatlosomopoimtsmsr.supabase.co/functions/v1
+        - url: https://edge-api.nvlp.app
       parameters:
         - name: budget_id
           in: query
@@ -881,7 +894,7 @@ paths:
       summary: Acknowledge notifications
       description: Mark notifications as seen to prevent re-notification
       servers:
-        - url: https://qnpatlosomopoimtsmsr.supabase.co/functions/v1
+        - url: https://edge-api.nvlp.app
       requestBody:
         required: true
         content:
@@ -921,7 +934,7 @@ paths:
       summary: Clear acknowledgments
       description: Clear notification acknowledgments to allow re-notification
       servers:
-        - url: https://qnpatlosomopoimtsmsr.supabase.co/functions/v1
+        - url: https://edge-api.nvlp.app
       requestBody:
         required: false
         content:
