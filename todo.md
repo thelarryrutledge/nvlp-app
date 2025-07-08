@@ -114,7 +114,7 @@
 - [x] Implement Go HTTP client for PostgREST transport
 - [x] Implement Go HTTP client for Edge Function transport  
 - [x] Port authentication management to Go (token persistence)
-- [ ] Port error handling and types to Go
+- [x] Port error handling and types to Go
 - [ ] Test Go client library with existing APIs
 - [ ] Document Go client library usage
 

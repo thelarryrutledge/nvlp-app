@@ -48,13 +48,13 @@ func (p *PostgRESTTransport) SetAuth(token string) {
 }
 
 // Request performs an HTTP request to the PostgREST API
-func (p *PostgRESTTransport) Request(method, endpoint string, data interface{}, options *client.RequestOptions) (*client.APIResponse, error) {
+func (p *PostgRESTTransport) Request(method, endpoint string, data interface{}, options *types.RequestOptions) (*types.APIResponse, error) {
 	// Build URL
 	fullURL := p.baseURL + "/" + strings.TrimPrefix(endpoint, "/")
 	
 	// Handle query parameters for GET requests
 	if method == "GET" && data != nil {
-		if params, ok := data.(client.QueryParams); ok {
+		if params, ok := data.(types.QueryParams); ok {
 			queryParams := url.Values{}
 			for key, value := range params {
 				queryParams.Add(key, fmt.Sprintf("%v", value))
@@ -100,18 +100,18 @@ func (p *PostgRESTTransport) Request(method, endpoint string, data interface{}, 
 	// Execute request
 	resp, err := p.httpClient.Do(req)
 	if err != nil {
-		return nil, client.NewNetworkError(fmt.Sprintf("request failed: %v", err))
+		return nil, types.NewNetworkError(fmt.Sprintf("request failed: %v", err))
 	}
 	defer resp.Body.Close()
 
 	// Read response body
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, client.NewNetworkError(fmt.Sprintf("failed to read response body: %v", err))
+		return nil, types.NewNetworkError(fmt.Sprintf("failed to read response body: %v", err))
 	}
 
 	// Handle different response types
-	apiResponse := &client.APIResponse{
+	apiResponse := &types.APIResponse{
 		Status: resp.StatusCode,
 	}
 
@@ -151,17 +151,17 @@ func (p *PostgRESTTransport) Request(method, endpoint string, data interface{}, 
 		message = http.StatusText(resp.StatusCode)
 	}
 
-	return nil, client.MapHTTPStatusToError(resp.StatusCode, message, errorResponse.Details)
+	return nil, types.MapHTTPStatusToError(resp.StatusCode, message, errorResponse.Details)
 }
 
 // Get performs a GET request
-func (p *PostgRESTTransport) Get(endpoint string, params client.QueryParams) (*client.APIResponse, error) {
+func (p *PostgRESTTransport) Get(endpoint string, params types.QueryParams) (*types.APIResponse, error) {
 	return p.Request("GET", endpoint, params, nil)
 }
 
 // Post performs a POST request
-func (p *PostgRESTTransport) Post(endpoint string, data interface{}) (*client.APIResponse, error) {
-	options := &client.RequestOptions{
+func (p *PostgRESTTransport) Post(endpoint string, data interface{}) (*types.APIResponse, error) {
+	options := &types.RequestOptions{
 		Headers: map[string]string{
 			"Prefer": "return=representation",
 		},
@@ -170,8 +170,8 @@ func (p *PostgRESTTransport) Post(endpoint string, data interface{}) (*client.AP
 }
 
 // Patch performs a PATCH request
-func (p *PostgRESTTransport) Patch(endpoint string, data interface{}) (*client.APIResponse, error) {
-	options := &client.RequestOptions{
+func (p *PostgRESTTransport) Patch(endpoint string, data interface{}) (*types.APIResponse, error) {
+	options := &types.RequestOptions{
 		Headers: map[string]string{
 			"Prefer": "return=representation",
 		},
@@ -180,12 +180,12 @@ func (p *PostgRESTTransport) Patch(endpoint string, data interface{}) (*client.A
 }
 
 // Delete performs a DELETE request
-func (p *PostgRESTTransport) Delete(endpoint string) (*client.APIResponse, error) {
+func (p *PostgRESTTransport) Delete(endpoint string) (*types.APIResponse, error) {
 	return p.Request("DELETE", endpoint, nil, nil)
 }
 
 // BuildQuery builds a PostgREST query string from parameters
-func (p *PostgRESTTransport) BuildQuery(table string, params client.QueryParams) string {
+func (p *PostgRESTTransport) BuildQuery(table string, params types.QueryParams) string {
 	query := table
 	
 	if len(params) > 0 {

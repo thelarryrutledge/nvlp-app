@@ -6,251 +6,85 @@ import (
 	"github.com/thelarryrutledge/nvlp-app/internal/types"
 )
 
-// NVLPClientConfig represents the configuration for the NVLP client
-type NVLPClientConfig struct {
-	SupabaseURL     string
-	SupabaseAnonKey string
-	Transport       string // "postgrest", "edge-function", or "hybrid"
-	Timeout         time.Duration
-	Retries         int
-	// Token persistence options
-	PersistTokens    bool
-	TokenStorageKey  string
-	AutoRefresh      bool
-	// Custom API endpoints
-	APIBaseURL string
-}
+// Import configuration from shared types
+type NVLPClientConfig = types.NVLPClientConfig
 
 // Import shared auth types
 type AuthState = types.AuthState
 type PersistedAuthData = types.PersistedAuthData  
 type User = types.User
 
-// Transport interface for abstraction
-type Transport interface {
-	Request(method, endpoint string, data interface{}, options *RequestOptions) (*APIResponse, error)
-	SetAuth(token string)
-}
+// Import transport types from shared types
+type Transport = types.Transport
+type RequestOptions = types.RequestOptions
+type APIResponse = types.APIResponse
+type APIError = types.APIError
+type QueryParams = types.QueryParams
 
-// RequestOptions represents options for API requests
-type RequestOptions struct {
-	Headers map[string]string
-	Timeout time.Duration
-	Retry   bool
-}
+// Import all domain types and inputs from shared types package
+type UserProfile = types.UserProfile
+type Budget = types.Budget
+type IncomeSource = types.IncomeSource
+type Category = types.Category
+type Envelope = types.Envelope
+type Payee = types.Payee
+type Transaction = types.Transaction
 
-// APIResponse represents the standard API response format
-type APIResponse struct {
-	Data   interface{} `json:"data"`
-	Error  *APIError   `json:"error"`
-	Status int         `json:"status"`
-}
+// Import input types
+type CreateBudgetInput = types.CreateBudgetInput
+type UpdateBudgetInput = types.UpdateBudgetInput
+type CreateIncomeSourceInput = types.CreateIncomeSourceInput
+type UpdateIncomeSourceInput = types.UpdateIncomeSourceInput
+type CreateCategoryInput = types.CreateCategoryInput
+type UpdateCategoryInput = types.UpdateCategoryInput
+type CreateEnvelopeInput = types.CreateEnvelopeInput
+type UpdateEnvelopeInput = types.UpdateEnvelopeInput
+type CreatePayeeInput = types.CreatePayeeInput
+type UpdatePayeeInput = types.UpdatePayeeInput
+type CreateTransactionInput = types.CreateTransactionInput
+type UpdateTransactionInput = types.UpdateTransactionInput
 
-// APIError represents an API error response
-type APIError struct {
-	Code    string      `json:"code"`
-	Message string      `json:"message"`
-	Details interface{} `json:"details,omitempty"`
-}
+// Import auth and session types
+type LoginInput = types.LoginInput
+type RegisterInput = types.RegisterInput
+type LoginResponse = types.LoginResponse
+type Session = types.Session
 
-// QueryParams represents query parameters for API requests
-type QueryParams map[string]interface{}
+// Import complex types
+type DashboardData = types.DashboardData
+type BudgetOverview = types.BudgetOverview
+type EnvelopeSummary = types.EnvelopeSummary
+type SpendingAnalysis = types.SpendingAnalysis
+type CategorySpending = types.CategorySpending
+type MonthlySpending = types.MonthlySpending
+type IncomeVsExpenses = types.IncomeVsExpenses
+type IncomeBySource = types.IncomeBySource
+type ReportData = types.ReportData
+type ExportData = types.ExportData
+type AuditEvent = types.AuditEvent
+type Notification = types.Notification
+type HealthCheckResponse = types.HealthCheckResponse
 
-// Domain types matching database schema
-type UserProfile struct {
-	ID              string     `json:"id"`
-	DisplayName     string     `json:"display_name"`
-	Timezone        string     `json:"timezone"`
-	CurrencyCode    string     `json:"currency_code"`
-	DateFormat      string     `json:"date_format"`
-	DefaultBudgetID *string    `json:"default_budget_id"`
-	CreatedAt       time.Time  `json:"created_at"`
-	UpdatedAt       time.Time  `json:"updated_at"`
-}
+// Import error types
+type NVLPError = types.NVLPError
+type AuthenticationError = types.AuthenticationError
+type AuthorizationError = types.AuthorizationError
+type ValidationError = types.ValidationError
+type NotFoundError = types.NotFoundError
+type NetworkError = types.NetworkError
+type ServerError = types.ServerError
+type ConflictError = types.ConflictError
+type RateLimitError = types.RateLimitError
+type TimeoutError = types.TimeoutError
 
-type Budget struct {
-	ID          string     `json:"id"`
-	UserID      string     `json:"user_id"`
-	Name        string     `json:"name"`
-	Description *string    `json:"description"`
-	IsDefault   bool       `json:"is_default"`
-	IsActive    bool       `json:"is_active"`
-	CreatedAt   time.Time  `json:"created_at"`
-	UpdatedAt   time.Time  `json:"updated_at"`
-}
-
-type IncomeSource struct {
-	ID                     string     `json:"id"`
-	BudgetID               string     `json:"budget_id"`
-	Name                   string     `json:"name"`
-	Description            *string    `json:"description"`
-	ExpectedMonthlyAmount  float64    `json:"expected_monthly_amount"`
-	Frequency              string     `json:"frequency"`
-	NextDueDate            *time.Time `json:"next_due_date"`
-	IsActive               bool       `json:"is_active"`
-	CreatedAt              time.Time  `json:"created_at"`
-	UpdatedAt              time.Time  `json:"updated_at"`
-}
-
-type Category struct {
-	ID          string     `json:"id"`
-	BudgetID    string     `json:"budget_id"`
-	Name        string     `json:"name"`
-	Description *string    `json:"description"`
-	Color       *string    `json:"color"`
-	Icon        *string    `json:"icon"`
-	IsActive    bool       `json:"is_active"`
-	CreatedAt   time.Time  `json:"created_at"`
-	UpdatedAt   time.Time  `json:"updated_at"`
-}
-
-type Envelope struct {
-	ID                string     `json:"id"`
-	BudgetID          string     `json:"budget_id"`
-	CategoryID        string     `json:"category_id"`
-	Name              string     `json:"name"`
-	Description       *string    `json:"description"`
-	TargetAmount      float64    `json:"target_amount"`
-	CurrentBalance    float64    `json:"current_balance"`
-	FillFrequency     string     `json:"fill_frequency"`
-	FillAmount        float64    `json:"fill_amount"`
-	AutoFillEnabled   bool       `json:"auto_fill_enabled"`
-	OverspendAllowed  bool       `json:"overspend_allowed"`
-	NotificationLimit *float64   `json:"notification_limit"`
-	IsActive          bool       `json:"is_active"`
-	CreatedAt         time.Time  `json:"created_at"`
-	UpdatedAt         time.Time  `json:"updated_at"`
-}
-
-type Payee struct {
-	ID              string     `json:"id"`
-	BudgetID        string     `json:"budget_id"`
-	Name            string     `json:"name"`
-	Description     *string    `json:"description"`
-	DefaultCategory *string    `json:"default_category"`
-	IsActive        bool       `json:"is_active"`
-	CreatedAt       time.Time  `json:"created_at"`
-	UpdatedAt       time.Time  `json:"updated_at"`
-}
-
-// Input types for create operations
-type CreateBudgetInput struct {
-	Name        string  `json:"name"`
-	Description *string `json:"description"`
-	IsDefault   *bool   `json:"is_default,omitempty"`
-	IsActive    *bool   `json:"is_active,omitempty"`
-}
-
-type UpdateBudgetInput struct {
-	Name        *string `json:"name,omitempty"`
-	Description *string `json:"description,omitempty"`
-	IsDefault   *bool   `json:"is_default,omitempty"`
-	IsActive    *bool   `json:"is_active,omitempty"`
-}
-
-type CreateIncomeSourceInput struct {
-	BudgetID              string     `json:"budget_id"`
-	Name                  string     `json:"name"`
-	Description           *string    `json:"description,omitempty"`
-	ExpectedMonthlyAmount float64    `json:"expected_monthly_amount"`
-	Frequency             string     `json:"frequency"`
-	NextDueDate           *time.Time `json:"next_due_date,omitempty"`
-	IsActive              *bool      `json:"is_active,omitempty"`
-}
-
-type UpdateIncomeSourceInput struct {
-	Name                  *string    `json:"name,omitempty"`
-	Description           *string    `json:"description,omitempty"`
-	ExpectedMonthlyAmount *float64   `json:"expected_monthly_amount,omitempty"`
-	Frequency             *string    `json:"frequency,omitempty"`
-	NextDueDate           *time.Time `json:"next_due_date,omitempty"`
-	IsActive              *bool      `json:"is_active,omitempty"`
-}
-
-type CreateCategoryInput struct {
-	BudgetID    string  `json:"budget_id"`
-	Name        string  `json:"name"`
-	Description *string `json:"description,omitempty"`
-	Color       *string `json:"color,omitempty"`
-	Icon        *string `json:"icon,omitempty"`
-	IsActive    *bool   `json:"is_active,omitempty"`
-}
-
-type UpdateCategoryInput struct {
-	Name        *string `json:"name,omitempty"`
-	Description *string `json:"description,omitempty"`
-	Color       *string `json:"color,omitempty"`
-	Icon        *string `json:"icon,omitempty"`
-	IsActive    *bool   `json:"is_active,omitempty"`
-}
-
-type CreateEnvelopeInput struct {
-	BudgetID          string   `json:"budget_id"`
-	CategoryID        string   `json:"category_id"`
-	Name              string   `json:"name"`
-	Description       *string  `json:"description,omitempty"`
-	TargetAmount      float64  `json:"target_amount"`
-	FillFrequency     string   `json:"fill_frequency"`
-	FillAmount        float64  `json:"fill_amount"`
-	AutoFillEnabled   *bool    `json:"auto_fill_enabled,omitempty"`
-	OverspendAllowed  *bool    `json:"overspend_allowed,omitempty"`
-	NotificationLimit *float64 `json:"notification_limit,omitempty"`
-	IsActive          *bool    `json:"is_active,omitempty"`
-}
-
-type UpdateEnvelopeInput struct {
-	Name              *string  `json:"name,omitempty"`
-	Description       *string  `json:"description,omitempty"`
-	TargetAmount      *float64 `json:"target_amount,omitempty"`
-	FillFrequency     *string  `json:"fill_frequency,omitempty"`
-	FillAmount        *float64 `json:"fill_amount,omitempty"`
-	AutoFillEnabled   *bool    `json:"auto_fill_enabled,omitempty"`
-	OverspendAllowed  *bool    `json:"overspend_allowed,omitempty"`
-	NotificationLimit *float64 `json:"notification_limit,omitempty"`
-	IsActive          *bool    `json:"is_active,omitempty"`
-}
-
-type CreatePayeeInput struct {
-	BudgetID        string  `json:"budget_id"`
-	Name            string  `json:"name"`
-	Description     *string `json:"description,omitempty"`
-	DefaultCategory *string `json:"default_category,omitempty"`
-	IsActive        *bool   `json:"is_active,omitempty"`
-}
-
-type UpdatePayeeInput struct {
-	Name            *string `json:"name,omitempty"`
-	Description     *string `json:"description,omitempty"`
-	DefaultCategory *string `json:"default_category,omitempty"`
-	IsActive        *bool   `json:"is_active,omitempty"`
-}
-
-// Login/Register inputs
-type LoginInput struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
-type RegisterInput struct {
-	Email       string  `json:"email"`
-	Password    string  `json:"password"`
-	DisplayName *string `json:"display_name,omitempty"`
-}
-
-type LoginResponse struct {
-	User    *User    `json:"user"`
-	Session *Session `json:"session"`
-}
-
-type Session struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
-	ExpiresIn    int    `json:"expires_in"`
-	TokenType    string `json:"token_type"`
-}
-
-// Health check response
-type HealthCheckResponse struct {
-	Status    string    `json:"status"`
-	Timestamp time.Time `json:"timestamp"`
-}
+// Import error functions
+var NewAuthenticationError = types.NewAuthenticationError
+var NewAuthorizationError = types.NewAuthorizationError
+var NewValidationError = types.NewValidationError
+var NewNotFoundError = types.NewNotFoundError
+var NewNetworkError = types.NewNetworkError
+var NewServerError = types.NewServerError
+var NewConflictError = types.NewConflictError
+var NewRateLimitError = types.NewRateLimitError
+var NewTimeoutError = types.NewTimeoutError
+var MapHTTPStatusToError = types.MapHTTPStatusToError

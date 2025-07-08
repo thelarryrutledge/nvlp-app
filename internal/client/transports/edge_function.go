@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/thelarryrutledge/nvlp-app/internal/client"
+	"github.com/thelarryrutledge/nvlp-app/internal/types"
 )
 
 // EdgeFunctionTransport implements the Transport interface for Edge Functions
@@ -21,7 +21,7 @@ type EdgeFunctionTransport struct {
 }
 
 // NewEdgeFunctionTransport creates a new Edge Function transport
-func NewEdgeFunctionTransport(config *client.NVLPClientConfig) *EdgeFunctionTransport {
+func NewEdgeFunctionTransport(config *types.NVLPClientConfig) *EdgeFunctionTransport {
 	baseURL := config.SupabaseURL + "/functions/v1"
 	if config.APIBaseURL != "" {
 		baseURL = config.APIBaseURL + "/functions/v1"
@@ -47,7 +47,7 @@ func (e *EdgeFunctionTransport) SetAuth(token string) {
 }
 
 // Request performs an HTTP request to an Edge Function
-func (e *EdgeFunctionTransport) Request(method, endpoint string, data interface{}, options *client.RequestOptions) (*client.APIResponse, error) {
+func (e *EdgeFunctionTransport) Request(method, endpoint string, data interface{}, options *types.RequestOptions) (*types.APIResponse, error) {
 	// Build URL
 	fullURL := e.baseURL + "/" + strings.TrimPrefix(endpoint, "/")
 	

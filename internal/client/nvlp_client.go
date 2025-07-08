@@ -866,56 +866,7 @@ func (c *NVLPClient) DeletePayee(id string) error {
 // Transaction Methods (Edge Functions)
 // ===========================================
 
-// Transaction represents a transaction for Edge Function operations
-type Transaction struct {
-	ID              string    `json:"id"`
-	BudgetID        string    `json:"budget_id"`
-	Type            string    `json:"type"`
-	Amount          float64   `json:"amount"`
-	Description     string    `json:"description"`
-	Date            time.Time `json:"date"`
-	FromEnvelopeID  *string   `json:"from_envelope_id"`
-	ToEnvelopeID    *string   `json:"to_envelope_id"`
-	PayeeID         *string   `json:"payee_id"`
-	IncomeSourceID  *string   `json:"income_source_id"`
-	CategoryID      *string   `json:"category_id"`
-	IsRecurring     bool      `json:"is_recurring"`
-	RecurrenceRule  *string   `json:"recurrence_rule"`
-	Tags            []string  `json:"tags"`
-	CreatedAt       time.Time `json:"created_at"`
-	UpdatedAt       time.Time `json:"updated_at"`
-}
-
-type CreateTransactionInput struct {
-	BudgetID        string    `json:"budget_id"`
-	Type            string    `json:"type"`
-	Amount          float64   `json:"amount"`
-	Description     string    `json:"description"`
-	Date            time.Time `json:"date"`
-	FromEnvelopeID  *string   `json:"from_envelope_id,omitempty"`
-	ToEnvelopeID    *string   `json:"to_envelope_id,omitempty"`
-	PayeeID         *string   `json:"payee_id,omitempty"`
-	IncomeSourceID  *string   `json:"income_source_id,omitempty"`
-	CategoryID      *string   `json:"category_id,omitempty"`
-	IsRecurring     *bool     `json:"is_recurring,omitempty"`
-	RecurrenceRule  *string   `json:"recurrence_rule,omitempty"`
-	Tags            []string  `json:"tags,omitempty"`
-}
-
-type UpdateTransactionInput struct {
-	Type            *string    `json:"type,omitempty"`
-	Amount          *float64   `json:"amount,omitempty"`
-	Description     *string    `json:"description,omitempty"`
-	Date            *time.Time `json:"date,omitempty"`
-	FromEnvelopeID  *string    `json:"from_envelope_id,omitempty"`
-	ToEnvelopeID    *string    `json:"to_envelope_id,omitempty"`
-	PayeeID         *string    `json:"payee_id,omitempty"`
-	IncomeSourceID  *string    `json:"income_source_id,omitempty"`
-	CategoryID      *string    `json:"category_id,omitempty"`
-	IsRecurring     *bool      `json:"is_recurring,omitempty"`
-	RecurrenceRule  *string    `json:"recurrence_rule,omitempty"`
-	Tags            []string   `json:"tags,omitempty"`
-}
+// Transaction methods use shared types from /internal/types/
 
 // GetTransactions retrieves transactions using Edge Function
 func (c *NVLPClient) GetTransactions(budgetID string, params map[string]interface{}) ([]Transaction, error) {
@@ -1048,63 +999,7 @@ func (c *NVLPClient) DeleteTransaction(id string) error {
 // Dashboard Methods (Edge Functions)
 // ===========================================
 
-type DashboardData struct {
-	BudgetOverview    *BudgetOverview    `json:"budget_overview"`
-	EnvelopeSummary   []EnvelopeSummary  `json:"envelope_summary"`
-	RecentTransactions []Transaction     `json:"recent_transactions"`
-	SpendingAnalysis  *SpendingAnalysis  `json:"spending_analysis"`
-	IncomeVsExpenses  *IncomeVsExpenses  `json:"income_vs_expenses"`
-}
-
-type BudgetOverview struct {
-	BudgetID        string  `json:"budget_id"`
-	BudgetName      string  `json:"budget_name"`
-	TotalIncome     float64 `json:"total_income"`
-	TotalExpenses   float64 `json:"total_expenses"`
-	AvailableAmount float64 `json:"available_amount"`
-	LastUpdated     time.Time `json:"last_updated"`
-}
-
-type EnvelopeSummary struct {
-	EnvelopeID      string  `json:"envelope_id"`
-	Name            string  `json:"name"`
-	CurrentBalance  float64 `json:"current_balance"`
-	TargetAmount    float64 `json:"target_amount"`
-	PercentFull     float64 `json:"percent_full"`
-	CategoryName    string  `json:"category_name"`
-}
-
-type SpendingAnalysis struct {
-	TopCategories    []CategorySpending `json:"top_categories"`
-	MonthlyTrend     []MonthlySpending  `json:"monthly_trend"`
-	BudgetUtilization float64           `json:"budget_utilization"`
-}
-
-type CategorySpending struct {
-	CategoryID   string  `json:"category_id"`
-	CategoryName string  `json:"category_name"`
-	Amount       float64 `json:"amount"`
-	Percentage   float64 `json:"percentage"`
-}
-
-type MonthlySpending struct {
-	Month  string  `json:"month"`
-	Amount float64 `json:"amount"`
-}
-
-type IncomeVsExpenses struct {
-	TotalIncome   float64            `json:"total_income"`
-	TotalExpenses float64            `json:"total_expenses"`
-	NetAmount     float64            `json:"net_amount"`
-	IncomeBySource []IncomeBySource  `json:"income_by_source"`
-	ExpensesByCategory []CategorySpending `json:"expenses_by_category"`
-}
-
-type IncomeBySource struct {
-	SourceID   string  `json:"source_id"`
-	SourceName string  `json:"source_name"`
-	Amount     float64 `json:"amount"`
-}
+// Dashboard types are imported from /internal/types/
 
 // GetDashboard retrieves dashboard data for a budget
 func (c *NVLPClient) GetDashboard(budgetID string, params map[string]interface{}) (*DashboardData, error) {
@@ -1129,12 +1024,7 @@ func (c *NVLPClient) GetDashboard(budgetID string, params map[string]interface{}
 // Reporting Methods (Edge Functions)
 // ===========================================
 
-type ReportData struct {
-	ReportType   string                 `json:"report_type"`
-	GeneratedAt  time.Time              `json:"generated_at"`
-	Parameters   map[string]interface{} `json:"parameters"`
-	Data         interface{}            `json:"data"`
-}
+// Report types are imported from /internal/types/
 
 // GetTransactionReport generates a transaction report
 func (c *NVLPClient) GetTransactionReport(budgetID string, params map[string]interface{}) (*ReportData, error) {
@@ -1221,14 +1111,7 @@ func (c *NVLPClient) GetIncomeExpenseReport(budgetID string, params map[string]i
 // Export Methods (Edge Functions)
 // ===========================================
 
-type ExportData struct {
-	ExportType  string    `json:"export_type"`
-	Format      string    `json:"format"`
-	GeneratedAt time.Time `json:"generated_at"`
-	Filename    string    `json:"filename"`
-	Data        interface{} `json:"data"`
-	DownloadURL *string   `json:"download_url,omitempty"`
-}
+// Export types are imported from /internal/types/
 
 // ExportTransactions exports transaction data
 func (c *NVLPClient) ExportTransactions(budgetID, format string, params map[string]interface{}) (*ExportData, error) {
@@ -1290,18 +1173,7 @@ func (c *NVLPClient) ExportBudget(budgetID, format string, params map[string]int
 // Audit Methods (Edge Functions)
 // ===========================================
 
-type AuditEvent struct {
-	ID           string                 `json:"id"`
-	BudgetID     string                 `json:"budget_id"`
-	UserID       string                 `json:"user_id"`
-	EventType    string                 `json:"event_type"`
-	ResourceType string                 `json:"resource_type"`
-	ResourceID   string                 `json:"resource_id"`
-	Action       string                 `json:"action"`
-	Changes      map[string]interface{} `json:"changes"`
-	Metadata     map[string]interface{} `json:"metadata"`
-	CreatedAt    time.Time              `json:"created_at"`
-}
+// Audit types are imported from /internal/types/
 
 // GetAuditEvents retrieves audit events
 func (c *NVLPClient) GetAuditEvents(budgetID string, params map[string]interface{}) ([]AuditEvent, error) {
@@ -1337,22 +1209,7 @@ func (c *NVLPClient) GetAuditEvents(budgetID string, params map[string]interface
 // Notification Methods (Edge Functions)
 // ===========================================
 
-type Notification struct {
-	ID            string                 `json:"id"`
-	BudgetID      string                 `json:"budget_id"`
-	UserID        string                 `json:"user_id"`
-	Type          string                 `json:"type"`
-	Title         string                 `json:"title"`
-	Message       string                 `json:"message"`
-	Severity      string                 `json:"severity"`
-	ResourceType  *string                `json:"resource_type"`
-	ResourceID    *string                `json:"resource_id"`
-	Data          map[string]interface{} `json:"data"`
-	IsRead        bool                   `json:"is_read"`
-	IsAcknowledged bool                  `json:"is_acknowledged"`
-	CreatedAt     time.Time              `json:"created_at"`
-	ExpiresAt     *time.Time             `json:"expires_at"`
-}
+// Notification types are imported from /internal/types/
 
 // GetNotifications retrieves notifications
 func (c *NVLPClient) GetNotifications(budgetID string, params map[string]interface{}) ([]Notification, error) {

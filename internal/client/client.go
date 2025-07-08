@@ -2,14 +2,16 @@ package client
 
 import (
 	"time"
+	
+	"github.com/thelarryrutledge/nvlp-app/internal/types"
 )
 
 // Client package provides the main entry point for the NVLP Go client library
 // This file serves as the package's main export interface
 
 // DefaultConfig returns a default configuration for the NVLP client
-func DefaultConfig() *NVLPClientConfig {
-	return &NVLPClientConfig{
+func DefaultConfig() *types.NVLPClientConfig {
+	return &types.NVLPClientConfig{
 		Transport:        "postgrest",
 		Timeout:          30 * time.Second,
 		Retries:          3,

@@ -285,6 +285,16 @@ Income Sources → available_amount (user_state) → Envelopes → Payees
 - Shared type system in `/internal/types/` to avoid import cycles
 - Full compatibility with TypeScript client authentication patterns
 
+**Complete Type System & Error Handling**: ✅
+- Comprehensive domain types in `/internal/types/domain.go` (all entities)
+- Input types for CRUD operations in `/internal/types/inputs.go`
+- Transport interfaces and API types in `/internal/types/transport.go`
+- Full error hierarchy with HTTP status mapping in `/internal/types/errors.go`
+- Custom error types: Authentication, Authorization, Validation, NotFound, Network, Server, Conflict, RateLimit, Timeout
+- Error utility functions: retry detection, status extraction, code mapping
+- Type aliases in client package to maintain clean API surface
+- All types match TypeScript client for full compatibility
+
 ## Environment
 - **Working Directory**: /Users/larryrutledge/Projects/nvlp-app
 - **Git Status**: Clean, ahead of origin by commits
