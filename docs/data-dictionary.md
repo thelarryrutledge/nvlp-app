@@ -130,6 +130,8 @@ Sources of income for budgeting and tracking.
 | should_notify | BOOLEAN | DEFAULT false | Enable notifications |
 | frequency | income_frequency | DEFAULT 'monthly' | Income frequency |
 | custom_day | INTEGER | | Day of month for custom frequency |
+| weekly_day | INTEGER | | Day of week (0=Sunday, 6=Saturday) for weekly/bi_weekly |
+| monthly_day | INTEGER | | Day of month (1-31) for monthly frequency |
 | next_expected_date | DATE | | Next expected income date |
 | created_at | TIMESTAMPTZ | DEFAULT NOW() | Record creation timestamp |
 | updated_at | TIMESTAMPTZ | DEFAULT NOW() | Last update timestamp |
@@ -139,6 +141,10 @@ Sources of income for budgeting and tracking.
 - `income_sources_amount_positive`: Expected amount must be positive
 - `income_sources_custom_day_valid`: Custom day must be 1-31
 - `income_sources_custom_day_required`: Custom day required when frequency is 'custom'
+- `income_sources_weekly_day_valid`: Weekly day must be 0-6
+- `income_sources_weekly_day_required`: Weekly day required when frequency is 'weekly' or 'bi_weekly'
+- `income_sources_monthly_day_valid`: Monthly day must be 1-31
+- `income_sources_monthly_day_required`: Monthly day required when frequency is 'monthly'
 - `income_sources_unique_name_per_budget`: Unique name per budget
 
 ---

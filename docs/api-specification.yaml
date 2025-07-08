@@ -1252,6 +1252,17 @@ components:
           type: integer
           minimum: 1
           maximum: 31
+          description: Day of month for custom frequency
+        weekly_day:
+          type: integer
+          minimum: 0
+          maximum: 6
+          description: Day of week (0=Sunday, 6=Saturday) for weekly/bi_weekly frequency
+        monthly_day:
+          type: integer
+          minimum: 1
+          maximum: 31
+          description: Day of month for monthly frequency
         next_expected_date:
           type: string
           format: date
@@ -1281,6 +1292,21 @@ components:
           enum: [weekly, bi_weekly, twice_monthly, monthly, annually, custom, one_time]
         should_notify:
           type: boolean
+        custom_day:
+          type: integer
+          minimum: 1
+          maximum: 31
+          description: Required for custom frequency
+        weekly_day:
+          type: integer
+          minimum: 0
+          maximum: 6
+          description: Required for weekly/bi_weekly frequency
+        monthly_day:
+          type: integer
+          minimum: 1
+          maximum: 31
+          description: Required for monthly frequency
 
     Payee:
       type: object
