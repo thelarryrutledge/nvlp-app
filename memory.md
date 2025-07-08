@@ -1,397 +1,86 @@
-# NVLP Project Memory - Consolidated
-
-## Core Setup
-- **Supabase Project**: qnpatlosomopoimtsmsr
-- **Test Users**: larryjrutledge@gmail.com & larry@mariomurillo.org / Test1234!
-- **Architecture**: Hybrid PostgREST Direct + Edge Functions
-- **Custom Domains**: 
-  - **Edge Functions**: edge-api.nvlp.app (for complex operations)
-  - **PostgREST**: db-api.nvlp.app (for CRUD operations)
-- **Direct URLs** (fallback):
-  - **PostgREST**: https://qnpatlosomopoimtsmsr.supabase.co/rest/v1
-  - **Edge Functions**: https://qnpatlosomopoimtsmsr.supabase.co/functions/v1
+# NVLP Project Memory
 
 ## Current Status: Phase 4 Task 11 Complete ✅
-**Backend**: 100% feature-complete, production-ready
-**Go Client Library**: 100% complete with comprehensive testing and documentation
-**Next Phase**: Phase 4 Task 12 - CLI Foundation (Go)
+**Next**: Phase 4 Task 12 - CLI Foundation (Go)
 
-## Architecture Overview
+## Core Setup
+- **Supabase Project**: qnpatlosomopoimtsmsr  
+- **Test User**: larryjrutledge@gmail.com / Test1234!
+- **Custom Domains**: 
+  - Edge Functions: edge-api.nvlp.app
+  - PostgREST: db-api.nvlp.app
+- **Fallback URLs**:
+  - PostgREST: https://qnpatlosomopoimtsmsr.supabase.co/rest/v1
+  - Edge Functions: https://qnpatlosomopoimtsmsr.supabase.co/functions/v1
 
-### Authentication (Edge Functions)
-- **Endpoints**: register, login, logout, refresh, password reset
-- **Security**: JWT tokens, proper validation, CORS, security headers
-- **Location**: /supabase/functions/auth/
-- **Status**: Production ready ✅
+## Architecture (Production Ready)
+- **Database**: 11 tables with RLS, triggers, comprehensive constraints
+- **PostgREST**: Direct CRUD (user_profiles, budgets, categories, envelopes, payees, income_sources)
+- **Edge Functions**: Complex logic (auth, transactions, dashboard, reports, export, audit, notifications)
+- **Authentication**: JWT tokens with proper validation
+- **Caching**: TTL-based system with 70-80% performance improvement
 
-### Database Schema (11 Tables)
-**Core Tables**: user_profiles, budgets, categories, envelopes, payees, income_sources, transactions
-**System Tables**: transaction_events (audit), user_state (balances), notification_acknowledgments
-**Features**: RLS policies, triggers, auto-calculations, soft deletes, comprehensive constraints
-**Performance**: Proper indexes, optimized queries
-**Status**: Production ready ✅
-
-### API Layer Architecture
-
-#### PostgREST Direct (Fast CRUD)
-- **URL**: https://qnpatlosomopoimtsmsr.supabase.co/rest/v1
-- **Auth**: JWT + API key pattern
-- **Performance**: 139-214ms response times
-- **Endpoints**: user_profiles, budgets, categories, envelopes, payees, income_sources
-- **Usage**: Simple CRUD operations, filtering, pagination
-- **RLS**: All data properly isolated by user/budget
-
-#### Edge Functions (Complex Logic)
-- **URL**: https://qnpatlosomopoimtsmsr.supabase.co/functions/v1
-- **Performance**: 300-950ms (acceptable with caching)
-- **Functions**: auth, transactions, dashboard, reports, export, audit, notifications
-- **Features**: Business logic validation, complex aggregations, data exports
-
-### Transaction System (Edge Function)
-- **Types**: income, allocation, expense, transfer, debt_payment
-- **Validation**: Type-specific rules, resource ownership, balance checks
-- **Features**: CRUD operations, automatic balance updates, audit trail
-- **Testing**: 18 test cases, 100% pass rate
-- **Location**: /supabase/functions/transactions/
-
-### Advanced Features APIs
-
-#### Dashboard API (/dashboard)
-- **Data**: Budget overview, envelope summary, recent transactions, spending analysis, income vs expenses
-- **Performance**: Complex aggregation, parallel queries
-- **Caching**: 5-minute TTL, 70-80% performance improvement
-- **Testing**: Multi-user validated
-
-#### Reporting APIs (/reports)
-- **Endpoints**: transactions, category-trends, income-expense, envelope-history, budget-performance
-- **Features**: Date filtering, grouping, pagination, export-ready data
-- **Caching**: 10-15 minute TTL based on volatility
-- **Testing**: 13 test cases, 100% pass rate
-
-#### Data Export (/export)
-- **Formats**: CSV, JSON with proper escaping
-- **Exports**: transactions, complete budget, individual entities
-- **Features**: Date filtering, automatic file naming
-- **Testing**: 19 test cases, 100% pass rate
-
-#### Audit Trail (/audit)
-- **Features**: Transaction event history, user activity tracking, filtering
-- **Storage**: transaction_events table with comprehensive logging
-- **Testing**: 14 test cases, 100% pass rate
-
-#### Notifications (/notifications)
-- **Types**: income due/overdue, envelope thresholds, overbudget alerts, old transactions
-- **Features**: Timezone support, acknowledgment system, smart filtering
-- **Storage**: notification_acknowledgments table
-- **Testing**: Core functionality validated
-
-### Caching System ✅
-- **Implementation**: Shared cache utility (/supabase/functions/_shared/cache.ts)
-- **Features**: TTL-based, automatic cleanup, invalidation patterns
-- **Performance Impact**: 70-80% improvement for cached endpoints
-- **Cache TTLs**: Dashboard (5min), Reports (10-15min), Components (2-3min)
-- **Invalidation**: Automatic on transaction changes, budget-scoped patterns
-- **Testing**: Comprehensive cache performance test suite
-
-### Performance Analysis ✅
-- **PostgREST**: Excellent (139-214ms)
-- **Edge Functions**: Acceptable (300-950ms, much faster with cache)
-- **Database**: Well-optimized with proper indexes
-- **Scalability**: Current architecture handles datasets efficiently
-- **Testing**: Multiple performance test scripts created
-- **Documentation**: Complete performance analysis in /docs/PERFORMANCE_ANALYSIS.md
-
-## Client Libraries
-
-### TypeScript Client (/src/client/) ✅
-- **Architecture**: Dual transport (PostgREST + Edge Functions)
-- **Features**: Complete auth management, token persistence, auto-refresh
-- **Files**: nvlp-client.ts, token-manager.ts, transports/, types.ts, errors.ts
-- **Status**: Production-ready, comprehensive testing
-- **Usage**: Future web/Node.js integrations
-
-## Documentation ✅
-
-### API Documentation
-- **OpenAPI Spec**: /docs/api-specification.yaml (comprehensive, production-ready)
-- **Data Dictionary**: /docs/data-dictionary.md (all schemas, constraints, relationships)
-- **Performance Analysis**: /docs/PERFORMANCE_ANALYSIS.md
-- **Caching Implementation**: /docs/CACHING_IMPLEMENTATION.md
-
-### Legacy Docs Removed
-- Consolidated from 7 individual API docs into single OpenAPI spec
-- Maintains AUTH_QUICK_REFERENCE.md, RLS_POLICIES.md for implementation details
-
-## Testing Infrastructure ✅
-
-### Test Scripts (/scripts/)
-**Core**: login-and-save-token.sh (auth), working-performance-test.sh (performance)
-**Performance**: test-caching-performance.sh (cache validation), performance-analysis.sh (large datasets)
-**API Testing**: Individual function test scripts for all endpoints
-**Results**: 118/119 tests passed (99.2% success rate) across all APIs
-
-### Test Results Summary
-- **Profile API**: 15/15 ✅
-- **Budget API**: 15/15 ✅ 
-- **Income Sources API**: 17/17 ✅
-- **Categories API**: 19/19 ✅
-- **Envelopes API**: 23/23 ✅
-- **Payees API**: 24/24 ✅
-- **Transaction System**: 18/18 ✅
-- **Advanced Features**: All endpoints tested and validated
-
-## Key Implementation Patterns
-
-### Authentication Pattern
+## Auth Patterns
 ```bash
-# Get token
-curl -X POST "https://qnpatlosomopoimtsmsr.supabase.co/functions/v1/auth/login" \
+# Login (Edge Function)
+curl -X POST "https://edge-api.nvlp.app/auth/login" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {ANON_KEY}" \
   -d '{"email":"user@example.com","password":"password"}'
 
-# Use token
+# PostgREST CRUD
 curl -H "Authorization: Bearer {ACCESS_TOKEN}" \
      -H "apikey: {ANON_KEY}" \
-     "https://qnpatlosomopoimtsmsr.supabase.co/rest/v1/budgets"
+     "https://db-api.nvlp.app/budgets"
 ```
 
-### PostgREST Patterns
-- **URL**: /rest/v1/{table}
-- **Auth**: Bearer token + apikey header
-- **Filtering**: ?column=eq.value, ?budget_id=eq.{id}
-- **Pagination**: ?limit=50&offset=100
-- **Selection**: ?select=id,name,description
-- **Ordering**: ?order=name.asc
-- **RLS**: Automatic user isolation
+## Go Client Library ✅ (Complete)
+**Location**: `/internal/client/`, `/internal/types/`, `/internal/auth/`
 
-### Edge Function Patterns
-- **URL**: /functions/v1/{function}
-- **Auth**: Bearer token only
-- **Response**: {success: boolean, data/error: object}
-- **Caching**: Automatic with TTL
-- **Validation**: Comprehensive business rules
+### Key Files
+- `internal/client/nvlp_client.go` - Main client
+- `internal/client/transports/postgrest.go` - CRUD operations  
+- `internal/client/transports/edge_function.go` - Business logic
+- `internal/auth/token_manager.go` - Token persistence (~/.nvlp/auth.json)
+- `internal/types/` - Complete type system (domain, inputs, transport, errors, auth)
 
-## Database Money Flow
-```
-Income Sources → available_amount (user_state) → Envelopes → Payees
-```
-**Transaction Types**: income (adds to available), allocation (available→envelope), expense (envelope→payee), transfer (envelope→envelope), debt_payment (envelope→payee)
-
-## Go Client Library ✅ (Phase 4 Task 11 Complete)
-
-### Architecture
-- **Dual Transport**: PostgREST (CRUD) + Edge Functions (complex logic)
-- **Custom Domains**: edge-api.nvlp.app + db-api.nvlp.app
-- **Authentication**: JWT token management with auto-refresh and persistence
-- **Error Handling**: Comprehensive typed error system
-- **Type Safety**: Complete Go type definitions matching database schema
-
-### Key Features
-- **Authentication Management**: Login, token persistence (~/.nvlp/auth.json), auto-refresh
-- **CRUD Operations**: All database tables via PostgREST transport
-- **Business Logic**: Transactions, dashboard, reports via Edge Function transport
-- **Error Types**: AuthenticationError, ValidationError, NetworkError, etc.
-- **Configuration**: Environment variables + programmatic config
-- **Testing**: Comprehensive test suite with real API validation
-
-### File Structure
-```
-/internal/client/
-├── README.md                    # Package documentation
-├── doc.go                       # GoDoc package description
-├── types.go                     # Type aliases from shared types
-├── nvlp_client.go              # Main client implementation
-├── client.go                    # Client interface
-└── transports/
-    ├── postgrest.go            # PostgREST transport
-    └── edge_function.go        # Edge Function transport
-
-/internal/types/                 # Shared type definitions
-├── domain.go                   # Database entities
-├── inputs.go                   # CRUD input types
-├── transport.go                # Transport interfaces
-├── errors.go                   # Error types
-└── auth.go                     # Authentication types
-
-/internal/auth/                  # Token management
-└── token_manager.go            # JWT token persistence
-
-/docs/
-└── go-client-library.md        # Complete usage documentation
-
-/examples/go-client/            # Practical examples
-├── basic-usage.go              # Authentication and basic operations
-├── complete-workflow.go        # Full budget setup demonstration
-└── error-handling.go           # Error handling patterns
-```
-
-### Usage Pattern
-```go
-config := &client.NVLPClientConfig{
-    SupabaseURL:     "https://project.supabase.co",
-    SupabaseAnonKey: "anon-key",
-    APIBaseURL:      "https://edge-api.nvlp.app",  // Edge Functions
-    DBApiURL:        "https://db-api.nvlp.app",    // PostgREST
-    PersistTokens:   true,
-    AutoRefresh:     true,
-}
-
-nvlpClient := client.NewNVLPClient(config)
-loginResponse, err := nvlpClient.Login("user@example.com", "password")
-budgets, err := nvlpClient.GetBudgets(client.QueryParams{})
-```
+### Fixed Issues
+- **Edge Function Response Format**: Fixed transport to handle auth responses without "data" wrapper
+- **Import Cycles**: Resolved with shared types package
+- **Custom Domains**: Both domains working correctly
 
 ### Testing Results
-- **Authentication**: ✅ Working (login, logout, token persistence)
-- **PostgREST Operations**: ✅ All CRUD operations functional
-- **Edge Functions**: ✅ Complex operations working
-- **Token Management**: ✅ Automatic persistence and refresh
-- **Error Handling**: ✅ Comprehensive error type system
-- **Custom Domains**: ✅ Both domains operational
-- **Real Data Testing**: ✅ Found 3 budgets, 10 categories, 8 envelopes, 2 income sources, 12 payees
+- Authentication, CRUD, Edge Functions, Token persistence all working
+- Real data validation: 3 budgets, 10 categories, 8 envelopes, 2 income sources, 12 payees
+- Comprehensive error handling with typed errors
 
-### Documentation Status
-- **Complete API Guide**: docs/go-client-library.md (400+ lines)
-- **Package Documentation**: internal/client/doc.go (GoDoc compatible)
-- **Quick Start Guide**: internal/client/README.md
-- **Working Examples**: examples/go-client/ (3 comprehensive examples)
-- **Error Handling Guide**: Complete error type documentation
+### Documentation  
+- `docs/go-client-library.md` - Complete API guide
+- `internal/client/README.md` - Package documentation
+- `examples/go-client/` - Working examples
 
-## Critical File Locations
+## Database Schema Notes
+**Money Flow**: Income Sources → available_amount (user_state) → Envelopes → Payees
+**Transaction Types**: income, allocation, expense, transfer, debt_payment
 
-### Database
-- **Migrations**: /supabase/migrations/ (11 migration files)
-- **Schema**: Complete in data-dictionary.md
+## Critical Files for CLI Development
+- `/supabase/functions/` - All Edge Functions (production ready)
+- `/scripts/test-custom-domains.sh` - Domain validation
+- `test_go_client_comprehensive.go` - Client library test
+- `.env.example` - Environment configuration
 
-### APIs
-- **Edge Functions**: /supabase/functions/{auth,transactions,dashboard,reports,export,audit,notifications}/
-- **Shared Utils**: /supabase/functions/_shared/cache.ts
-
-### Documentation
-- **/docs/**: All production documentation
-- **API Spec**: api-specification.yaml
-- **Data Dictionary**: data-dictionary.md
-- **Performance**: PERFORMANCE_ANALYSIS.md
-- **Caching**: CACHING_IMPLEMENTATION.md
-
-### Client Libraries
-- **TypeScript**: /src/client/ (complete implementation)
-- **Go**: /internal/client/ (complete implementation with testing and documentation)
-
-### Testing
-- **/scripts/**: All test scripts
-- **Key Scripts**: login-and-save-token.sh, working-performance-test.sh, test-caching-performance.sh
-
-## Production Readiness Status ✅
-
-### Backend APIs
-- **Authentication**: Production ready
-- **Database**: Production ready with RLS, triggers, constraints
-- **CRUD APIs**: Production ready (PostgREST)
-- **Business Logic**: Production ready (Edge Functions)
-- **Performance**: Optimized with caching (70-80% improvement)
-- **Security**: Comprehensive (RLS, JWT, CORS, headers)
-- **Testing**: Extensive test coverage (99.2% pass rate)
-- **Documentation**: Complete OpenAPI specification
-
-### Deployment
-- **Supabase**: Fully deployed and functional
-- **Edge Functions**: All 7 functions deployed and tested
-- **Database**: All tables, RLS, triggers active
-- **Custom Domain**: Configured (may need verification)
-
-## Next Phase: Phase 4 - CLI Development
-
-### Planned Go Implementation
-- **Task 11**: Go Client Library (port from TypeScript) - IN PROGRESS
-- **Task 12**: CLI Foundation (cobra/viper)
-- **Task 13**: Basic CLI Commands (auth, config)
-- **Task 14**: Business Logic Commands (budgets, transactions, dashboard)
-
-### Key Requirements
-- Port TypeScript client architecture to Go
-- Implement token persistence (~/.nvlp/)
-- Create cobra-based CLI with colored output
-- Support all current API operations
-- Maintain same authentication patterns
-
-### Go Client Library Structure ✅
-**Location**: `/internal/client/` and `/internal/auth/`
-**Architecture**: Matches TypeScript client with dual transport pattern
-**Key Files**:
-- `types.go` - All type definitions (mirrors TypeScript types)
-- `errors.go` - Custom error types with HTTP status mapping
-- `nvlp_client.go` - Main client implementation
-- `client.go` - Package entry point with defaults
-- `transports/postgrest.go` - PostgREST transport layer
-- `transports/edge_function.go` - Edge Function transport layer
-- `auth/token_manager.go` - Token persistence (~/.nvlp/auth.json)
-- `config/config.go` - Configuration management (viper)
-- `cmd/nvlp/main.go` - CLI entry point (cobra)
-- `go.mod` - Go module with required dependencies
-
-**Dependencies**:
-- `github.com/spf13/cobra` - CLI framework
-- `github.com/spf13/viper` - Configuration management
-- `github.com/fatih/color` - Colored output
-- `github.com/AlecAivazis/survey/v2` - Interactive prompts
-- `github.com/golang-jwt/jwt/v5` - JWT token handling
-
-**Token Storage**: `~/.nvlp/auth.json` (same pattern as TypeScript client)
-
-**PostgREST Transport Implementation**: ✅
-- Complete CRUD operations for all resource types (profiles, budgets, income sources, categories, envelopes, payees)
-- Query parameter handling with PostgREST filtering (eq., select, limit, order)
-- Authentication via Bearer token + apikey headers
-- Error handling with HTTP status code mapping
-- JSON request/response parsing with proper type conversion
-- URL query building for GET requests with filters
-- Prefer header support for POST/PATCH operations
-
-**Edge Function Transport Implementation**: ✅
-- Complete transaction system with CRUD operations
-- Dashboard API with budget overview, envelope summary, spending analysis
-- Reporting APIs (transaction reports, category trends, income vs expenses)
-- Export functionality (transactions, budget data) with CSV/JSON formats
-- Audit trail with event tracking and filtering
-- Notification system with acknowledgment support
-- All complex business logic operations via Edge Functions
-- Matches TypeScript client Edge Function patterns
-
-**Authentication Management & Token Persistence**: ✅
-- Token storage in `~/.nvlp/auth.json` with secure permissions (0600)
-- JWT token parsing and validation using `github.com/golang-jwt/jwt/v5`
-- Automatic token refresh detection (5-minute threshold)
-- Cross-platform home directory detection
-- Complete error handling and recovery
-- Session restoration on client initialization
-- Shared type system in `/internal/types/` to avoid import cycles
-- Full compatibility with TypeScript client authentication patterns
-
-**Complete Type System & Error Handling**: ✅
-- Comprehensive domain types in `/internal/types/domain.go` (all entities)
-- Input types for CRUD operations in `/internal/types/inputs.go`
-- Transport interfaces and API types in `/internal/types/transport.go`
-- Full error hierarchy with HTTP status mapping in `/internal/types/errors.go`
-- Custom error types: Authentication, Authorization, Validation, NotFound, Network, Server, Conflict, RateLimit, Timeout
-- Error utility functions: retry detection, status extraction, code mapping
-- Type aliases in client package to maintain clean API surface
-- All types match TypeScript client for full compatibility
+## Known Working Patterns
+- **PostgREST**: `?column=eq.value`, `?select=`, `?limit=`, `?order=`
+- **Edge Functions**: `{success: boolean, data/error: object}` response format
+- **Token Storage**: `~/.nvlp/auth.json` with 0600 permissions
+- **Custom Domain Routing**: Vercel rewrites handle domain separation
 
 ## Environment
 - **Working Directory**: /Users/larryrutledge/Projects/nvlp-app
-- **Git Status**: Clean, ahead of origin by commits
-- **Token File**: .token (for testing)
-- **Platform**: macOS (Darwin 24.5.0)
+- **Platform**: macOS Darwin 24.5.0
+- **Go Module**: github.com/thelarryrutledge/nvlp-app
 
-## Critical Notes for Next Session
-1. **Phase 3 Complete**: All backend features implemented and tested
-2. **Architecture**: Hybrid PostgREST + Edge Functions with caching
-3. **Performance**: Optimized and production-ready
-4. **Documentation**: Comprehensive and up-to-date
-5. **Testing**: Extensive coverage with automated scripts
-6. **Next**: Begin Phase 4 Go CLI implementation
-7. **Auth Pattern**: JWT + apikey for PostgREST, JWT only for Edge Functions
-8. **Cache Invalidation**: Automatic on transaction changes
-9. **Database URLs**: Use direct Supabase URLs, not custom domain for reliable access
+## Next Phase Dependencies
+**CLI Framework**: cobra + viper + color + survey
+**Token Storage**: ~/.nvlp/ directory structure
+**Config Management**: Environment variables + config files
