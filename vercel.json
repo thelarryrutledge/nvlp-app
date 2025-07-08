@@ -1,16 +1,22 @@
 {
   "rewrites": [
     {
-      "source": "/api/:path*",
-      "destination": "https://qnpatlosomopoimtsmsr.supabase.co/functions/v1/:path*"
-    },
-    {
       "source": "/:path*",
       "destination": "https://qnpatlosomopoimtsmsr.supabase.co/functions/v1/:path*",
       "has": [
         {
           "type": "host",
-          "value": "api.nvlp.app"
+          "value": "edge-api.nvlp.app"
+        }
+      ]
+    },
+    {
+      "source": "/:path*",
+      "destination": "https://qnpatlosomopoimtsmsr.supabase.co/rest/v1/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "db-api.nvlp.app"
         }
       ]
     }
@@ -34,7 +40,7 @@
       ]
     },
     {
-      "source": "/api/:path*",
+      "source": "/:path*",
       "headers": [
         {
           "key": "Access-Control-Allow-Origin",
@@ -47,6 +53,12 @@
         {
           "key": "Access-Control-Allow-Headers",
           "value": "Content-Type, Authorization, apikey"
+        }
+      ],
+      "has": [
+        {
+          "type": "host",
+          "value": "edge-api.nvlp.app"
         }
       ]
     },
@@ -69,7 +81,7 @@
       "has": [
         {
           "type": "host",
-          "value": "api.nvlp.app"
+          "value": "db-api.nvlp.app"
         }
       ]
     }

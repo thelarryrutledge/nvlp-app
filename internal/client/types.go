@@ -1,8 +1,6 @@
 package client
 
 import (
-	"time"
-	
 	"github.com/thelarryrutledge/nvlp-app/internal/types"
 )
 

@@ -14,7 +14,8 @@ export class PostgRESTTransport implements Transport {
   private accessToken: string | null = null;
 
   constructor(config: NVLPClientConfig) {
-    this.baseUrl = `${config.supabaseUrl}/rest/v1`;
+    // Use custom DB API URL if provided, otherwise fall back to Supabase URL
+    this.baseUrl = config.dbApiUrl || `${config.supabaseUrl}/rest/v1`;
     this.anonKey = config.supabaseAnonKey;
     this.timeout = config.timeout || 30000; // 30 second default
   }

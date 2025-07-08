@@ -23,9 +23,10 @@ type PostgRESTTransport struct {
 
 // NewPostgRESTTransport creates a new PostgREST transport
 func NewPostgRESTTransport(config *types.NVLPClientConfig) *PostgRESTTransport {
+	// Use custom DB API URL if provided, otherwise fall back to Supabase URL
 	baseURL := config.SupabaseURL + "/rest/v1"
-	if config.APIBaseURL != "" {
-		baseURL = config.APIBaseURL + "/rest/v1"
+	if config.DBApiURL != "" {
+		baseURL = config.DBApiURL
 	}
 
 	timeout := 30 * time.Second

@@ -14,7 +14,8 @@ export interface NVLPClientConfig {
   tokenStorageKey?: string; // Default: 'nvlp_auth_tokens'
   autoRefresh?: boolean; // Default: true
   // Custom API endpoints
-  apiBaseUrl?: string; // Default: derived from supabaseUrl, but can override for custom domains
+  apiBaseUrl?: string; // Default: derived from supabaseUrl, for Edge Functions (edge-api.nvlp.app)
+  dbApiUrl?: string; // Custom URL for PostgREST operations (db-api.nvlp.app)
 }
 
 // Authentication state

@@ -22,9 +22,10 @@ type EdgeFunctionTransport struct {
 
 // NewEdgeFunctionTransport creates a new Edge Function transport
 func NewEdgeFunctionTransport(config *types.NVLPClientConfig) *EdgeFunctionTransport {
+	// Use custom Edge API URL if provided, otherwise fall back to Supabase URL
 	baseURL := config.SupabaseURL + "/functions/v1"
 	if config.APIBaseURL != "" {
-		baseURL = config.APIBaseURL + "/functions/v1"
+		baseURL = config.APIBaseURL
 	}
 
 	timeout := 30 * time.Second
@@ -86,18 +87,18 @@ func (e *EdgeFunctionTransport) Request(method, endpoint string, data interface{
 	// Execute request
 	resp, err := e.httpClient.Do(req)
 	if err != nil {
-		return nil, client.NewNetworkError(fmt.Sprintf("request failed: %v", err))
+		return nil, types.NewNetworkError(fmt.Sprintf("request failed: %v", err))
 	}
 	defer resp.Body.Close()
 
 	// Read response body
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, client.NewNetworkError(fmt.Sprintf("failed to read response body: %v", err))
+		return nil, types.NewNetworkError(fmt.Sprintf("failed to read response body: %v", err))
 	}
 
 	// Parse response
-	apiResponse := &client.APIResponse{
+	apiResponse := &types.APIResponse{
 		Status: resp.StatusCode,
 	}
 
@@ -121,7 +122,31 @@ func (e *EdgeFunctionTransport) Request(method, endpoint string, data interface{
 		} else {
 			// Use the parsed Edge Function response
 			if edgeResponse.Success {
-				apiResponse.Data = edgeResponse.Data
+				// If data field exists, use it
+				if edgeResponse.Data != nil {
+					apiResponse.Data = edgeResponse.Data
+				} else {
+					// Otherwise, use the entire response as the data (for auth endpoints)
+					// Parse the response body again as a map to extract relevant fields
+					var fullResponse map[string]interface{}
+					if err := json.Unmarshal(respBody, &fullResponse); err == nil {
+						// Create a data structure with user and session if they exist
+						if user, hasUser := fullResponse["user"]; hasUser {
+							if session, hasSession := fullResponse["session"]; hasSession {
+								apiResponse.Data = map[string]interface{}{
+									"user":    user,
+									"session": session,
+								}
+							} else {
+								apiResponse.Data = fullResponse
+							}
+						} else {
+							apiResponse.Data = fullResponse
+						}
+					} else {
+						apiResponse.Data = fullResponse
+					}
+				}
 			} else {
 				// Handle error response
 				errorMsg := "Unknown error"
@@ -135,7 +160,7 @@ func (e *EdgeFunctionTransport) Request(method, endpoint string, data interface{
 					}
 				}
 				
-				return nil, client.MapHTTPStatusToError(resp.StatusCode, errorMsg, edgeResponse.Error)
+				return nil, types.MapHTTPStatusToError(resp.StatusCode, errorMsg, edgeResponse.Error)
 			}
 		}
 	}
@@ -146,25 +171,25 @@ func (e *EdgeFunctionTransport) Request(method, endpoint string, data interface{
 		if apiResponse.Data != nil {
 			message = fmt.Sprintf("%v", apiResponse.Data)
 		}
-		return nil, client.MapHTTPStatusToError(resp.StatusCode, message, nil)
+		return nil, types.MapHTTPStatusToError(resp.StatusCode, message, nil)
 	}
 
 	return apiResponse, nil
 }
 
 // CallFunction calls a specific Edge Function
-func (e *EdgeFunctionTransport) CallFunction(functionName string, data interface{}) (*client.APIResponse, error) {
+func (e *EdgeFunctionTransport) CallFunction(functionName string, data interface{}) (*types.APIResponse, error) {
 	return e.Request("POST", functionName, data, nil)
 }
 
 // Auth calls authentication-related Edge Functions
-func (e *EdgeFunctionTransport) Auth(action string, data interface{}) (*client.APIResponse, error) {
+func (e *EdgeFunctionTransport) Auth(action string, data interface{}) (*types.APIResponse, error) {
 	endpoint := fmt.Sprintf("auth/%s", action)
 	return e.Request("POST", endpoint, data, nil)
 }
 
 // Transaction calls transaction-related Edge Functions
-func (e *EdgeFunctionTransport) Transaction(action string, data interface{}) (*client.APIResponse, error) {
+func (e *EdgeFunctionTransport) Transaction(action string, data interface{}) (*types.APIResponse, error) {
 	endpoint := fmt.Sprintf("transactions/%s", action)
 	if action == "" {
 		endpoint = "transactions"
@@ -173,7 +198,7 @@ func (e *EdgeFunctionTransport) Transaction(action string, data interface{}) (*c
 }
 
 // Dashboard calls dashboard-related Edge Functions
-func (e *EdgeFunctionTransport) Dashboard(budgetID string, params map[string]interface{}) (*client.APIResponse, error) {
+func (e *EdgeFunctionTransport) Dashboard(budgetID string, params map[string]interface{}) (*types.APIResponse, error) {
 	data := map[string]interface{}{
 		"budget_id": budgetID,
 	}
@@ -189,7 +214,7 @@ func (e *EdgeFunctionTransport) Dashboard(budgetID string, params map[string]int
 }
 
 // Reports calls reporting-related Edge Functions
-func (e *EdgeFunctionTransport) Reports(reportType string, params map[string]interface{}) (*client.APIResponse, error) {
+func (e *EdgeFunctionTransport) Reports(reportType string, params map[string]interface{}) (*types.APIResponse, error) {
 	data := map[string]interface{}{
 		"report_type": reportType,
 	}
@@ -205,7 +230,7 @@ func (e *EdgeFunctionTransport) Reports(reportType string, params map[string]int
 }
 
 // Export calls export-related Edge Functions
-func (e *EdgeFunctionTransport) Export(exportType string, params map[string]interface{}) (*client.APIResponse, error) {
+func (e *EdgeFunctionTransport) Export(exportType string, params map[string]interface{}) (*types.APIResponse, error) {
 	data := map[string]interface{}{
 		"export_type": exportType,
 	}

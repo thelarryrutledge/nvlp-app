@@ -20,14 +20,15 @@ EMAIL="${1:-$DEFAULT_EMAIL}"
 PASSWORD="${2:-$DEFAULT_PASSWORD}"
 
 # API configuration
-API_BASE_URL="https://api.nvlp.app"
+EDGE_API_URL="https://edge-api.nvlp.app"
+DB_API_URL="https://db-api.nvlp.app"
 ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFucGF0bG9zb21vcG9pbXRzbXNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE2NTg5MzcsImV4cCI6MjA2NzIzNDkzN30.__GhvGGWqhC_i1ztp1-A1VEsL3JVWrtdpQG_uJS8tB8"
 
 echo -e "${BLUE}🔑 Logging in to NVLP API...${NC}"
 echo "Email: $EMAIL"
 
 # Login to get JWT token
-LOGIN_RESPONSE=$(curl -s -X POST "$API_BASE_URL/auth/login" \
+LOGIN_RESPONSE=$(curl -s -X POST "$EDGE_API_URL/auth/login" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $ANON_KEY" \
   -d "{\"email\":\"$EMAIL\",\"password\":\"$PASSWORD\"}")
@@ -47,12 +48,12 @@ echo "$ACCESS_TOKEN" > .token
 echo -e "${GREEN}✅ Login successful!${NC}"
 echo "Token saved to .token file"
 echo ""
-echo -e "${BLUE}📋 Quick test - Get your profile:${NC}"
-echo "curl -H \"Authorization: Bearer \$(cat .token)\" $API_BASE_URL/profile"
+echo -e "${BLUE}📋 Quick test - Get your profile (PostgREST):${NC}"
+echo "curl -H \"Authorization: Bearer \$(cat .token)\" -H \"apikey: $ANON_KEY\" $DB_API_URL/user_profiles"
 echo ""
-echo -e "${BLUE}📋 Quick test - Get your budgets:${NC}"
-echo "curl -H \"Authorization: Bearer \$(cat .token)\" $API_BASE_URL/budgets"
+echo -e "${BLUE}📋 Quick test - Get your budgets (PostgREST):${NC}"
+echo "curl -H \"Authorization: Bearer \$(cat .token)\" -H \"apikey: $ANON_KEY\" $DB_API_URL/budgets"
 echo ""
 echo -e "${BLUE}💡 Usage in curl commands:${NC}"
-echo "Just use: -H \"Authorization: Bearer \$(cat .token)\""
-echo "Example: curl -H \"Authorization: Bearer \$(cat .token)\" $API_BASE_URL/endpoint"
+echo "PostgREST (DB): curl -H \"Authorization: Bearer \$(cat .token)\" -H \"apikey: $ANON_KEY\" $DB_API_URL/[table]"
+echo "Edge Functions: curl -H \"Authorization: Bearer \$(cat .token)\" $EDGE_API_URL/[function]"

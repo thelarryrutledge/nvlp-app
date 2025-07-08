@@ -4,9 +4,12 @@
 - **Supabase Project**: qnpatlosomopoimtsmsr
 - **Test Users**: larryjrutledge@gmail.com & larry@mariomurillo.org / Test1234!
 - **Architecture**: Hybrid PostgREST Direct + Edge Functions
-- **Custom Domain**: api.nvlp.app (configured but may need verification)
-- **Direct PostgREST**: https://qnpatlosomopoimtsmsr.supabase.co/rest/v1
-- **Edge Functions**: https://qnpatlosomopoimtsmsr.supabase.co/functions/v1
+- **Custom Domains**: 
+  - **Edge Functions**: edge-api.nvlp.app (for complex operations)
+  - **PostgREST**: db-api.nvlp.app (for CRUD operations)
+- **Direct URLs** (fallback):
+  - **PostgREST**: https://qnpatlosomopoimtsmsr.supabase.co/rest/v1
+  - **Edge Functions**: https://qnpatlosomopoimtsmsr.supabase.co/functions/v1
 
 ## Current Status: Phase 3 Complete ✅
 **Backend**: 100% feature-complete, production-ready

@@ -16,7 +16,8 @@ type NVLPClientConfig struct {
 	TokenStorageKey  string
 	AutoRefresh      bool
 	// Custom API endpoints
-	APIBaseURL string
+	APIBaseURL string // For Edge Functions (edge-api.nvlp.app)
+	DBApiURL   string // For PostgREST operations (db-api.nvlp.app)
 }
 
 // Transport interface for abstraction
