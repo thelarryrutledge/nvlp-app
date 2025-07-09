@@ -20,22 +20,28 @@ type UpdateBudgetInput struct {
 }
 
 type CreateIncomeSourceInput struct {
-	BudgetID              string     `json:"budget_id"`
-	Name                  string     `json:"name"`
-	Description           *string    `json:"description,omitempty"`
-	ExpectedMonthlyAmount float64    `json:"expected_monthly_amount"`
-	Frequency             string     `json:"frequency"`
-	NextDueDate           *time.Time `json:"next_due_date,omitempty"`
-	IsActive              *bool      `json:"is_active,omitempty"`
+	BudgetID              string   `json:"budget_id"`
+	Name                  string   `json:"name"`
+	Description           *string  `json:"description,omitempty"`
+	ExpectedMonthlyAmount *float64 `json:"expected_monthly_amount,omitempty"`
+	IsActive              *bool    `json:"is_active,omitempty"`
+	ShouldNotify          *bool    `json:"should_notify,omitempty"`
+	Frequency             string   `json:"frequency"`
+	CustomDay             *int     `json:"custom_day,omitempty"`
+	WeeklyDay             *int     `json:"weekly_day,omitempty"`
+	MonthlyDay            *int     `json:"monthly_day,omitempty"`
 }
 
 type UpdateIncomeSourceInput struct {
-	Name                  *string    `json:"name,omitempty"`
-	Description           *string    `json:"description,omitempty"`
-	ExpectedMonthlyAmount *float64   `json:"expected_monthly_amount,omitempty"`
-	Frequency             *string    `json:"frequency,omitempty"`
-	NextDueDate           *time.Time `json:"next_due_date,omitempty"`
-	IsActive              *bool      `json:"is_active,omitempty"`
+	Name                  *string  `json:"name,omitempty"`
+	Description           *string  `json:"description,omitempty"`
+	ExpectedMonthlyAmount *float64 `json:"expected_monthly_amount,omitempty"`
+	IsActive              *bool    `json:"is_active,omitempty"`
+	ShouldNotify          *bool    `json:"should_notify,omitempty"`
+	Frequency             *string  `json:"frequency,omitempty"`
+	CustomDay             *int     `json:"custom_day,omitempty"`
+	WeeklyDay             *int     `json:"weekly_day,omitempty"`
+	MonthlyDay            *int     `json:"monthly_day,omitempty"`
 }
 
 type CreateCategoryInput struct {
@@ -56,29 +62,32 @@ type UpdateCategoryInput struct {
 }
 
 type CreateEnvelopeInput struct {
-	BudgetID          string   `json:"budget_id"`
-	CategoryID        string   `json:"category_id"`
-	Name              string   `json:"name"`
-	Description       *string  `json:"description,omitempty"`
-	TargetAmount      float64  `json:"target_amount"`
-	FillFrequency     string   `json:"fill_frequency"`
-	FillAmount        float64  `json:"fill_amount"`
-	AutoFillEnabled   *bool    `json:"auto_fill_enabled,omitempty"`
-	OverspendAllowed  *bool    `json:"overspend_allowed,omitempty"`
-	NotificationLimit *float64 `json:"notification_limit,omitempty"`
-	IsActive          *bool    `json:"is_active,omitempty"`
+	BudgetID          string     `json:"budget_id"`
+	CategoryID        *string    `json:"category_id,omitempty"`
+	Name              string     `json:"name"`
+	Description       *string    `json:"description,omitempty"`
+	Color             *string    `json:"color,omitempty"`
+	Icon              *string    `json:"icon,omitempty"`
+	IsActive          *bool      `json:"is_active,omitempty"`
+	SortOrder         *int       `json:"sort_order,omitempty"`
+	ShouldNotify      *bool      `json:"should_notify,omitempty"`
+	NotifyDate        *time.Time `json:"notify_date,omitempty"`
+	NotifyBelowAmount *float64   `json:"notify_below_amount,omitempty"`
+	NotifyAboveAmount *float64   `json:"notify_above_amount,omitempty"`
 }
 
 type UpdateEnvelopeInput struct {
-	Name              *string  `json:"name,omitempty"`
-	Description       *string  `json:"description,omitempty"`
-	TargetAmount      *float64 `json:"target_amount,omitempty"`
-	FillFrequency     *string  `json:"fill_frequency,omitempty"`
-	FillAmount        *float64 `json:"fill_amount,omitempty"`
-	AutoFillEnabled   *bool    `json:"auto_fill_enabled,omitempty"`
-	OverspendAllowed  *bool    `json:"overspend_allowed,omitempty"`
-	NotificationLimit *float64 `json:"notification_limit,omitempty"`
-	IsActive          *bool    `json:"is_active,omitempty"`
+	Name              *string    `json:"name,omitempty"`
+	Description       *string    `json:"description,omitempty"`
+	CategoryID        *string    `json:"category_id,omitempty"`
+	Color             *string    `json:"color,omitempty"`
+	Icon              *string    `json:"icon,omitempty"`
+	IsActive          *bool      `json:"is_active,omitempty"`
+	SortOrder         *int       `json:"sort_order,omitempty"`
+	ShouldNotify      *bool      `json:"should_notify,omitempty"`
+	NotifyDate        *time.Time `json:"notify_date,omitempty"`
+	NotifyBelowAmount *float64   `json:"notify_below_amount,omitempty"`
+	NotifyAboveAmount *float64   `json:"notify_above_amount,omitempty"`
 }
 
 type CreatePayeeInput struct {

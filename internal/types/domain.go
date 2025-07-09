@@ -32,10 +32,14 @@ type IncomeSource struct {
 	BudgetID               string     `json:"budget_id"`
 	Name                   string     `json:"name"`
 	Description            *string    `json:"description"`
-	ExpectedMonthlyAmount  float64    `json:"expected_monthly_amount"`
-	Frequency              string     `json:"frequency"`
-	NextDueDate            *time.Time `json:"next_due_date"`
+	ExpectedMonthlyAmount  *float64   `json:"expected_monthly_amount"`
 	IsActive               bool       `json:"is_active"`
+	ShouldNotify           bool       `json:"should_notify"`
+	Frequency              string     `json:"frequency"`
+	CustomDay              *int       `json:"custom_day"`
+	WeeklyDay              *int       `json:"weekly_day"`
+	MonthlyDay             *int       `json:"monthly_day"`
+	NextExpectedDate       *time.Time `json:"next_expected_date"`
 	CreatedAt              time.Time  `json:"created_at"`
 	UpdatedAt              time.Time  `json:"updated_at"`
 }
@@ -55,17 +59,18 @@ type Category struct {
 type Envelope struct {
 	ID                string     `json:"id"`
 	BudgetID          string     `json:"budget_id"`
-	CategoryID        string     `json:"category_id"`
+	CategoryID        *string    `json:"category_id"`
 	Name              string     `json:"name"`
 	Description       *string    `json:"description"`
-	TargetAmount      float64    `json:"target_amount"`
-	CurrentBalance    float64    `json:"current_balance"`
-	FillFrequency     string     `json:"fill_frequency"`
-	FillAmount        float64    `json:"fill_amount"`
-	AutoFillEnabled   bool       `json:"auto_fill_enabled"`
-	OverspendAllowed  bool       `json:"overspend_allowed"`
-	NotificationLimit *float64   `json:"notification_limit"`
+	Color             *string    `json:"color"`
+	Icon              *string    `json:"icon"`
 	IsActive          bool       `json:"is_active"`
+	SortOrder         *int       `json:"sort_order"`
+	CurrentBalance    float64    `json:"current_balance"`
+	ShouldNotify      bool       `json:"should_notify"`
+	NotifyDate        *time.Time `json:"notify_date"`
+	NotifyBelowAmount *float64   `json:"notify_below_amount"`
+	NotifyAboveAmount *float64   `json:"notify_above_amount"`
 	CreatedAt         time.Time  `json:"created_at"`
 	UpdatedAt         time.Time  `json:"updated_at"`
 }
