@@ -107,59 +107,57 @@
 - [x] Test performance with larger datasets
 - [x] Add caching where appropriate
 
-## Phase 4: CLI Development (Build & Test Incrementally) - **Go Implementation**
+## Phase 4: Frontend Development
 
-### Task 11: Go Client Library (Port from TypeScript)
-- [x] Create Go client library project structure
-- [x] Implement Go HTTP client for PostgREST transport
-- [x] Implement Go HTTP client for Edge Function transport  
-- [x] Port authentication management to Go (token persistence)
-- [x] Port error handling and types to Go
-- [x] Test Go client library with existing APIs
-- [x] Document Go client library usage
+### Task 11: React Native Mobile App Setup
+- [ ] Initialize React Native project with TypeScript
+- [ ] Set up navigation (React Navigation)
+- [ ] Configure state management (Redux Toolkit / Context)
+- [ ] Set up authentication flow
+- [ ] Configure build tools and environment
+- [ ] Set up testing framework (Jest/React Native Testing Library)
 
-### Task 12: CLI Foundation (Go)
-- [ ] Set up Go CLI project structure (cobra/viper framework)
-- [ ] Integrate Go client library
-- [ ] Test API client with auth endpoints
-- [ ] Implement configuration management (config files + env vars)
-- [ ] Test auth token storage and retrieval (~/.nvlp/ directory)
-- [ ] Verify token persistence between CLI commands
+### Task 12: Web Frontend Setup (React)
+- [ ] Initialize React project with TypeScript
+- [ ] Set up routing (React Router)
+- [ ] Configure state management (Redux Toolkit / Context)
+- [ ] Set up UI component library (Material-UI / Tailwind)
+- [ ] Configure build tools (Vite/Create React App)
+- [ ] Set up testing framework (Jest/React Testing Library)
 
-### Task 13: Basic CLI Commands (Go)
-- [ ] Implement auth commands (login, logout, status)
-- [ ] Test each command works with real API
-- [ ] Implement config commands (show, set, validate)
-- [ ] Add colored output and error handling (cobra styling)
-- [ ] Test complete auth flow end-to-end
-- [ ] Fix any auth persistence issues
+### Task 13: Core Frontend Components
+- [ ] Create authentication screens (login/register)
+- [ ] Build budget management interface
+- [ ] Create envelope management views
+- [ ] Build transaction entry forms
+- [ ] Create dashboard with charts/summaries
+- [ ] Implement notification system
 
-### Task 14: Business Logic CLI Commands (Go)
-- [ ] Implement budget management commands (list, create, switch)
-- [ ] Implement envelope commands (list, create, transfer)
-- [ ] Implement transaction commands (income, expense, transfer)
-- [ ] Implement dashboard command
-- [ ] Test each command with real API data
-- [ ] Add interactive prompts where appropriate (survey package)
-- [ ] Test error handling and edge cases
+### Task 14: Mobile-Specific Features
+- [ ] Implement offline support
+- [ ] Add push notifications
+- [ ] Create mobile-optimized UI components
+- [ ] Add biometric authentication
+- [ ] Implement photo receipt capture
+- [ ] Add mobile-specific gestures and interactions
 
 ## Phase 5: Integration & Testing
 
 ### Task 15: End-to-End Testing
 - [ ] Test complete user journey (register → login → create budget → add transactions)
-- [ ] Test CLI commands work with real backend data
+- [ ] Test frontend applications work with real backend data
 - [ ] Test error scenarios (network failures, invalid tokens, etc.)
 - [ ] Test with multiple users to verify data isolation
 - [ ] Performance test with realistic data volumes
-- [ ] Test all edge cases and error conditions
+- [ ] Test cross-platform compatibility (iOS/Android/Web)
 
 ### Task 16: Documentation & Polish
 - [ ] Create comprehensive API documentation
-- [ ] Document CLI commands and usage
-- [ ] Create setup and deployment guides
+- [ ] Document frontend setup and deployment
+- [ ] Create user guides and tutorials
 - [ ] Add error message improvements
 - [ ] Create troubleshooting guides
-- [ ] Add configuration validation
+- [ ] Add accessibility documentation
 
 ## Phase 6: Advanced Features (Optional)
 

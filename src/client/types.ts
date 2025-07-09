@@ -133,6 +133,7 @@ export interface Category {
   is_active: boolean;
   sort_order: number;
   category_type: CategoryType;
+  is_system_category: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -142,6 +143,7 @@ export type CategoryType = 'income' | 'expense' | 'transfer';
 export interface Envelope {
   id: string;
   budget_id: string;
+  category_id: string | null;
   name: string;
   description: string | null;
   color: string | null;
@@ -149,13 +151,21 @@ export interface Envelope {
   is_active: boolean;
   sort_order: number;
   current_balance: number;
-  target_amount: number | null;
+  envelope_type: EnvelopeType;
+  // Renamed notification fields
+  notify_above_amount: number | null; // Also used as savings goal for savings envelopes
+  notify_below_amount: number | null;
   should_notify: boolean;
   notify_date: string | null;
-  notify_amount: number | null;
+  // Debt-specific fields
+  debt_balance: number;
+  minimum_payment: number | null;
+  due_date: string | null;
   created_at: string;
   updated_at: string;
 }
+
+export type EnvelopeType = 'regular' | 'savings' | 'debt';
 
 export interface Payee {
   id: string;
@@ -241,26 +251,38 @@ export interface UpdateCategoryInput {
 
 export interface CreateEnvelopeInput {
   budget_id: string;
+  category_id?: string;
   name: string;
   description?: string;
   color?: string;
   icon?: string;
-  target_amount?: number;
+  envelope_type?: EnvelopeType;
+  notify_above_amount?: number; // Also used as savings goal for savings envelopes
+  notify_below_amount?: number;
   should_notify?: boolean;
   notify_date?: string;
-  notify_amount?: number;
+  // Debt-specific fields
+  debt_balance?: number;
+  minimum_payment?: number;
+  due_date?: string;
   sort_order?: number;
 }
 
 export interface UpdateEnvelopeInput {
   name?: string;
+  category_id?: string;
   description?: string;
   color?: string;
   icon?: string;
-  target_amount?: number;
+  envelope_type?: EnvelopeType;
+  notify_above_amount?: number;
+  notify_below_amount?: number;
   should_notify?: boolean;
   notify_date?: string;
-  notify_amount?: number;
+  // Debt-specific fields
+  debt_balance?: number;
+  minimum_payment?: number;
+  due_date?: string;
   sort_order?: number;
   is_active?: boolean;
 }

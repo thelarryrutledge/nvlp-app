@@ -270,7 +270,7 @@
 </ul>
 <hr>
 <h3>envelopes</h3>
-<p>Envelope budgeting containers for allocating money.</p>
+<p>Envelope budgeting containers with flexible notification thresholds.</p>
 <table>
 <thead>
 <tr>
@@ -341,12 +341,6 @@
 <td>Current envelope balance</td>
 </tr>
 <tr>
-<td>target_amount</td>
-<td>DECIMAL(12,2)</td>
-<td></td>
-<td>Target/goal amount</td>
-</tr>
-<tr>
 <td>should_notify</td>
 <td>BOOLEAN</td>
 <td>DEFAULT false</td>
@@ -359,10 +353,16 @@
 <td>Date-based notification trigger</td>
 </tr>
 <tr>
-<td>notify_amount</td>
+<td>notify_below_amount</td>
 <td>DECIMAL(12,2)</td>
 <td></td>
-<td>Amount-based notification trigger</td>
+<td>Alert when balance falls below this amount</td>
+</tr>
+<tr>
+<td>notify_above_amount</td>
+<td>DECIMAL(12,2)</td>
+<td></td>
+<td>Alert when balance reaches/exceeds this amount</td>
 </tr>
 <tr>
 <td>created_at</td>
@@ -382,8 +382,8 @@
 <li><code>envelopes_name_not_empty</code>: Name cannot be empty</li>
 <li><code>envelopes_color_hex</code>: Color must be valid hex format</li>
 <li><code>envelopes_sort_order_positive</code>: Sort order must be positive</li>
-<li><code>envelopes_target_amount_positive</code>: Target amount must be positive</li>
-<li><code>envelopes_notify_amount_positive</code>: Notify amount must be positive</li>
+<li><code>envelopes_notify_below_amount_positive</code>: Notify below amount must be positive</li>
+<li><code>envelopes_notify_above_amount_positive</code>: Notify above amount must be positive</li>
 <li><code>envelopes_notification_required</code>: If notifications enabled, at least one trigger required</li>
 <li><code>envelopes_unique_name_per_budget</code>: Unique name per budget</li>
 </ul>

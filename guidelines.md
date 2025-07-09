@@ -3,12 +3,12 @@
 ## Task-Based Development Process
 
 ### Single Task Focus
-- **CRITICAL**: Implement only ONE subtask from todo.md at a time
+- **CRITICAL**: Implement only ONE subtask from the active roadmap at a time
 - **NEVER** complete multiple subtasks in a single session
 - Exception: Only combine subtasks if they are technically interdependent and cannot function separately
 - This ensures proper testing, validation, and course correction at each step
 - Focus on individual subtasks, not entire tasks, sections, or phases
-- Each subtask should be a single checkbox item from todo.md
+- Each subtask should be a single checkbox item from the active roadmap file
 
 ### Implementation Workflow for Each Subtask
 
@@ -30,7 +30,7 @@
    - Document any test results or validation steps taken
 
 4. **Complete Task Checklist** (in this exact order):
-   - **CRITICAL**: Update todo.md file to mark the specific subtask as completed (change [ ] to [x])
+   - **CRITICAL**: Update active roadmap file to mark the specific subtask as completed (change [ ] to [x])
    - Update memory.md with any important implementation details or decisions
    - Fix any linting, type checking, or code quality issues
    - **CRITICAL**: Commit changes using Bash tool with git commands:
@@ -64,7 +64,7 @@
 - Important file locations and project structure
 
 ### What NOT to Include
-- Task completion status (tracked in todo.md)
+- Task completion status (tracked in active roadmap)
 - Routine implementation details
 - Temporary notes or debugging information
 
@@ -77,13 +77,13 @@
 
 ### Files That Don't Require User Confirmation
 - `memory.md` - Always safe to update with project context and implementation details
-- `todo.md` - Always safe to update to mark subtasks as completed
+- `roadmap` - Always safe to update to mark subtasks as completed
 - `guidelines.md` - Always safe to update to improve development process
 - Command line operations (git, bash, etc.) - No confirmation needed
 
 ### Files That Require User Confirmation
 - All other files (migrations, source code, configuration files, etc.)
-- Any new file creation except memory.md, todo.md, guidelines.md updates
+- Any new file creation except memory.md, active roadmap, guidelines.md updates
 
 ## Guidelines Evolution
 
