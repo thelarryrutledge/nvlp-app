@@ -84,7 +84,7 @@ Categories for grouping envelopes (e.g., "Housing", "Food", "Transportation").
 ---
 
 ### envelopes
-Envelope budgeting containers for allocating money.
+Envelope budgeting containers with flexible notification thresholds.
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
@@ -98,10 +98,10 @@ Envelope budgeting containers for allocating money.
 | is_active | BOOLEAN | DEFAULT true | Whether envelope is active |
 | sort_order | INTEGER | DEFAULT 1 | Display sort order |
 | current_balance | DECIMAL(12,2) | DEFAULT 0 | Current envelope balance |
-| target_amount | DECIMAL(12,2) | | Target/goal amount |
 | should_notify | BOOLEAN | DEFAULT false | Enable notifications |
 | notify_date | DATE | | Date-based notification trigger |
-| notify_amount | DECIMAL(12,2) | | Amount-based notification trigger |
+| notify_below_amount | DECIMAL(12,2) | | Alert when balance falls below this amount |
+| notify_above_amount | DECIMAL(12,2) | | Alert when balance reaches/exceeds this amount |
 | created_at | TIMESTAMPTZ | DEFAULT NOW() | Record creation timestamp |
 | updated_at | TIMESTAMPTZ | DEFAULT NOW() | Last update timestamp |
 
@@ -109,8 +109,8 @@ Envelope budgeting containers for allocating money.
 - `envelopes_name_not_empty`: Name cannot be empty
 - `envelopes_color_hex`: Color must be valid hex format
 - `envelopes_sort_order_positive`: Sort order must be positive
-- `envelopes_target_amount_positive`: Target amount must be positive
-- `envelopes_notify_amount_positive`: Notify amount must be positive
+- `envelopes_notify_below_amount_positive`: Notify below amount must be positive
+- `envelopes_notify_above_amount_positive`: Notify above amount must be positive
 - `envelopes_notification_required`: If notifications enabled, at least one trigger required
 - `envelopes_unique_name_per_budget`: Unique name per budget
 

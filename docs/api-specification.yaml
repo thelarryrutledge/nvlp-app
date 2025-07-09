@@ -1179,17 +1179,19 @@ components:
         current_balance:
           type: number
           format: decimal
-        target_amount:
-          type: number
-          format: decimal
         should_notify:
           type: boolean
         notify_date:
           type: string
           format: date
-        notify_amount:
+        notify_below_amount:
           type: number
           format: decimal
+          description: Alert when balance falls below this amount
+        notify_above_amount:
+          type: number
+          format: decimal
+          description: Alert when balance reaches or exceeds this amount
         is_active:
           type: boolean
         created_at:
@@ -1213,17 +1215,19 @@ components:
           type: string
         description:
           type: string
-        target_amount:
-          type: number
-          format: decimal
         should_notify:
           type: boolean
         notify_date:
           type: string
           format: date
-        notify_amount:
+        notify_below_amount:
           type: number
           format: decimal
+          description: Alert when balance falls below this amount
+        notify_above_amount:
+          type: number
+          format: decimal
+          description: Alert when balance reaches or exceeds this amount
 
     IncomeSource:
       type: object

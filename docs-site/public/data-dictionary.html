@@ -454,6 +454,18 @@
 <td>Day of month for custom frequency</td>
 </tr>
 <tr>
+<td>weekly_day</td>
+<td>INTEGER</td>
+<td></td>
+<td>Day of week (0=Sunday, 6=Saturday) for weekly/bi_weekly</td>
+</tr>
+<tr>
+<td>monthly_day</td>
+<td>INTEGER</td>
+<td></td>
+<td>Day of month (1-31) for monthly frequency</td>
+</tr>
+<tr>
 <td>next_expected_date</td>
 <td>DATE</td>
 <td></td>
@@ -478,6 +490,10 @@
 <li><code>income_sources_amount_positive</code>: Expected amount must be positive</li>
 <li><code>income_sources_custom_day_valid</code>: Custom day must be 1-31</li>
 <li><code>income_sources_custom_day_required</code>: Custom day required when frequency is &#39;custom&#39;</li>
+<li><code>income_sources_weekly_day_valid</code>: Weekly day must be 0-6</li>
+<li><code>income_sources_weekly_day_required</code>: Weekly day required when frequency is &#39;weekly&#39; or &#39;bi_weekly&#39;</li>
+<li><code>income_sources_monthly_day_valid</code>: Monthly day must be 1-31</li>
+<li><code>income_sources_monthly_day_required</code>: Monthly day required when frequency is &#39;monthly&#39;</li>
 <li><code>income_sources_unique_name_per_budget</code>: Unique name per budget</li>
 </ul>
 <hr>
