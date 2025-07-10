@@ -11,7 +11,7 @@
 - [x] Set up environment variables (.env files for dev/staging/prod)
 
 ### 1.2 Development Environment
-- [ ] Configure iOS development environment (Xcode, pods)
+- [x] Configure iOS development environment (Xcode, pods)
 - [ ] Configure Android development environment (Android Studio)
 - [ ] Set up React Native Debugger or Flipper
 - [ ] Configure hot reload and fast refresh
