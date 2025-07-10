@@ -1,10 +1,6 @@
 {
   "rewrites": [
     {
-      "source": "/api-docs/:path*",
-      "destination": "/api-docs/:path*"
-    },
-    {
       "source": "/:path*",
       "destination": "https://qnpatlosomopoimtsmsr.supabase.co/functions/v1/:path*",
       "has": [
