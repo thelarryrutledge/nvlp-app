@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NVLP Data Dictionary</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #34495e;
+            margin-top: 40px;
+            border-left: 4px solid #3498db;
+            padding-left: 15px;
+        }
+        h3 {
+            color: #2c3e50;
+            margin-top: 30px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        .type {
+            font-family: monospace;
+            background-color: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+        .constraint {
+            font-style: italic;
+            color: #6c757d;
+        }
+        .required {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        .system-category {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .nav {
+            background-color: #2c3e50;
+            color: white;
+            padding: 15px;
+            margin: -40px -40px 40px -40px;
+            border-radius: 8px 8px 0 0;
+        }
+        .nav a {
+            color: #ecf0f1;
+            text-decoration: none;
+            margin-right: 20px;
+        }
+        .nav a:hover {
+            color: #3498db;
+        }
+        .toc {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .toc ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .toc li {
+            margin: 5px 0;
+        }
+        .toc a {
+            color: #2c3e50;
+            text-decoration: none;
+        }
+        .toc a:hover {
+            color: #3498db;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav">
+            <strong>NVLP API Documentation</strong>
+            <a href="index.html">Overview</a>
+            <a href="data-dictionary.html">Data Dictionary</a>
+            <a href="openapi.html">API Reference</a>
+        </div>
+
+        <h1>NVLP Data Dictionary</h1>
+        <p><strong>Generated:</strong> July 9, 2025</p>
+        <p>Complete data dictionary for the NVLP (Virtual Envelope Budget) application database schema.</p>
+
+        <div class="toc">
+            <h3>Table of Contents</h3>
+            <ul>
+                <li><a href="#user_profiles">user_profiles</a> - User profile data and preferences</li>
+                <li><a href="#budgets">budgets</a> - Budget containers</li>
+                <li><a href="#categories">categories</a> - Transaction categories with system categories</li>
+                <li><a href="#envelopes">envelopes</a> - Envelope budgeting containers with types</li>
+                <li><a href="#payees">payees</a> - Payment recipients</li>
+                <li><a href="#transactions">transactions</a> - Financial transactions</li>
+                <li><a href="#incomes">incomes</a> - Income sources and schedules</li>
+                <li><a href="#user_state">user_state</a> - Cached user financial state</li>
+            </ul>
+        </div>
+
+        <h2 id="user_profiles">user_profiles</h2>
+        <p>User profile data that extends Supabase auth.users with application-specific preferences.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Column</th>
+                    <th>Type</th>
+                    <th>Constraints</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>id</td>
+                    <td class="type">UUID</td>
+                    <td class="required">PRIMARY KEY, REFERENCES auth.users(id)</td>
+                    <td>Foreign key to auth.users.id</td>
+                </tr>
+                <tr>
+                    <td>display_name</td>
+                    <td class="type">TEXT</td>
+                    <td></td>
+                    <td>User display name, defaults to email</td>
+                </tr>
+                <tr>
+                    <td>timezone</td>
+                    <td class="type">TEXT</td>
+                    <td>DEFAULT 'UTC'</td>
+                    <td>User timezone for date/time display</td>
+                </tr>
+                <tr>
+                    <td>currency_code</td>
+                    <td class="type">CHAR(3)</td>
+                    <td>DEFAULT 'USD'</td>
+                    <td>Default currency code (ISO 4217)</td>
+                </tr>
+                <tr>
+                    <td>date_format</td>
+                    <td class="type">TEXT</td>
+                    <td>DEFAULT 'YYYY-MM-DD'</td>
+                    <td>Preferred date format for UI</td>
+                </tr>
+                <tr>
+                    <td>default_budget_id</td>
+                    <td class="type">UUID</td>
+                    <td>REFERENCES budgets(id)</td>
+                    <td>Reference to user's default budget</td>
+                </tr>
+                <tr>
+                    <td>created_at</td>
+                    <td class="type">TIMESTAMPTZ</td>
+                    <td class="required">NOT NULL, DEFAULT NOW()</td>
+                    <td>Profile creation timestamp</td>
+                </tr>
+                <tr>
+                    <td>updated_at</td>
+                    <td class="type">TIMESTAMPTZ</td>
+                    <td class="required">NOT NULL, DEFAULT NOW()</td>
+                    <td>Last profile update timestamp</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2 id="budgets">budgets</h2>
+        <p>Budget containers that organize financial data for users.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Column</th>
+                    <th>Type</th>
+                    <th>Constraints</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>id</td>
+                    <td class="type">UUID</td>
+                    <td class="required">PRIMARY KEY, DEFAULT gen_random_uuid()</td>
+                    <td>Unique budget identifier</td>
+                </tr>
+                <tr>
+                    <td>user_id</td>
+                    <td class="type">UUID</td>
+                    <td class="required">NOT NULL, REFERENCES auth.users(id)</td>
+                    <td>Budget owner</td>
+                </tr>
+                <tr>
+                    <td>name</td>
+                    <td class="type">TEXT</td>
+                    <td class="required">NOT NULL</td>
+                    <td>Budget name</td>
+                </tr>
+                <tr>
+                    <td>description</td>
+                    <td class="type">TEXT</td>
+                    <td></td>
+                    <td>Optional budget description</td>
+                </tr>
+                <tr>
+                    <td>is_active</td>
+                    <td class="type">BOOLEAN</td>
+                    <td>DEFAULT true</td>
+                    <td>Whether budget is active</td>
+                </tr>
+                <tr>
+                    <td>created_at</td>
+                    <td class="type">TIMESTAMPTZ</td>
+                    <td class="required">NOT NULL, DEFAULT NOW()</td>
+                    <td>Budget creation timestamp</td>
+                </tr>
+                <tr>
+                    <td>updated_at</td>
+                    <td class="type">TIMESTAMPTZ</td>
+                    <td class="required">NOT NULL, DEFAULT NOW()</td>
+                    <td>Last budget update timestamp</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2 id="categories">categories</h2>
+        <p>Transaction categories including system categories for savings and debt management.</p>
+        <div class="system-category">
+            <strong>System Categories:</strong> Categories with <code>is_system_category = true</code> are automatically created (Savings, Loans, Credit Cards, Debt) and cannot be modified or deleted by users.
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Column</th>
+                    <th>Type</th>
+                    <th>Constraints</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>id</td>
+                    <td class="type">UUID</td>
+                    <td class="required">PRIMARY KEY, DEFAULT gen_random_uuid()</td>
+                    <td>Unique category identifier</td>
+                </tr>
+                <tr>
+                    <td>budget_id</td>
+                    <td class="type">UUID</td>
+                    <td class="required">NOT NULL, REFERENCES budgets(id)</td>
+                    <td>Parent budget</td>
+                </tr>
+                <tr>
+                    <td>name</td>
+                    <td class="type">TEXT</td>
+                    <td class="required">NOT NULL</td>
+                    <td>Category name</td>
+                </tr>
+                <tr>
+                    <td>description</td>
+                    <td class="type">TEXT</td>
+                    <td></td>
+                    <td>Category description</td>
+                </tr>
+                <tr>
+                    <td>color</td>
+                    <td class="type">TEXT</td>
+                    <td>DEFAULT '#6B7280'</td>
+                    <td>Display color (hex code)</td>
+                </tr>
+                <tr>
+                    <td>category_type</td>
+                    <td class="type">TEXT</td>
+                    <td class="required">NOT NULL, CHECK IN ('income', 'expense')</td>
+                    <td>Category type</td>
+                </tr>
+                <tr>
+                    <td>is_system_category</td>
+                    <td class="type">BOOLEAN</td>
+                    <td>DEFAULT false, NOT NULL</td>
+                    <td>Whether this is a system-created category that cannot be modified</td>
+                </tr>
+                <tr>
+                    <td>sort_order</td>
+                    <td class="type">INTEGER</td>
+                    <td>DEFAULT 0</td>
+                    <td>Display sort order</td>
+                </tr>
+                <tr>
+                    <td>created_at</td>
+                    <td class="type">TIMESTAMPTZ</td>
+                    <td class="required">NOT NULL, DEFAULT NOW()</td>
+                    <td>Category creation timestamp</td>
+                </tr>
+                <tr>
+                    <td>updated_at</td>
+                    <td class="type">TIMESTAMPTZ</td>
+                    <td class="required">NOT NULL, DEFAULT NOW()</td>
+                    <td>Last category update timestamp</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2 id="envelopes">envelopes</h2>
+        <p>Envelopes for budget allocation with support for regular, savings, and debt types.</p>
+        <div class="system-category">
+            <strong>Envelope Types:</strong>
+            <ul>
+                <li><strong>regular:</strong> Standard budgeting envelopes</li>
+                <li><strong>savings:</strong> Savings envelopes with goals (use notify_above_amount for targets)</li>
+                <li><strong>debt:</strong> Debt tracking envelopes with balance, minimum payment, and due date</li>
+            </ul>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Column</th>
+                    <th>Type</th>
+                    <th>Constraints</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>id</td>
+                    <td class="type">UUID</td>
+                    <td class="required">PRIMARY KEY, DEFAULT gen_random_uuid()</td>
+                    <td>Unique envelope identifier</td>
+                </tr>
+                <tr>
+                    <td>budget_id</td>
+                    <td class="type">UUID</td>
+                    <td class="required">NOT NULL, REFERENCES budgets(id)</td>
+                    <td>Parent budget</td>
+                </tr>
+                <tr>
+                    <td>category_id</td>
+                    <td class="type">UUID</td>
+                    <td>REFERENCES categories(id)</td>
+                    <td>Category for organization</td>
+                </tr>
+                <tr>
+                    <td>name</td>
+                    <td class="type">TEXT</td>
+                    <td class="required">NOT NULL</td>
+                    <td>Envelope name</td>
+                </tr>
+                <tr>
+                    <td>description</td>
+                    <td class="type">TEXT</td>
+                    <td></td>
+                    <td>Envelope description</td>
+                </tr>
+                <tr>
+                    <td>envelope_type</td>
+                    <td class="type">TEXT</td>
+                    <td class="required">NOT NULL, DEFAULT 'regular', CHECK IN ('regular', 'savings', 'debt')</td>
+                    <td>Type of envelope: regular, savings, or debt</td>
+                </tr>
+                <tr>
+                    <td>current_balance</td>
+                    <td class="type">DECIMAL(12,2)</td>
+                    <td>DEFAULT 0</td>
+                    <td>Current envelope balance</td>
+                </tr>
+                <tr>
+                    <td>debt_balance</td>
+                    <td class="type">DECIMAL(12,2)</td>
+                    <td>DEFAULT 0, NOT NULL, CHECK >= 0</td>
+                    <td>Current debt balance (for debt envelopes)</td>
+                </tr>
+                <tr>
+                    <td>minimum_payment</td>
+                    <td class="type">DECIMAL(12,2)</td>
+                    <td>CHECK > 0 OR NULL</td>
+                    <td>Minimum payment amount (for debt envelopes, display only)</td>
+                </tr>
+                <tr>
+                    <td>due_date</td>
+                    <td class="type">DATE</td>
+                    <td></td>
+                    <td>Payment due date (for debt envelopes, display only)</td>
+                </tr>
+                <tr>
+                    <td>should_notify</td>
+                    <td class="type">BOOLEAN</td>
+                    <td>DEFAULT false</td>
+                    <td>Enable notifications for this envelope</td>
+                </tr>
+                <tr>
+                    <td>notify_below_amount</td>
+                    <td class="type">DECIMAL(12,2)</td>
+                    <td>CHECK > 0 OR NULL</td>
+                    <td>Alert when envelope balance falls below this amount</td>
+                </tr>
+                <tr>
+                    <td>notify_above_amount</td>
+                    <td class="type">DECIMAL(12,2)</td>
+                    <td>CHECK > 0 OR NULL</td>
+                    <td>Alert when envelope balance reaches or exceeds this amount</td>
+                </tr>
+                <tr>
+                    <td>notify_date</td>
+                    <td class="type">DATE</td>
+                    <td></td>
+                    <td>Date to send notification</td>
+                </tr>
+                <tr>
+                    <td>color</td>
+                    <td class="type">TEXT</td>
+                    <td>DEFAULT '#6B7280'</td>
+                    <td>Display color (hex code)</td>
+                </tr>
+                <tr>
+                    <td>sort_order</td>
+                    <td class="type">INTEGER</td>
+                    <td>DEFAULT 0</td>
+                    <td>Display sort order</td>
+                </tr>
+                <tr>
+                    <td>created_at</td>
+                    <td class="type">TIMESTAMPTZ</td>
+                    <td class="required">NOT NULL, DEFAULT NOW()</td>
+                    <td>Envelope creation timestamp</td>
+                </tr>
+                <tr>
+                    <td>updated_at</td>
+                    <td class="type">TIMESTAMPTZ</td>
+                    <td class="required">NOT NULL, DEFAULT NOW()</td>
+                    <td>Last envelope update timestamp</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2 id="payees">payees</h2>
+        <p>Payment recipients with cached payment statistics.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Column</th>
+                    <th>Type</th>
+                    <th>Constraints</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>id</td>
+                    <td class="type">UUID</td>
+                    <td class="required">PRIMARY KEY, DEFAULT gen_random_uuid()</td>
+                    <td>Unique payee identifier</td>
+                </tr>
+                <tr>
+                    <td>budget_id</td>
+                    <td class="type">UUID</td>
+                    <td class="required">NOT NULL, REFERENCES budgets(id)</td>
+                    <td>Parent budget</td>
+                </tr>
+                <tr>
+                    <td>name</td>
+                    <td class="type">TEXT</td>
+                    <td class="required">NOT NULL</td>
+                    <td>Payee name</td>
+                </tr>
+                <tr>
+                    <td>description</td>
+                    <td class="type">TEXT</td>
+                    <td></td>
+                    <td>Payee description</td>
+                </tr>
+                <tr>
+                    <td>total_paid</td>
+                    <td class="type">DECIMAL(12,2)</td>
+                    <td>DEFAULT 0</td>
+                    <td>Total amount paid to this payee (cached)</td>
+                </tr>
+                <tr>
+                    <td>last_payment_date</td>
+                    <td class="type">DATE</td>
+                    <td></td>
+                    <td>Date of last payment (cached)</td>
+                </tr>
+                <tr>
+                    <td>last_payment_amount</td>
+                    <td class="type">DECIMAL(12,2)</td>
+                    <td></td>
+                    <td>Amount of last payment (cached)</td>
+                </tr>
+                <tr>
+                    <td>created_at</td>
+                    <td class="type">TIMESTAMPTZ</td>
+                    <td class="required">NOT NULL, DEFAULT NOW()</td>
+                    <td>Payee creation timestamp</td>
+                </tr>
+                <tr>
+                    <td>updated_at</td>
+                    <td class="type">TIMESTAMPTZ</td>
+                    <td class="required">NOT NULL, DEFAULT NOW()</td>
+                    <td>Last payee update timestamp</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2 id="transactions">transactions</h2>
+        <p>Financial transactions including income, expenses, transfers, and debt payments.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Column</th>
+                    <th>Type</th>
+                    <th>Constraints</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>id</td>
+                    <td class="type">UUID</td>
+                    <td class="required">PRIMARY KEY, DEFAULT gen_random_uuid()</td>
+                    <td>Unique transaction identifier</td>
+                </tr>
+                <tr>
+                    <td>budget_id</td>
+                    <td class="type">UUID</td>
+                    <td class="required">NOT NULL, REFERENCES budgets(id)</td>
+                    <td>Parent budget</td>
+                </tr>
+                <tr>
+                    <td>transaction_type</td>
+                    <td class="type">TEXT</td>
+                    <td class="required">NOT NULL, CHECK IN ('income', 'expense', 'transfer', 'debt_payment')</td>
+                    <td>Type of transaction</td>
+                </tr>
+                <tr>
+                    <td>amount</td>
+                    <td class="type">DECIMAL(12,2)</td>
+                    <td class="required">NOT NULL, CHECK > 0</td>
+                    <td>Transaction amount (always positive)</td>
+                </tr>
+                <tr>
+                    <td>description</td>
+                    <td class="type">TEXT</td>
+                    <td class="required">NOT NULL</td>
+                    <td>Transaction description</td>
+                </tr>
+                <tr>
+                    <td>transaction_date</td>
+                    <td class="type">DATE</td>
+                    <td class="required">NOT NULL</td>
+                    <td>Transaction date</td>
+                </tr>
+                <tr>
+                    <td>from_envelope_id</td>
+                    <td class="type">UUID</td>
+                    <td>REFERENCES envelopes(id)</td>
+                    <td>Source envelope (for expenses, transfers, debt payments)</td>
+                </tr>
+                <tr>
+                    <td>to_envelope_id</td>
+                    <td class="type">UUID</td>
+                    <td>REFERENCES envelopes(id)</td>
+                    <td>Destination envelope (for income, transfers)</td>
+                </tr>
+                <tr>
+                    <td>category_id</td>
+                    <td class="type">UUID</td>
+                    <td>REFERENCES categories(id)</td>
+                    <td>Transaction category</td>
+                </tr>
+                <tr>
+                    <td>payee_id</td>
+                    <td class="type">UUID</td>
+                    <td>REFERENCES payees(id)</td>
+                    <td>Payment recipient</td>
+                </tr>
+                <tr>
+                    <td>is_deleted</td>
+                    <td class="type">BOOLEAN</td>
+                    <td>DEFAULT false</td>
+                    <td>Soft delete flag</td>
+                </tr>
+                <tr>
+                    <td>created_at</td>
+                    <td class="type">TIMESTAMPTZ</td>
+                    <td class="required">NOT NULL, DEFAULT NOW()</td>
+                    <td>Transaction creation timestamp</td>
+                </tr>
+                <tr>
+                    <td>updated_at</td>
+                    <td class="type">TIMESTAMPTZ</td>
+                    <td class="required">NOT NULL, DEFAULT NOW()</td>
+                    <td>Last transaction update timestamp</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2 id="incomes">incomes</h2>
+        <p>Income sources and their scheduling information.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Column</th>
+                    <th>Type</th>
+                    <th>Constraints</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>id</td>
+                    <td class="type">UUID</td>
+                    <td class="required">PRIMARY KEY, DEFAULT gen_random_uuid()</td>
+                    <td>Unique income identifier</td>
+                </tr>
+                <tr>
+                    <td>budget_id</td>
+                    <td class="type">UUID</td>
+                    <td class="required">NOT NULL, REFERENCES budgets(id)</td>
+                    <td>Parent budget</td>
+                </tr>
+                <tr>
+                    <td>category_id</td>
+                    <td class="type">UUID</td>
+                    <td class="required">NOT NULL, REFERENCES categories(id)</td>
+                    <td>Income category</td>
+                </tr>
+                <tr>
+                    <td>name</td>
+                    <td class="type">TEXT</td>
+                    <td class="required">NOT NULL</td>
+                    <td>Income source name</td>
+                </tr>
+                <tr>
+                    <td>description</td>
+                    <td class="type">TEXT</td>
+                    <td></td>
+                    <td>Income description</td>
+                </tr>
+                <tr>
+                    <td>amount</td>
+                    <td class="type">DECIMAL(12,2)</td>
+                    <td class="required">NOT NULL, CHECK > 0</td>
+                    <td>Income amount per occurrence</td>
+                </tr>
+                <tr>
+                    <td>frequency</td>
+                    <td class="type">TEXT</td>
+                    <td class="required">NOT NULL, CHECK IN ('one_time', 'weekly', 'biweekly', 'monthly', 'quarterly', 'annually')</td>
+                    <td>Income frequency</td>
+                </tr>
+                <tr>
+                    <td>frequency_days</td>
+                    <td class="type">INTEGER[]</td>
+                    <td></td>
+                    <td>Custom frequency days (flexible scheduling)</td>
+                </tr>
+                <tr>
+                    <td>next_date</td>
+                    <td class="type">DATE</td>
+                    <td></td>
+                    <td>Next expected income date</td>
+                </tr>
+                <tr>
+                    <td>start_date</td>
+                    <td class="type">DATE</td>
+                    <td></td>
+                    <td>Income start date</td>
+                </tr>
+                <tr>
+                    <td>end_date</td>
+                    <td class="type">DATE</td>
+                    <td></td>
+                    <td>Income end date (optional)</td>
+                </tr>
+                <tr>
+                    <td>is_active</td>
+                    <td class="type">BOOLEAN</td>
+                    <td>DEFAULT true</td>
+                    <td>Whether income is currently active</td>
+                </tr>
+                <tr>
+                    <td>created_at</td>
+                    <td class="type">TIMESTAMPTZ</td>
+                    <td class="required">NOT NULL, DEFAULT NOW()</td>
+                    <td>Income creation timestamp</td>
+                </tr>
+                <tr>
+                    <td>updated_at</td>
+                    <td class="type">TIMESTAMPTZ</td>
+                    <td class="required">NOT NULL, DEFAULT NOW()</td>
+                    <td>Last income update timestamp</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2 id="user_state">user_state</h2>
+        <p>Cached user financial state for performance optimization.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Column</th>
+                    <th>Type</th>
+                    <th>Constraints</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>id</td>
+                    <td class="type">UUID</td>
+                    <td class="required">PRIMARY KEY, DEFAULT gen_random_uuid()</td>
+                    <td>Unique state record identifier</td>
+                </tr>
+                <tr>
+                    <td>budget_id</td>
+                    <td class="type">UUID</td>
+                    <td class="required">NOT NULL, REFERENCES budgets(id), UNIQUE</td>
+                    <td>Budget this state represents (one per budget)</td>
+                </tr>
+                <tr>
+                    <td>total_available</td>
+                    <td class="type">DECIMAL(12,2)</td>
+                    <td>DEFAULT 0</td>
+                    <td>Total available money (cached)</td>
+                </tr>
+                <tr>
+                    <td>total_allocated</td>
+                    <td class="type">DECIMAL(12,2)</td>
+                    <td>DEFAULT 0</td>
+                    <td>Total allocated to envelopes (cached)</td>
+                </tr>
+                <tr>
+                    <td>total_spent</td>
+                    <td class="type">DECIMAL(12,2)</td>
+                    <td>DEFAULT 0</td>
+                    <td>Total spent from envelopes (cached)</td>
+                </tr>
+                <tr>
+                    <td>last_calculated</td>
+                    <td class="type">TIMESTAMPTZ</td>
+                    <td>DEFAULT NOW()</td>
+                    <td>When these totals were last calculated</td>
+                </tr>
+                <tr>
+                    <td>created_at</td>
+                    <td class="type">TIMESTAMPTZ</td>
+                    <td class="required">NOT NULL, DEFAULT NOW()</td>
+                    <td>State creation timestamp</td>
+                </tr>
+                <tr>
+                    <td>updated_at</td>
+                    <td class="type">TIMESTAMPTZ</td>
+                    <td class="required">NOT NULL, DEFAULT NOW()</td>
+                    <td>Last state update timestamp</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>Key Business Rules</h2>
+        <ul>
+            <li><strong>Envelope Types:</strong> Savings envelopes must be in Savings category, debt envelopes must be in debt-related system categories (Loans, Credit Cards, Debt)</li>
+            <li><strong>System Categories:</strong> Automatically created categories (Savings, Loans, Credit Cards, Debt) cannot be modified or deleted</li>
+            <li><strong>Debt Payments:</strong> debt_payment transactions automatically reduce both envelope balance and debt_balance on debt envelopes</li>
+            <li><strong>Row Level Security:</strong> All tables enforce RLS to ensure users can only access their own data</li>
+            <li><strong>Soft Deletes:</strong> Transactions use soft deletes (is_deleted flag) to maintain data integrity</li>
+            <li><strong>Cached Values:</strong> user_state and payee totals are cached for performance and recalculated via triggers</li>
+        </ul>
+
+        <p><em>This data dictionary is automatically generated from the current database schema and reflects all recent changes including envelope types, system categories, and debt handling functionality.</em></p>
+    </div>
+</body>
+</html>
