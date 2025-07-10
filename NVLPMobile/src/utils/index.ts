@@ -11,4 +11,5 @@ export * from './validation';
 export * from './storage';
 
 // Date utilities
-export * from './date';
+export * from './date';// Placeholder export to make this a proper module
+export const placeholder = src/utils/index.ts;

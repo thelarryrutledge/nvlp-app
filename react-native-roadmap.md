@@ -5,7 +5,7 @@
 ### 1.1 Initialize React Native Project
 - [x] Create new React Native project with TypeScript template
 - [x] Set up project structure (src/, components/, screens/, utils/, etc.)
-- [ ] Configure TypeScript with strict mode
+- [x] Configure TypeScript with strict mode
 - [ ] Set up ESLint and Prettier for code consistency
 - [ ] Configure absolute imports with path aliases
 - [ ] Set up environment variables (.env files for dev/staging/prod)

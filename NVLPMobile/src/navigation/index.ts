@@ -14,4 +14,5 @@ export type RootStackParamList = {
 
 export type TabParamList = {
   // Define tab navigation param types here
-};
+};// Placeholder export to make this a proper module
+export const placeholder = src/navigation/index.ts;

@@ -18,4 +18,5 @@ export interface ComponentProps {
   // Common component props
   testID?: string;
   style?: any;
-}
+}// Placeholder export to make this a proper module
+export const placeholder = src/types/index.ts;
