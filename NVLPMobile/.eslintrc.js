@@ -16,6 +16,7 @@ module.exports = {
           ['@/hooks', './src/hooks'],
           ['@/navigation', './src/navigation'],
           ['@/context', './src/context'],
+          ['@/config', './src/config'],
           ['@/assets', './assets'],
         ],
         extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],

@@ -8,7 +8,7 @@
 - [x] Configure TypeScript with strict mode
 - [x] Set up ESLint and Prettier for code consistency
 - [x] Configure absolute imports with path aliases
-- [ ] Set up environment variables (.env files for dev/staging/prod)
+- [x] Set up environment variables (.env files for dev/staging/prod)
 
 ### 1.2 Development Environment
 - [ ] Configure iOS development environment (Xcode, pods)

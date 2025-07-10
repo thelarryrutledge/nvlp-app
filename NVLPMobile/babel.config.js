@@ -16,6 +16,7 @@ module.exports = {
           '@/hooks': './src/hooks',
           '@/navigation': './src/navigation',
           '@/context': './src/context',
+          '@/config': './src/config',
           '@/assets': './assets',
         },
         extensions: ['.ios.js', '.android.js', '.js', '.jsx', '.json', '.tsx', '.ts', '.native.js'],

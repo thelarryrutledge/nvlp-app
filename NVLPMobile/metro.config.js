@@ -21,6 +21,7 @@ const config = {
       '@/hooks': path.resolve(__dirname, 'src/hooks'),
       '@/navigation': path.resolve(__dirname, 'src/navigation'),
       '@/context': path.resolve(__dirname, 'src/context'),
+      '@/config': path.resolve(__dirname, 'src/config'),
       '@/assets': path.resolve(__dirname, 'assets'),
     },
   },

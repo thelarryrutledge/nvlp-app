@@ -28,6 +28,7 @@
       "@/hooks": ["src/hooks"],
       "@/navigation": ["src/navigation"],
       "@/context": ["src/context"],
+      "@/config": ["src/config"],
       "@/assets": ["assets"]
     },
     "resolveJsonModule": true,
