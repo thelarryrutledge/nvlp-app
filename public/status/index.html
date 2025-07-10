@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NVLP API Status</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #2c3e50;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .overall-status {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-size: 1.2em;
+        }
+
+        .status-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            font-weight: bold;
+        }
+
+        .status-icon.loading {
+            background-color: #f39c12;
+            color: white;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .status-icon.success {
+            background-color: #27ae60;
+            color: white;
+        }
+
+        .status-icon.error {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .status-icon.partial {
+            background-color: #f39c12;
+            color: white;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+
+        .status-grid {
+            display: grid;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .status-section {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .status-section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #ecf0f1;
+        }
+
+        .endpoint-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .endpoint-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+
+        .endpoint-item:hover {
+            background-color: #ecf0f1;
+        }
+
+        .endpoint-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+        }
+
+        .endpoint-name {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .endpoint-url {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            font-family: 'Courier New', monospace;
+        }
+
+        .endpoint-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .response-time {
+            font-size: 0.85em;
+            color: #7f8c8d;
+        }
+
+        .last-checked {
+            text-align: center;
+            margin-top: 30px;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        .refresh-button {
+            display: inline-block;
+            margin: 20px auto;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .refresh-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .refresh-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .legend {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            margin-top: 30px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .endpoint-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .endpoint-status {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .legend {
+                flex-wrap: wrap;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>NVLP API Status</h1>
+            <p>Real-time health check for NVLP API endpoints</p>
+            <div class="overall-status">
+                <span>Overall System Status:</span>
+                <span class="status-icon loading" id="overall-status-icon">...</span>
+                <span id="overall-status-text">Checking...</span>
+            </div>
+        </div>
+
+        <div class="status-grid">
+            <div class="status-section">
+                <h2>Authentication Services</h2>
+                <div class="endpoint-list" id="auth-endpoints">
+                    <div class="endpoint-item">
+                        <div class="endpoint-info">
+                            <span class="status-icon loading">...</span>
+                            <div>
+                                <div class="endpoint-name">Edge API - Health Check</div>
+                                <div class="endpoint-url">GET /health</div>
+                            </div>
+                        </div>
+                        <div class="endpoint-status">
+                            <span class="response-time"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="status-section">
+                <h2>Database API (PostgREST)</h2>
+                <div class="endpoint-list" id="db-endpoints">
+                    <div class="endpoint-item">
+                        <div class="endpoint-info">
+                            <span class="status-icon loading">...</span>
+                            <div>
+                                <div class="endpoint-name">Database API - Root</div>
+                                <div class="endpoint-url">GET /</div>
+                            </div>
+                        </div>
+                        <div class="endpoint-status">
+                            <span class="response-time"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="status-section">
+                <h2>Supabase Services</h2>
+                <div class="endpoint-list" id="supabase-endpoints">
+                    <div class="endpoint-item">
+                        <div class="endpoint-info">
+                            <span class="status-icon loading">...</span>
+                            <div>
+                                <div class="endpoint-name">Supabase API</div>
+                                <div class="endpoint-url">GET /rest/v1/</div>
+                            </div>
+                        </div>
+                        <div class="endpoint-status">
+                            <span class="response-time"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center;">
+            <button class="refresh-button" onclick="checkAllEndpoints()">
+                Refresh Status
+            </button>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <span class="status-icon success">✓</span>
+                <span>Operational</span>
+            </div>
+            <div class="legend-item">
+                <span class="status-icon error">✗</span>
+                <span>Down</span>
+            </div>
+            <div class="legend-item">
+                <span class="status-icon partial">!</span>
+                <span>Partial Outage</span>
+            </div>
+            <div class="legend-item">
+                <span class="status-icon loading">...</span>
+                <span>Checking</span>
+            </div>
+        </div>
+
+        <div class="last-checked" id="last-checked">
+            Last checked: Never
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const endpoints = [
+            {
+                category: 'auth-endpoints',
+                name: 'Edge API - Health Check',
+                url: 'https://edge-api.nvlp.app/health',
+                method: 'GET',
+                displayUrl: 'GET /health'
+            },
+            {
+                category: 'auth-endpoints',
+                name: 'Edge API - Auth Status',
+                url: 'https://edge-api.nvlp.app/auth/status',
+                method: 'GET',
+                displayUrl: 'GET /auth/status'
+            },
+            {
+                category: 'db-endpoints',
+                name: 'Database API - Root',
+                url: 'https://db-api.nvlp.app/',
+                method: 'GET',
+                displayUrl: 'GET /',
+                headers: {
+                    'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFucGF0bG9zb21vcG9pbXRzbXNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE2NTg5MzcsImV4cCI6MjA2NzIzNDkzN30.__GhvGGWqhC_i1ztp1-A1VEsL3JVWrtdpQG_uJS8tB8'
+                }
+            },
+            {
+                category: 'db-endpoints',
+                name: 'Database API - OpenAPI',
+                url: 'https://db-api.nvlp.app/',
+                method: 'GET',
+                displayUrl: 'GET / (OpenAPI)',
+                headers: {
+                    'Accept': 'application/openapi+json',
+                    'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFucGF0bG9zb21vcG9pbXRzbXNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE2NTg5MzcsImV4cCI6MjA2NzIzNDkzN30.__GhvGGWqhC_i1ztp1-A1VEsL3JVWrtdpQG_uJS8tB8'
+                }
+            },
+            {
+                category: 'supabase-endpoints',
+                name: 'Supabase API',
+                url: 'https://qnpatlosomopoimtsmsr.supabase.co/rest/v1/',
+                method: 'GET',
+                displayUrl: 'GET /rest/v1/',
+                headers: {
+                    'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFucGF0bG9zb21vcG9pbXRzbXNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE2NTg5MzcsImV4cCI6MjA2NzIzNDkzN30.__GhvGGWqhC_i1ztp1-A1VEsL3JVWrtdpQG_uJS8tB8'
+                }
+            },
+            {
+                category: 'supabase-endpoints',
+                name: 'Supabase Auth',
+                url: 'https://qnpatlosomopoimtsmsr.supabase.co/auth/v1/health',
+                method: 'GET',
+                displayUrl: 'GET /auth/v1/health',
+                headers: {
+                    'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFucGF0bG9zb21vcG9pbXRzbXNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE2NTg5MzcsImV4cCI6MjA2NzIzNDkzN30.__GhvGGWqhC_i1ztp1-A1VEsL3JVWrtdpQG_uJS8tB8'
+                }
+            }
+        ];
+
+        let checkingInProgress = false;
+
+        async function checkEndpoint(endpoint) {
+            const startTime = Date.now();
+            try {
+                const response = await fetch(endpoint.url, {
+                    method: endpoint.method,
+                    headers: endpoint.headers || {},
+                    mode: 'cors',
+                    signal: AbortSignal.timeout(10000) // 10 second timeout
+                });
+                
+                const endTime = Date.now();
+                const responseTime = endTime - startTime;
+                
+                return {
+                    success: response.ok,
+                    status: response.status,
+                    responseTime
+                };
+            } catch (error) {
+                return {
+                    success: false,
+                    status: 0,
+                    responseTime: Date.now() - startTime,
+                    error: error.message
+                };
+            }
+        }
+
+        function updateEndpointUI(endpoint, result) {
+            // Find the endpoint item
+            const category = document.getElementById(endpoint.category);
+            const items = category.querySelectorAll('.endpoint-item');
+            
+            let targetItem = null;
+            items.forEach(item => {
+                const nameEl = item.querySelector('.endpoint-name');
+                if (nameEl && nameEl.textContent === endpoint.name) {
+                    targetItem = item;
+                }
+            });
+
+            if (!targetItem) {
+                // Create new item if it doesn't exist
+                targetItem = createEndpointItem(endpoint);
+                category.appendChild(targetItem);
+            }
+
+            // Update status icon
+            const statusIcon = targetItem.querySelector('.status-icon');
+            statusIcon.classList.remove('loading', 'success', 'error');
+            
+            if (result.success) {
+                statusIcon.classList.add('success');
+                statusIcon.textContent = '✓';
+            } else {
+                statusIcon.classList.add('error');
+                statusIcon.textContent = '✗';
+            }
+
+            // Update response time
+            const responseTimeEl = targetItem.querySelector('.response-time');
+            if (result.success) {
+                responseTimeEl.textContent = `${result.responseTime}ms`;
+                responseTimeEl.style.color = result.responseTime < 500 ? '#27ae60' : 
+                                           result.responseTime < 1000 ? '#f39c12' : '#e74c3c';
+            } else {
+                responseTimeEl.textContent = result.error || `Error ${result.status}`;
+                responseTimeEl.style.color = '#e74c3c';
+            }
+        }
+
+        function createEndpointItem(endpoint) {
+            const div = document.createElement('div');
+            div.className = 'endpoint-item';
+            div.innerHTML = `
+                <div class="endpoint-info">
+                    <span class="status-icon loading">...</span>
+                    <div>
+                        <div class="endpoint-name">${endpoint.name}</div>
+                        <div class="endpoint-url">${endpoint.displayUrl}</div>
+                    </div>
+                </div>
+                <div class="endpoint-status">
+                    <span class="response-time"></span>
+                </div>
+            `;
+            return div;
+        }
+
+        async function checkAllEndpoints() {
+            if (checkingInProgress) return;
+            
+            checkingInProgress = true;
+            const refreshButton = document.querySelector('.refresh-button');
+            refreshButton.disabled = true;
+            refreshButton.textContent = 'Checking...';
+
+            // Reset all to loading state
+            document.querySelectorAll('.status-icon').forEach(icon => {
+                icon.classList.remove('success', 'error', 'partial');
+                icon.classList.add('loading');
+                icon.textContent = '...';
+            });
+
+            // Check all endpoints
+            const results = await Promise.all(
+                endpoints.map(async endpoint => {
+                    const result = await checkEndpoint(endpoint);
+                    updateEndpointUI(endpoint, result);
+                    return result;
+                })
+            );
+
+            // Update overall status
+            updateOverallStatus(results);
+
+            // Update last checked time
+            const now = new Date();
+            document.getElementById('last-checked').textContent = 
+                `Last checked: ${now.toLocaleString()}`;
+
+            // Re-enable refresh button
+            refreshButton.disabled = false;
+            refreshButton.textContent = 'Refresh Status';
+            checkingInProgress = false;
+        }
+
+        function updateOverallStatus(results) {
+            const overallIcon = document.getElementById('overall-status-icon');
+            const overallText = document.getElementById('overall-status-text');
+            
+            const successCount = results.filter(r => r.success).length;
+            const totalCount = results.length;
+            
+            overallIcon.classList.remove('loading', 'success', 'error', 'partial');
+            
+            if (successCount === totalCount) {
+                overallIcon.classList.add('success');
+                overallIcon.textContent = '✓';
+                overallText.textContent = 'All Systems Operational';
+            } else if (successCount === 0) {
+                overallIcon.classList.add('error');
+                overallIcon.textContent = '✗';
+                overallText.textContent = 'Major Outage';
+            } else {
+                overallIcon.classList.add('partial');
+                overallIcon.textContent = '!';
+                overallText.textContent = `Partial Outage (${successCount}/${totalCount} operational)`;
+            }
+        }
+
+        // Initialize empty endpoint items
+        function initializeEndpoints() {
+            endpoints.forEach(endpoint => {
+                const category = document.getElementById(endpoint.category);
+                const existingItems = category.querySelectorAll('.endpoint-item');
+                
+                // Check if this endpoint already exists
+                let exists = false;
+                existingItems.forEach(item => {
+                    const nameEl = item.querySelector('.endpoint-name');
+                    if (nameEl && nameEl.textContent === endpoint.name) {
+                        exists = true;
+                    }
+                });
+                
+                if (!exists) {
+                    category.appendChild(createEndpointItem(endpoint));
+                }
+            });
+        }
+
+        // Check status on page load
+        window.addEventListener('load', () => {
+            initializeEndpoints();
+            checkAllEndpoints();
+        });
+
+        // Auto-refresh every 5 minutes
+        setInterval(() => {
+            if (!checkingInProgress) {
+                checkAllEndpoints();
+            }
+        }, 5 * 60 * 1000);
+    </script>
+</body>
+</html>
