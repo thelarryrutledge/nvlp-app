@@ -241,56 +241,23 @@
 
         <div class="status-grid">
             <div class="status-section">
-                <h2>Authentication Services</h2>
+                <h2>Edge Functions</h2>
                 <div class="endpoint-list" id="auth-endpoints">
-                    <div class="endpoint-item">
-                        <div class="endpoint-info">
-                            <span class="status-icon loading">...</span>
-                            <div>
-                                <div class="endpoint-name">Edge API - Health Check</div>
-                                <div class="endpoint-url">GET /health</div>
-                            </div>
-                        </div>
-                        <div class="endpoint-status">
-                            <span class="response-time"></span>
-                        </div>
-                    </div>
+                    <!-- Endpoints will be populated by JavaScript -->
                 </div>
             </div>
 
             <div class="status-section">
                 <h2>Database API (PostgREST)</h2>
                 <div class="endpoint-list" id="db-endpoints">
-                    <div class="endpoint-item">
-                        <div class="endpoint-info">
-                            <span class="status-icon loading">...</span>
-                            <div>
-                                <div class="endpoint-name">Database API - Root</div>
-                                <div class="endpoint-url">GET /</div>
-                            </div>
-                        </div>
-                        <div class="endpoint-status">
-                            <span class="response-time"></span>
-                        </div>
-                    </div>
+                    <!-- Endpoints will be populated by JavaScript -->
                 </div>
             </div>
 
             <div class="status-section">
-                <h2>Supabase Services</h2>
+                <h2>Supabase Auth</h2>
                 <div class="endpoint-list" id="supabase-endpoints">
-                    <div class="endpoint-item">
-                        <div class="endpoint-info">
-                            <span class="status-icon loading">...</span>
-                            <div>
-                                <div class="endpoint-name">Supabase API</div>
-                                <div class="endpoint-url">GET /rest/v1/</div>
-                            </div>
-                        </div>
-                        <div class="endpoint-status">
-                            <span class="response-time"></span>
-                        </div>
-                    </div>
+                    <!-- Endpoints will be populated by JavaScript -->
                 </div>
             </div>
         </div>
@@ -330,42 +297,17 @@
         const endpoints = [
             {
                 category: 'auth-endpoints',
-                name: 'Edge API - Health Check',
-                url: 'https://edge-api.nvlp.app/health',
+                name: 'Edge Functions - Health Check',
+                url: 'https://qnpatlosomopoimtsmsr.supabase.co/functions/v1/health',
                 method: 'GET',
-                displayUrl: 'GET /health'
-            },
-            {
-                category: 'auth-endpoints',
-                name: 'Edge API - Auth Status',
-                url: 'https://edge-api.nvlp.app/auth/status',
-                method: 'GET',
-                displayUrl: 'GET /auth/status'
-            },
-            {
-                category: 'db-endpoints',
-                name: 'Database API - Root',
-                url: 'https://db-api.nvlp.app/',
-                method: 'GET',
-                displayUrl: 'GET /',
+                displayUrl: 'GET /functions/v1/health',
                 headers: {
-                    'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFucGF0bG9zb21vcG9pbXRzbXNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE2NTg5MzcsImV4cCI6MjA2NzIzNDkzN30.__GhvGGWqhC_i1ztp1-A1VEsL3JVWrtdpQG_uJS8tB8'
+                    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFucGF0bG9zb21vcG9pbXRzbXNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE2NTg5MzcsImV4cCI6MjA2NzIzNDkzN30.__GhvGGWqhC_i1ztp1-A1VEsL3JVWrtdpQG_uJS8tB8'
                 }
             },
             {
                 category: 'db-endpoints',
-                name: 'Database API - OpenAPI',
-                url: 'https://db-api.nvlp.app/',
-                method: 'GET',
-                displayUrl: 'GET / (OpenAPI)',
-                headers: {
-                    'Accept': 'application/openapi+json',
-                    'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFucGF0bG9zb21vcG9pbXRzbXNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE2NTg5MzcsImV4cCI6MjA2NzIzNDkzN30.__GhvGGWqhC_i1ztp1-A1VEsL3JVWrtdpQG_uJS8tB8'
-                }
-            },
-            {
-                category: 'supabase-endpoints',
-                name: 'Supabase API',
+                name: 'PostgREST API',
                 url: 'https://qnpatlosomopoimtsmsr.supabase.co/rest/v1/',
                 method: 'GET',
                 displayUrl: 'GET /rest/v1/',
