@@ -1,7 +1,9 @@
 # NVLP Mobile Project Structure
 
 ## Overview
-This React Native project follows a modular, scalable architecture with clear separation of concerns.
+
+This React Native project follows a modular, scalable architecture with clear
+separation of concerns.
 
 ## Folder Structure
 
@@ -57,21 +59,25 @@ NVLPMobile/
 ## Architecture Principles
 
 ### 1. Modular Design
+
 - Each folder has a specific responsibility
 - Components are organized by type and functionality
 - Clear separation between UI, business logic, and data
 
 ### 2. TypeScript First
+
 - All code written in TypeScript with strict mode
 - Comprehensive type definitions
 - Import/export types from centralized location
 
 ### 3. Clean Imports
+
 - Index files allow for clean imports: `import { Button } from '@/components'`
 - Absolute imports with path aliases (configured separately)
 - Consistent export patterns
 
 ### 4. Scalability
+
 - Structure supports growing codebase
 - Easy to add new features without restructuring
 - Clear guidelines for where new code belongs
@@ -79,7 +85,9 @@ NVLPMobile/
 ## Import Strategy
 
 ### Barrel Exports
-Each major folder has an `index.ts` file that exports all modules from that folder, enabling clean imports:
+
+Each major folder has an `index.ts` file that exports all modules from that
+folder, enabling clean imports:
 
 ```typescript
 // Instead of:
@@ -91,6 +99,7 @@ import { Button, Header } from '@/components';
 ```
 
 ### Path Aliases (To be configured)
+
 - `@/components` → `src/components`
 - `@/screens` → `src/screens`
 - `@/utils` → `src/utils`
@@ -104,33 +113,39 @@ import { Button, Header } from '@/components';
 ## Guidelines
 
 ### Components
+
 - Keep components small and focused
 - Use TypeScript interfaces for props
 - Include proper prop validation
 - Follow React Native best practices
 
 ### Screens
+
 - One screen per file
 - Use descriptive names (e.g., `LoginScreen`, `BudgetListScreen`)
 - Include proper navigation typing
 - Handle loading and error states
 
 ### Services
+
 - Separate API calls from component logic
 - Include proper error handling
 - Use async/await patterns
 - Implement retry logic where appropriate
 
 ### Types
+
 - Define interfaces for all data structures
 - Use union types for controlled values
 - Extend base interfaces when appropriate
 - Keep types close to where they're used
 
 ### Utils
+
 - Pure functions only
 - Include comprehensive unit tests
 - Use descriptive function names
 - Group related utilities together
 
-This structure provides a solid foundation for building a scalable, maintainable React Native application while following industry best practices.
+This structure provides a solid foundation for building a scalable, maintainable
+React Native application while following industry best practices.

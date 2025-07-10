@@ -17,5 +17,4 @@ export * from './transaction';
 export * from './profile';
 
 // Settings screens
-export * from './settings';// Placeholder export to make this a proper module
-export const placeholder = src/screens/index.ts;
+export * from './settings';

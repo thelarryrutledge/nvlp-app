@@ -8,6 +8,5 @@
 // export { useEnvelopes } from './useEnvelopes';
 // export { useTransactions } from './useTransactions';
 
-// Placeholder export to make this a proper module
-export const hooks = {};// Placeholder export to make this a proper module
-export const placeholder = src/hooks/index.ts;
+// Placeholder export to make this a valid module
+export {};

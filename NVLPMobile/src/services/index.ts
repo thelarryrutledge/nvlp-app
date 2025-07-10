@@ -11,5 +11,3 @@ export * from './auth';
 export * from './cache';
 
 // Sync services
-export * from './sync';// Placeholder export to make this a proper module
-export const placeholder = src/services/index.ts;

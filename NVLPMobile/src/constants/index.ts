@@ -7,7 +7,8 @@ export const APP_CONFIG = {
 
 // API Configuration
 export const API_CONFIG = {
-  BASE_URL: process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://api.nvlp.app',
+  BASE_URL:
+    process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://api.nvlp.app',
   TIMEOUT: 10000,
   RETRY_ATTEMPTS: 3,
 };
@@ -40,5 +41,4 @@ export const SCREEN = {
   PADDING: SPACING.MD,
   HEADER_HEIGHT: 60,
   TAB_HEIGHT: 50,
-};// Placeholder export to make this a proper module
-export const placeholder = src/constants/index.ts;
+};

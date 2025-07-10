@@ -7,6 +7,5 @@
 // export { ThemeProvider, useTheme } from './ThemeContext';
 // export { BudgetProvider, useBudget } from './BudgetContext';
 
-// Placeholder export to make this a proper module
-export const context = {};// Placeholder export to make this a proper module
-export const placeholder = src/context/index.ts;
+// Placeholder export to make this a valid module
+export {};

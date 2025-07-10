@@ -6,8 +6,17 @@ export * from '../../../src/client/types';
 
 // Add mobile-specific types here
 export interface NavigationProps {
-  navigation: any;
-  route: any;
+  navigation: {
+    navigate: (name: string, params?: Record<string, unknown>) => void;
+    goBack: () => void;
+    replace: (name: string, params?: Record<string, unknown>) => void;
+    reset: (state: Record<string, unknown>) => void;
+  };
+  route: {
+    params?: Record<string, unknown>;
+    name: string;
+    key: string;
+  };
 }
 
 export interface ScreenProps extends NavigationProps {
@@ -17,6 +26,5 @@ export interface ScreenProps extends NavigationProps {
 export interface ComponentProps {
   // Common component props
   testID?: string;
-  style?: any;
-}// Placeholder export to make this a proper module
-export const placeholder = src/types/index.ts;
+  style?: Record<string, unknown> | Array<Record<string, unknown>>;
+}

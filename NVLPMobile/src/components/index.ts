@@ -11,5 +11,4 @@ export * from './forms';
 export * from './charts';
 
 // UI components
-export * from './ui';// Placeholder export to make this a proper module
-export const placeholder = src/components/index.ts;
+export * from './ui';
