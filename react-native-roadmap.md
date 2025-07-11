@@ -35,7 +35,7 @@
   - [x] User profile data
   - [x] Active budget selection
   - [x] Cached data management
-- [ ] Implement persistence layer for offline support
+- [x] Implement persistence layer for offline support
 - [ ] Create state hydration/rehydration logic
 
 ### 2.2 API Integration

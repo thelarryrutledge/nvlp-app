@@ -9,6 +9,24 @@ export {
   initializeNetworkMonitoring 
 } from './cacheStore';
 
+// Persistence utilities
+export {
+  initializePersistence,
+  cleanupPersistence,
+  rehydrateStores,
+  handleAppStateChange,
+  getPersistenceStatus,
+} from './initializePersistence';
+
+export {
+  clearAllPersistedData,
+  clearStoreData,
+  exportPersistedData,
+  importPersistedData,
+  debugPersistedState,
+  monitorStorageUsage,
+} from './persistence';
+
 // Re-export store types for convenience
 export type {
   AuthStore,
