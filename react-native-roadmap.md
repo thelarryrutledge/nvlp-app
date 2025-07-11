@@ -31,7 +31,7 @@
 ### 2.1 State Management Setup
 - [x] Choose state management solution (Redux Toolkit, Zustand, or Context)
 - [ ] Set up global state structure for:
-  - [ ] Authentication state
+  - [x] Authentication state
   - [ ] User profile data
   - [ ] Active budget selection
   - [ ] Cached data management
