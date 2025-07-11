@@ -40,16 +40,28 @@ Download from: https://developer.android.com/studio
 
 After Android Studio installation, open it and:
 
-1. Go to **Preferences** → **Appearance & Behavior** → **System Settings** → **Android SDK**
-2. In the **SDK Platforms** tab, select:
-   - Android 14 (API 34) - Recommended for React Native 0.80.1
-   - Android 13 (API 33)
-3. In the **SDK Tools** tab, select:
-   - Android SDK Build-Tools 34.0.0
-   - Android Emulator
-   - Android SDK Platform-Tools
-   - Intel x86 Emulator Accelerator (HAXM) - for Intel Macs
-4. Click "Apply" to download and install
+**For macOS:**
+1. Open Android Studio → **Settings** (or **Android Studio** → **Preferences** from menu bar)
+2. Navigate to **Languages & Frameworks** → **Android SDK**
+   - Alternative: Search for "Android SDK" in the settings search bar
+
+**For the SDK Manager:**
+1. You can also access it from the Welcome screen: **More Actions** → **SDK Manager**
+2. Or from an open project: **Tools** → **SDK Manager**
+
+**SDK Platforms tab:**
+- Select **Android 14 (API 34)** - Recommended for React Native 0.80.1
+- Select **Android 13 (API 33)** as fallback
+
+**SDK Tools tab:**
+- Android SDK Build-Tools 34.0.0
+- Android Emulator
+- Android SDK Platform-Tools
+- Android SDK Command-line Tools (latest)
+- For Intel Macs: Intel x86 Emulator Accelerator (HAXM)
+- For Apple Silicon: No HAXM needed (uses built-in virtualization)
+
+Click "Apply" to download and install selected components
 
 ### 4. Configure Environment Variables
 
