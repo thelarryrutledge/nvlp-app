@@ -100,7 +100,12 @@ The project's `ios/Podfile` is already configured for:
    - Ensure full Xcode is installed (not just Command Line Tools)
    - Verify with `xcrun --show-sdk-path --sdk iphoneos`
 
-3. **Pod install fails**
+3. **"env: node: No such file or directory" error**
+   - Fixed in package.json scripts by prepending PATH=/opt/homebrew/bin:$PATH
+   - This ensures Metro bundler can find node when launched in new terminal
+   - Alternative: Add Homebrew path to system-wide PATH in /etc/paths.d/
+
+4. **Pod install fails**
    - Ensure Xcode is properly installed and licensed
    - Try `pod repo update` if dependency issues occur
    - Run `pod install --repo-update` for cache refresh

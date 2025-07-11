@@ -31,7 +31,7 @@ Access Chrome DevTools for JavaScript debugging:
    - **iOS Simulator**: Cmd+D
    - **Android Emulator**: Cmd+M (Mac) or Ctrl+M (Windows/Linux)
    - **Physical Device**: Shake the device
-3. Select "Open Debugger"
+3. Select "Open DevTools" (replaces "Open Debugger" in newer versions)
 4. Chrome will open with DevTools attached
 
 **Features**:
@@ -59,27 +59,49 @@ Built-in element inspector for UI debugging:
 
 ### Basic Debugging Session
 
-1. **Start Metro bundler**:
+**Option 1: Separate terminals (Recommended)**
+1. **Start Metro bundler** (Terminal 1):
    ```bash
    npm start
    ```
 
-2. **Start React DevTools** (in another terminal):
-   ```bash
-   npm run devtools
-   ```
-
-3. **Run your app**:
+2. **Run your app** (Terminal 2):
    ```bash
    npm run ios
    # or
    npm run android
    ```
 
+3. **Start React DevTools** (Terminal 3, optional):
+   ```bash
+   npm run devtools
+   ```
+
+**Option 2: Combined (Alternative)**
+```bash
+npm run ios:dev    # Starts Metro + iOS
+npm run android:dev # Starts Metro + Android
+```
+
+**Important**: Due to PATH issues with spawned terminals, we use `--no-packager` flag and start Metro separately.
+
 4. **Access debugging tools**:
    - Dev menu: Shake device or Cmd+D/Cmd+M
-   - React DevTools automatically connects
-   - Chrome DevTools via "Open Debugger"
+   - **Open DevTools**: Chrome DevTools for JavaScript debugging
+   - **Toggle Element Inspector**: Inspect UI elements in-app
+   - **Show Perf Monitor**: Performance metrics overlay
+   - React DevTools (optional): `npm run devtools` in separate terminal
+
+### Dev Menu Options Explained
+
+When you press **Cmd+D** (iOS) or **Cmd+M** (Android), you'll see:
+
+- **Reload** - Refresh the app manually (Cmd+R also works)
+- **Open DevTools** - Launch Chrome DevTools for JavaScript debugging
+- **Toggle Element Inspector** - Inspect UI elements directly in your app
+- **Disable Fast Refresh** - Temporarily turn off hot reload
+- **Show Perf Monitor** - Display FPS and memory usage overlay
+- **Configure Bundler** - Metro bundler configuration options
 
 ### Console Logging
 
@@ -168,12 +190,23 @@ Use Chrome DevTools Memory tab:
 
 ### Common Issues
 
-1. **DevTools won't connect**
+1. **"env: node: No such file or directory" error**
+   - ✅ **Fixed**: We use custom Metro script with proper PATH
+   - Always start Metro separately: `npm start`
+   - Then run iOS/Android: `npm run ios` or `npm run android`
+   - Scripts now use `--no-packager` flag to prevent spawning new terminals
+
+2. **"No script URL provided" error**
+   - Ensure Metro is running before launching app
+   - Check Metro is accessible at http://localhost:8081
+   - Restart Metro if needed: `npm start`
+
+3. **DevTools won't connect**
    - Ensure Metro is running
    - Check firewall settings
    - Try refreshing the app (Cmd+R / Ctrl+R)
 
-2. **Chrome DevTools shows "Waiting for connection"**
+4. **Chrome DevTools shows "Waiting for connection"**
    - Close and reopen debugger
    - Restart Metro bundler
    - Check dev menu is accessible

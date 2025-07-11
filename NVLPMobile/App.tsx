@@ -6,7 +6,8 @@
  */
 
 import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
+import { StatusBar, StyleSheet, useColorScheme, View, ScrollView } from 'react-native';
+import HotReloadTest from './src/components/HotReloadTest';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -14,13 +15,19 @@ function App() {
   return (
     <View style={styles.container}>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <NewAppScreen templateFileName="App.tsx" />
+      <ScrollView style={styles.scrollView}>
+        <HotReloadTest />
+        <NewAppScreen templateFileName="App.tsx" />
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  scrollView: {
     flex: 1,
   },
 });

@@ -14,8 +14,8 @@
 - [x] Configure iOS development environment (Xcode, pods)
 - [x] Configure Android development environment (Android Studio)
 - [x] Set up React Native Debugger or Flipper
-- [ ] Configure hot reload and fast refresh
-- [ ] Set up device testing (physical and simulators)
+- [x] Configure hot reload and fast refresh
+- [x] Set up device testing (physical and simulators)
 
 ### 1.3 Core Dependencies
 - [ ] Install React Navigation v6 and dependencies

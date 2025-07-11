@@ -25,6 +25,13 @@ const config = {
       '@/assets': path.resolve(__dirname, 'assets'),
     },
   },
+  server: {
+    port: 8081,
+  },
+  watchFolders: [
+    path.resolve(__dirname, 'src'),
+    path.resolve(__dirname, 'assets'),
+  ],
 };
 
 module.exports = mergeConfig(getDefaultConfig(__dirname), config);
