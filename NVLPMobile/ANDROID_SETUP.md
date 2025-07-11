@@ -50,11 +50,12 @@ After Android Studio installation, open it and:
 2. Or from an open project: **Tools** → **SDK Manager**
 
 **SDK Platforms tab:**
-- Select **Android 14 (API 34)** - Recommended for React Native 0.80.1
-- Select **Android 13 (API 33)** as fallback
+- Select **Android 16 (API 36)** if available, or
+- Select **Android 15 (API 35)** - Required for React Native 0.80.1
+- Select **Android 14 (API 34)** as fallback
 
 **SDK Tools tab:**
-- Android SDK Build-Tools 34.0.0
+- Android SDK Build-Tools 35.0.0 (or latest)
 - Android Emulator
 - Android SDK Platform-Tools
 - Android SDK Command-line Tools (latest)
@@ -99,8 +100,10 @@ source ~/.zshrc
 
 The project's `android/build.gradle` is configured for:
 - React Native 0.80.1
-- Minimum SDK: 23 (Android 6.0)
-- Target SDK: 34 (Android 14)
+- Minimum SDK: 24 (Android 7.0)
+- Compile SDK: 35 (Android 15)
+- Target SDK: 35 (Android 15)
+- Build Tools: 35.0.0
 - Kotlin support
 
 ### Native Dependencies
