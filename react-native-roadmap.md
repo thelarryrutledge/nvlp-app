@@ -13,7 +13,7 @@
 ### 1.2 Development Environment
 - [x] Configure iOS development environment (Xcode, pods)
 - [x] Configure Android development environment (Android Studio)
-- [ ] Set up React Native Debugger or Flipper
+- [x] Set up React Native Debugger or Flipper
 - [ ] Configure hot reload and fast refresh
 - [ ] Set up device testing (physical and simulators)
 
