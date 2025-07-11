@@ -32,7 +32,7 @@
 - [x] Choose state management solution (Redux Toolkit, Zustand, or Context)
 - [ ] Set up global state structure for:
   - [x] Authentication state
-  - [ ] User profile data
+  - [x] User profile data
   - [ ] Active budget selection
   - [ ] Cached data management
 - [ ] Implement persistence layer for offline support
