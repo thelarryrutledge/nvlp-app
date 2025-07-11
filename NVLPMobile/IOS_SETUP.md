@@ -57,17 +57,24 @@ Once Xcode is installed, complete the iOS setup:
    sudo xcodebuild -license accept
    ```
 
-3. **Install iOS Dependencies**:
+3. **Install iOS Dependencies** (Automated):
    ```bash
-   cd NVLPMobile/ios
-   pod install
+   # From NVLPMobile directory
+   # Pod install is now handled automatically by React Native CLI
+   # Direct pod install is deprecated - use the commands below instead
    ```
 
 4. **Test iOS Build**:
    ```bash
    # From NVLPMobile directory
    npx react-native run-ios
+   # or
+   yarn ios
+   # or
+   npm run ios
    ```
+
+   **Note**: The React Native CLI will automatically run `pod install` when needed during the build process.
 
 ## Project Configuration
 
