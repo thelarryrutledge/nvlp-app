@@ -33,7 +33,7 @@
 - [ ] Set up global state structure for:
   - [x] Authentication state
   - [x] User profile data
-  - [ ] Active budget selection
+  - [x] Active budget selection
   - [ ] Cached data management
 - [ ] Implement persistence layer for offline support
 - [ ] Create state hydration/rehydration logic
