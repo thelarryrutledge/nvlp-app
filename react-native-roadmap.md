@@ -21,7 +21,7 @@
 - [x] Install React Navigation v6 and dependencies
 - [x] Add React Native Safe Area Context
 - [x] Install React Native Gesture Handler (requires native setup)
-- [ ] Add React Native Reanimated for animations (requires native setup)
+- [x] Add React Native Reanimated for animations (requires native setup)
 - [ ] Install React Native Vector Icons or similar icon library (requires native setup)
 - [ ] Add React Native Async Storage for local persistence
 - [ ] Install date/time handling library (date-fns or moment)
