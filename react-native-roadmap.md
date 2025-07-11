@@ -36,7 +36,7 @@
   - [x] Active budget selection
   - [x] Cached data management
 - [x] Implement persistence layer for offline support
-- [ ] Create state hydration/rehydration logic
+- [x] Create state hydration/rehydration logic
 
 ### 2.2 API Integration
 - [ ] Integrate NVLP TypeScript client library

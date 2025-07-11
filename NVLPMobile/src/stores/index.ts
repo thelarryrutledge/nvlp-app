@@ -27,6 +27,15 @@ export {
   monitorStorageUsage,
 } from './persistence';
 
+// Hydration utilities
+export {
+  hydrateApp,
+  cleanupHydration,
+  forceRehydrate,
+  hydrateStore,
+  getHydrationStatus,
+} from './hydration';
+
 // Re-export store types for convenience
 export type {
   AuthStore,
