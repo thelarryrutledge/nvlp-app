@@ -1,40 +1,48 @@
 {
-  "functions": {
-    "api/**/*.ts": {
-      "runtime": "@vercel/node@3.0.0"
+  "_comment": "This configuration is for documentation only",
+  "_note": "NVLP API uses Supabase Edge Functions, not Vercel functions",
+  "deployment": {
+    "type": "supabase",
+    "commands": {
+      "dev": "supabase start && supabase functions serve",
+      "deploy": "supabase functions deploy",
+      "deploy_individual": {
+        "auth": "supabase functions deploy auth",
+        "dashboard": "supabase functions deploy dashboard", 
+        "transactions": "supabase functions deploy transactions",
+        "reports": "supabase functions deploy reports",
+        "audit": "supabase functions deploy audit",
+        "export": "supabase functions deploy export",
+        "health": "supabase functions deploy health",
+        "notifications": "supabase functions deploy notifications"
+      }
     }
   },
-  "env": {
-    "SUPABASE_URL": "@supabase_url",
-    "SUPABASE_ANON_KEY": "@supabase_anon_key",
-    "SUPABASE_SERVICE_KEY": "@supabase_service_key",
-    "JWT_SECRET": "@jwt_secret",
-    "DB_API_URL": "@db_api_url",
-    "EDGE_API_URL": "@edge_api_url"
+  "environment_variables": {
+    "required": [
+      "SUPABASE_URL",
+      "SUPABASE_ANON_KEY", 
+      "SUPABASE_SERVICE_KEY",
+      "JWT_SECRET"
+    ],
+    "optional": [
+      "DB_API_URL",
+      "EDGE_API_URL",
+      "CORS_ORIGIN",
+      "LOG_LEVEL"
+    ]
   },
-  "headers": [
-    {
-      "source": "/api/(.*)",
-      "headers": [
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
-        },
-        {
-          "key": "Access-Control-Allow-Methods",
-          "value": "GET, POST, PUT, DELETE, OPTIONS"
-        },
-        {
-          "key": "Access-Control-Allow-Headers",
-          "value": "Content-Type, Authorization"
-        }
-      ]
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
-    }
-  ]
+  "endpoints": {
+    "base_url": "https://qnpatlosomopoimtsmsr.supabase.co/functions/v1",
+    "functions": [
+      "/auth",
+      "/dashboard", 
+      "/transactions",
+      "/reports",
+      "/audit",
+      "/export",
+      "/health",
+      "/notifications"
+    ]
+  }
 }

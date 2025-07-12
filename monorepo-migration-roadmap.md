@@ -41,7 +41,7 @@
 - [x] Test edge function imports (all passed ✅)
 
 ### 2.3 Move API Configuration
-- [ ] Move Vercel configuration for API
+- [x] Move Vercel configuration for API
 - [ ] Update API deployment settings
 - [ ] Move API-specific documentation
 - [ ] Verify API structure
@@ -248,5 +248,5 @@
 - [ ] Documentation is complete
 
 ## Current Status
-**Phase**: 2.2 Move Edge Functions ✅ COMPLETE (4/4)
-**Next Task**: Move Vercel configuration for API (Phase 2.3)
+**Phase**: 2.3 Move API Configuration (1/4 complete)
+**Next Task**: Update API deployment settings
