@@ -1,6 +1,7 @@
 {
   "_comment": "This configuration is for documentation only",
   "_note": "NVLP API uses Supabase Edge Functions, not Vercel functions",
+  "_monorepo_note": "Supabase functions are located at ../../supabase/functions/",
   "deployment": {
     "type": "supabase",
     "commands": {

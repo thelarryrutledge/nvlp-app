@@ -45,18 +45,27 @@ The API will be available at `http://localhost:3001`
 
 ```
 apps/api/
-├── api/                 # Vercel Edge Functions
-│   ├── auth/           # Authentication endpoints
-│   ├── budgets/        # Budget management
-│   ├── transactions/   # Transaction handling
-│   └── ...            # Other endpoints
-├── src/                # Shared utilities
+├── docs/               # API documentation
+│   ├── API_TEST_PLAN.md
+│   ├── api-specification.yaml
+│   └── ...            # Other API docs
+├── src/                # Shared utilities (if needed)
 │   ├── lib/           # Helper functions
-│   └── middleware/    # Express middleware
-├── .env.example       # Environment template
+│   ├── types/         # TypeScript types
+│   └── utils/         # Utility functions
 ├── package.json       # Package configuration
 ├── tsconfig.json      # TypeScript config
-└── vercel.json        # Vercel configuration
+└── vercel.json        # Deployment reference
+
+# Note: Actual Supabase functions are at repository root
+../../supabase/
+├── functions/          # Supabase Edge Functions
+│   ├── auth/          # Authentication endpoints
+│   ├── dashboard/     # Dashboard data
+│   ├── transactions/  # Transaction handling
+│   └── ...           # Other functions
+├── migrations/        # Database migrations
+└── config.toml       # Supabase configuration
 ```
 
 ## Documentation
