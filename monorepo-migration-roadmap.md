@@ -37,7 +37,7 @@
 ### 2.2 Move Edge Functions
 - [x] Move Supabase functions to `apps/api/src/functions/`
 - [x] Update import paths in edge functions (no changes needed - relative imports work)
-- [ ] Move API-specific dependencies to `apps/api/package.json`
+- [x] Move API-specific dependencies to `apps/api/package.json`
 - [ ] Test edge function imports
 
 ### 2.3 Move API Configuration
@@ -248,5 +248,5 @@
 - [ ] Documentation is complete
 
 ## Current Status
-**Phase**: 2.2 Move Edge Functions (2/4 complete)
-**Next Task**: Move API-specific dependencies to apps/api/package.json
+**Phase**: 2.2 Move Edge Functions (3/4 complete)
+**Next Task**: Test edge function imports
