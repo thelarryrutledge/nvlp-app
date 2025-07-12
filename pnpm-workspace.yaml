@@ -1,0 +1,12 @@
+packages:
+  # All apps in the apps directory
+  - 'apps/*'
+  
+  # All packages in the packages directory
+  - 'packages/*'
+  
+  # Exclude test fixtures and build outputs
+  - '!**/test/**'
+  - '!**/dist/**'
+  - '!**/build/**'
+  - '!**/.next/**'

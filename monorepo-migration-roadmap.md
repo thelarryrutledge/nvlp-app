@@ -11,7 +11,7 @@
 
 ### 1.2 Root Configuration
 - [x] Create root `package.json` with workspace configuration
-- [ ] Create `pnpm-workspace.yaml` file
+- [x] Create `pnpm-workspace.yaml` file
 - [ ] Set up root-level scripts for common tasks
 - [ ] Configure root `.gitignore` for monorepo
 - [ ] Add root-level documentation files
@@ -248,5 +248,5 @@
 - [ ] Documentation is complete
 
 ## Current Status
-**Phase**: 1.2 Root Configuration (1/5 complete)
-**Next Task**: Create pnpm-workspace.yaml file
+**Phase**: 1.2 Root Configuration (2/5 complete)
+**Next Task**: Set up root-level scripts for common tasks
