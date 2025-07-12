@@ -32,7 +32,7 @@
 - [x] Create `apps/api/package.json`
 - [x] Create `apps/api/tsconfig.json`
 - [x] Create `apps/api/README.md`
-- [ ] Set up API-specific environment configuration
+- [x] Set up API-specific environment configuration
 
 ### 2.2 Move Edge Functions
 - [ ] Move `/api/` directory to `apps/api/src/`
@@ -248,5 +248,5 @@
 - [ ] Documentation is complete
 
 ## Current Status
-**Phase**: 2.1 Prepare API Package (3/4 complete)
-**Next Task**: Set up API-specific environment configuration
+**Phase**: 2.1 Prepare API Package ✅ COMPLETE (4/4)
+**Next Task**: Move /api/ directory to apps/api/src/ (Phase 2.2)
