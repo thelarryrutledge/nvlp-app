@@ -42,7 +42,7 @@
 
 ### 2.3 Move API Configuration
 - [x] Move Vercel configuration for API
-- [ ] Update API deployment settings
+- [x] Update API deployment settings
 - [ ] Move API-specific documentation
 - [ ] Verify API structure
 
@@ -248,5 +248,5 @@
 - [ ] Documentation is complete
 
 ## Current Status
-**Phase**: 2.3 Move API Configuration (1/4 complete)
-**Next Task**: Update API deployment settings
+**Phase**: 2.3 Move API Configuration (2/4 complete)
+**Next Task**: Move API-specific documentation
