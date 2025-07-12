@@ -43,7 +43,7 @@
 ### 2.3 Move API Configuration
 - [x] Move Vercel configuration for API
 - [x] Update API deployment settings
-- [ ] Move API-specific documentation
+- [x] Move API-specific documentation
 - [ ] Verify API structure
 
 ### 2.4 Test Supabase Edge Function Deployment
@@ -248,5 +248,5 @@
 - [ ] Documentation is complete
 
 ## Current Status
-**Phase**: 2.3 Move API Configuration (2/4 complete)
-**Next Task**: Move API-specific documentation
+**Phase**: 2.3 Move API Configuration (3/4 complete)
+**Next Task**: Verify API structure

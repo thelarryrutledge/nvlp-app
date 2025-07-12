@@ -68,7 +68,7 @@ curl -H "Authorization: Bearer {TOKEN}" \
 - **Device Testing**: ✅ iOS simulators (iPhone 16 Pro, iPad Pro) and Android emulators ready
 - **PATH Fix**: ✅ Node environment issue resolved in package.json scripts
 - **Status**: PAUSED - Migrating to Monorepo Structure
-- **Monorepo Migration**: Phase 2.3 Move API Configuration (2/4 complete)
-- **Latest**: Added deployment commands to root package.json and created DEPLOYMENT.md
-- **Next Monorepo Task**: Move API-specific documentation
+- **Monorepo Migration**: Phase 2.3 Move API Configuration (3/4 complete)
+- **Latest**: Moved API documentation (API_TEST_PLAN.md, api-specification.yaml, AUTH_QUICK_REFERENCE.md, RLS_POLICIES.md, test-api.html) to apps/api/docs/
+- **Next Monorepo Task**: Verify API structure
 - **React Native Status**: Phase 2.1 Complete, Phase 2.2 pending monorepo completion

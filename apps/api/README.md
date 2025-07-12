@@ -59,6 +59,16 @@ apps/api/
 └── vercel.json        # Vercel configuration
 ```
 
+## Documentation
+
+API documentation is located in the `docs/` directory:
+
+- `docs/API_TEST_PLAN.md` - Comprehensive API testing guide
+- `docs/api-specification.yaml` - OpenAPI specification
+- `docs/AUTH_QUICK_REFERENCE.md` - Authentication reference
+- `docs/RLS_POLICIES.md` - Row Level Security policies
+- `docs/test-api.html` - Interactive API testing tool
+
 ## Available Scripts
 
 - `pnpm dev` - Start development server
