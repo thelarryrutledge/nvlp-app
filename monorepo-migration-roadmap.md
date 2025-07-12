@@ -30,7 +30,7 @@
 
 ### 2.1 Prepare API Package
 - [x] Create `apps/api/package.json`
-- [ ] Create `apps/api/tsconfig.json`
+- [x] Create `apps/api/tsconfig.json`
 - [ ] Create `apps/api/README.md`
 - [ ] Set up API-specific environment configuration
 
@@ -248,5 +248,5 @@
 - [ ] Documentation is complete
 
 ## Current Status
-**Phase**: 2.1 Prepare API Package (1/4 complete)
-**Next Task**: Create apps/api/tsconfig.json
+**Phase**: 2.1 Prepare API Package (2/4 complete)
+**Next Task**: Create apps/api/README.md
