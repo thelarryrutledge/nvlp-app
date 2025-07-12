@@ -35,7 +35,7 @@
 - [x] Set up API-specific environment configuration
 
 ### 2.2 Move Edge Functions
-- [ ] Move `/api/` directory to `apps/api/src/`
+- [x] Move Supabase functions to `apps/api/src/functions/`
 - [ ] Update import paths in edge functions
 - [ ] Move API-specific dependencies to `apps/api/package.json`
 - [ ] Test edge function imports
@@ -248,5 +248,5 @@
 - [ ] Documentation is complete
 
 ## Current Status
-**Phase**: 2.1 Prepare API Package ✅ COMPLETE (4/4)
-**Next Task**: Move /api/ directory to apps/api/src/ (Phase 2.2)
+**Phase**: 2.2 Move Edge Functions (1/4 complete)
+**Next Task**: Update import paths in edge functions
