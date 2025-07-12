@@ -38,7 +38,7 @@
 - [x] Move Supabase functions to `apps/api/src/functions/`
 - [x] Update import paths in edge functions (no changes needed - relative imports work)
 - [x] Move API-specific dependencies to `apps/api/package.json`
-- [ ] Test edge function imports
+- [x] Test edge function imports (all passed ✅)
 
 ### 2.3 Move API Configuration
 - [ ] Move Vercel configuration for API
@@ -248,5 +248,5 @@
 - [ ] Documentation is complete
 
 ## Current Status
-**Phase**: 2.2 Move Edge Functions (3/4 complete)
-**Next Task**: Test edge function imports
+**Phase**: 2.2 Move Edge Functions ✅ COMPLETE (4/4)
+**Next Task**: Move Vercel configuration for API (Phase 2.3)
