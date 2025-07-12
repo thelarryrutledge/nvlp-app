@@ -31,7 +31,7 @@
 ### 2.1 Prepare API Package
 - [x] Create `apps/api/package.json`
 - [x] Create `apps/api/tsconfig.json`
-- [ ] Create `apps/api/README.md`
+- [x] Create `apps/api/README.md`
 - [ ] Set up API-specific environment configuration
 
 ### 2.2 Move Edge Functions
@@ -248,5 +248,5 @@
 - [ ] Documentation is complete
 
 ## Current Status
-**Phase**: 2.1 Prepare API Package (2/4 complete)
-**Next Task**: Create apps/api/README.md
+**Phase**: 2.1 Prepare API Package (3/4 complete)
+**Next Task**: Set up API-specific environment configuration
