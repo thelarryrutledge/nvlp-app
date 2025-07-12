@@ -1,37 +1,44 @@
 {
-  "name": "nvlp-app",
+  "name": "@nvlp/root",
   "version": "1.0.0",
-  "description": "NVLP - Virtual Envelope Budget App",
-  "main": "index.js",
-  "scripts": {
-    "dev": "vercel dev",
-    "deploy": "vercel --prod",
-    "build": "tsc",
-    "build:watch": "tsc --watch"
-  },
-  "keywords": [
-    "budgeting",
-    "envelope",
-    "supabase"
-  ],
+  "private": true,
+  "description": "NVLP - Virtual Envelope Budget App Monorepo",
   "author": "",
   "license": "ISC",
-  "devDependencies": {
-    "vercel": "^32.7.2"
-  },
-  "directories": {
-    "doc": "docs"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/thelarryrutledge/nvlp-app.git"
   },
-  "type": "commonjs",
   "bugs": {
     "url": "https://github.com/thelarryrutledge/nvlp-app/issues"
   },
   "homepage": "https://github.com/thelarryrutledge/nvlp-app#readme",
-  "dependencies": {
-    "dotenv": "^17.0.1"
-  }
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "pnpm run --parallel dev",
+    "dev:api": "pnpm --filter @nvlp/api dev",
+    "dev:mobile": "pnpm --filter @nvlp/mobile dev",
+    "build": "pnpm run -r build",
+    "build:client": "pnpm --filter @nvlp/client build",
+    "build:types": "pnpm --filter @nvlp/types build",
+    "test": "pnpm run -r test",
+    "lint": "pnpm run -r lint",
+    "format": "pnpm run -r format",
+    "clean": "pnpm run -r clean && rm -rf node_modules",
+    "typecheck": "pnpm run -r typecheck",
+    "install:all": "pnpm install",
+    "verify": "pnpm run build && pnpm run test && pnpm run lint"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@10.13.1"
 }
