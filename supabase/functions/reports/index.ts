@@ -398,7 +398,7 @@ const ReportQueries = {
     // Get envelope performance (target vs actual)
     const { data: envelopes, error: envError } = await supabase
       .from('envelopes')
-      .select('id, name, current_balance, target_amount')
+      .select('id, name, current_balance, notify_above_amount')
       .eq('budget_id', budgetId)
       .eq('is_active', true)
 
@@ -426,18 +426,18 @@ const ReportQueries = {
     // Calculate performance metrics
     const envelopePerformance = envelopes?.map(env => {
       const spent = envelopeSpending[env.id] || 0
-      const target = env.target_amount || 0
+      const goal = env.notify_above_amount || 0
       const current = env.current_balance || 0
       
       return {
         id: env.id,
         name: env.name,
         current_balance: current,
-        target_amount: target,
+        notify_above_amount: goal,
         spent_in_period: spent,
-        target_progress: target > 0 ? (current / target) * 100 : null,
-        over_budget: target > 0 && current < 0,
-        under_target: target > 0 && current < target
+        goal_progress: goal > 0 ? (current / goal) * 100 : null,
+        over_budget: current < 0,
+        under_goal: goal > 0 && current < goal
       }
     }) || []
 
@@ -451,9 +451,9 @@ const ReportQueries = {
       envelope_performance: envelopePerformance,
       period_summary: {
         total_envelopes: envelopes?.length || 0,
-        envelopes_with_targets: envelopes?.filter(e => e.target_amount && e.target_amount > 0).length || 0,
+        envelopes_with_goals: envelopes?.filter(e => e.notify_above_amount && e.notify_above_amount > 0).length || 0,
         over_budget_count: envelopePerformance.filter(e => e.over_budget).length,
-        under_target_count: envelopePerformance.filter(e => e.under_target).length
+        under_goal_count: envelopePerformance.filter(e => e.under_goal).length
       },
       date_range: { start, end }
     }

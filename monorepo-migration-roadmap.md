@@ -51,8 +51,8 @@
 - [x] Test local Supabase function development
 - [x] Deploy test function to Supabase
 - [x] Verify function executes correctly
-- [ ] Test function with dependencies
-- [ ] Verify existing functions still deploy
+- [x] Test function with dependencies (+ Fix schema mismatch)
+- [x] Verify existing functions still deploy
 - [ ] Document new deployment process from monorepo
 - [ ] Remove test function after validation
 
@@ -248,5 +248,5 @@
 - [ ] Documentation is complete
 
 ## Current Status
-**Phase**: 2.4 Test Supabase Edge Function Deployment (4/8 complete)
-**Next Task**: Test function with dependencies
+**Phase**: 2.4 Test Supabase Edge Function Deployment (5/7 complete)
+**Next Task**: Document new deployment process from monorepo
