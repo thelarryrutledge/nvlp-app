@@ -60,4 +60,42 @@ supabase/.branches/
 # Package manager files
 package-lock.json
 yarn.lock
-pnpm-lock.yaml
+# Keep pnpm-lock.yaml for monorepo
+
+# Monorepo specific
+.turbo/
+.changeset/
+
+# App specific build outputs
+apps/*/dist/
+apps/*/build/
+apps/*/.next/
+apps/*/out/
+
+# Package specific build outputs
+packages/*/dist/
+packages/*/build/
+packages/*/lib/
+packages/*/tsconfig.tsbuildinfo
+
+# React Native specific
+apps/mobile/ios/Pods/
+apps/mobile/ios/build/
+apps/mobile/android/app/build/
+apps/mobile/android/.gradle/
+apps/mobile/android/local.properties
+apps/mobile/**/*.xcuserstate
+apps/mobile/**/*.xcworkspace/xcuserdata/
+apps/mobile/**/*.pbxuser
+apps/mobile/**/*.mode1v3
+apps/mobile/**/*.mode2v3
+apps/mobile/**/*.perspectivev3
+apps/mobile/.metro-health-check*
+apps/mobile/.bundle/
+
+# Workspace temporary files
+**/.turbo/
+**/coverage/
+**/.nyc_output/
+**/tmp/
+**/temp/
