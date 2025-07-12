@@ -53,7 +53,7 @@
 - [x] Verify function executes correctly
 - [x] Test function with dependencies (+ Fix schema mismatch)
 - [x] Verify existing functions still deploy
-- [ ] Document new deployment process from monorepo
+- [x] Document new deployment process from monorepo
 - [ ] Remove test function after validation
 
 ## Phase 3: Extract Client Library
@@ -248,5 +248,5 @@
 - [ ] Documentation is complete
 
 ## Current Status
-**Phase**: 2.4 Test Supabase Edge Function Deployment (5/7 complete)
-**Next Task**: Document new deployment process from monorepo
+**Phase**: 2.4 Test Supabase Edge Function Deployment (6/7 complete)
+**Next Task**: Remove test function after validation
