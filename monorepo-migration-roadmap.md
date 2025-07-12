@@ -29,7 +29,7 @@
 ## Phase 2: Move Backend/API
 
 ### 2.1 Prepare API Package
-- [ ] Create `apps/api/package.json`
+- [x] Create `apps/api/package.json`
 - [ ] Create `apps/api/tsconfig.json`
 - [ ] Create `apps/api/README.md`
 - [ ] Set up API-specific environment configuration
@@ -248,5 +248,5 @@
 - [ ] Documentation is complete
 
 ## Current Status
-**Phase**: 1.3 Directory Structure ✅ COMPLETE
-**Next Task**: Create apps/api/package.json (Phase 2.1)
+**Phase**: 2.1 Prepare API Package (1/4 complete)
+**Next Task**: Create apps/api/tsconfig.json
