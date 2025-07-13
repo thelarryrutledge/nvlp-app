@@ -1,7 +1,7 @@
 /**
  * NVLP Client Library
- * 
- * Abstract client library providing a consistent interface for both 
+ *
+ * Abstract client library providing a consistent interface for both
  * PostgREST direct calls and Edge Function complex operations.
  */
 

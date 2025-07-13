@@ -33,9 +33,9 @@ export class TokenManager {
     const authData: PersistedAuthData = {
       accessToken,
       refreshToken,
-      expiresAt: Date.now() + (expiresIn * 1000),
+      expiresAt: Date.now() + expiresIn * 1000,
       user,
-      createdAt: Date.now()
+      createdAt: Date.now(),
     };
 
     try {
@@ -47,15 +47,15 @@ export class TokenManager {
         const fs = require('fs');
         const os = require('os');
         const path = require('path');
-        
+
         const tokenDir = path.join(os.homedir(), '.nvlp');
         const tokenFile = path.join(tokenDir, 'auth.json');
-        
+
         // Create directory if it doesn't exist
         if (!fs.existsSync(tokenDir)) {
           fs.mkdirSync(tokenDir, { recursive: true });
         }
-        
+
         fs.writeFileSync(tokenFile, JSON.stringify(authData, null, 2));
       }
     } catch (error) {
@@ -80,9 +80,9 @@ export class TokenManager {
         const fs = require('fs');
         const os = require('os');
         const path = require('path');
-        
+
         const tokenFile = path.join(os.homedir(), '.nvlp', 'auth.json');
-        
+
         if (fs.existsSync(tokenFile)) {
           authDataJson = fs.readFileSync(tokenFile, 'utf8');
         }
@@ -91,7 +91,7 @@ export class TokenManager {
       if (!authDataJson) return null;
 
       const authData: PersistedAuthData = JSON.parse(authDataJson);
-      
+
       // Check if token is expired
       if (authData.expiresAt <= Date.now()) {
         this.clearTokens();
@@ -121,9 +121,9 @@ export class TokenManager {
         const fs = require('fs');
         const os = require('os');
         const path = require('path');
-        
+
         const tokenFile = path.join(os.homedir(), '.nvlp', 'auth.json');
-        
+
         if (fs.existsSync(tokenFile)) {
           fs.unlinkSync(tokenFile);
         }
@@ -138,7 +138,7 @@ export class TokenManager {
    */
   needsRefresh(expiresAt: number): boolean {
     if (!this.autoRefresh) return false;
-    
+
     const fiveMinutes = 5 * 60 * 1000;
     return expiresAt - Date.now() < fiveMinutes;
   }

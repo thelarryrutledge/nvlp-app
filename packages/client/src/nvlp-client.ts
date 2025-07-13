@@ -2,6 +2,10 @@
  * NVLP Client - Main client class providing unified API access
  */
 
+import { AuthenticationError } from './errors';
+import { TokenManager } from './token-manager';
+import { EdgeFunctionTransport } from './transports/edge-function-transport';
+import { PostgRESTTransport } from './transports/postgrest-transport';
 import {
   AuthState,
   Budget,
@@ -23,13 +27,8 @@ import {
   UpdateEnvelopeInput,
   UpdateIncomeSourceInput,
   UpdatePayeeInput,
-  UserProfile
+  UserProfile,
 } from './types';
-
-import { PostgRESTTransport } from './transports/postgrest-transport';
-import { EdgeFunctionTransport } from './transports/edge-function-transport';
-import { AuthenticationError } from './errors';
-import { TokenManager } from './token-manager';
 
 export class NVLPClient {
   private postgrestTransport: PostgRESTTransport;
@@ -40,23 +39,23 @@ export class NVLPClient {
     accessToken: null,
     refreshToken: null,
     expiresAt: null,
-    user: null
+    user: null,
   };
 
   constructor(config: NVLPClientConfig) {
     this.postgrestTransport = new PostgRESTTransport(config);
     this.edgeFunctionTransport = new EdgeFunctionTransport(config);
-    
+
     // Initialize token manager
     this.tokenManager = new TokenManager(
       config.tokenStorageKey,
       config.persistTokens !== false, // Default true
-      config.autoRefresh !== false    // Default true
+      config.autoRefresh !== false // Default true
     );
-    
+
     // Default to PostgREST for CRUD operations
     this.primaryTransport = this.postgrestTransport;
-    
+
     // Try to restore session on initialization
     this.restoreSession();
   }
@@ -103,7 +102,7 @@ export class NVLPClient {
     this.authState.accessToken = accessToken;
     this.authState.refreshToken = refreshToken || null;
     this.authState.user = user || null;
-    this.authState.expiresAt = Date.now() + (actualExpiresIn * 1000);
+    this.authState.expiresAt = Date.now() + actualExpiresIn * 1000;
     this.authState.expiresIn = actualExpiresIn;
 
     // Update transport authentication
@@ -124,7 +123,7 @@ export class NVLPClient {
       accessToken: null,
       refreshToken: null,
       expiresAt: null,
-      user: null
+      user: null,
     };
 
     this.postgrestTransport.setAuth(null);
@@ -136,17 +135,18 @@ export class NVLPClient {
    * Check if client is authenticated
    */
   isAuthenticated(): boolean {
-    return !!(this.authState.accessToken && 
-              this.authState.expiresAt && 
-              this.authState.expiresAt > Date.now());
+    return !!(
+      this.authState.accessToken &&
+      this.authState.expiresAt &&
+      this.authState.expiresAt > Date.now()
+    );
   }
 
   /**
    * Check if token needs refresh
    */
   needsTokenRefresh(): boolean {
-    return !!(this.authState.expiresAt && 
-              this.tokenManager.needsRefresh(this.authState.expiresAt));
+    return !!(this.authState.expiresAt && this.tokenManager.needsRefresh(this.authState.expiresAt));
   }
 
   /**
@@ -183,28 +183,25 @@ export class NVLPClient {
   async getProfile(): Promise<UserProfile> {
     await this.requireAuth();
     const response = await this.postgrestTransport.get<UserProfile[]>('user_profiles', {
-      select: '*'
+      select: '*',
     });
-    
+
     if (!response.data || response.data.length === 0) {
       throw new Error('Profile not found');
     }
-    
+
     return response.data[0];
   }
 
   async updateProfile(updates: Partial<UserProfile>): Promise<UserProfile> {
     await this.requireAuth();
-    const response = await this.postgrestTransport.patch<UserProfile[]>(
-      'user_profiles',
-      updates
-    );
-    
+    const response = await this.postgrestTransport.patch<UserProfile[]>('user_profiles', updates);
+
     if (!response.data || response.data.length === 0) {
       // PATCH returns empty for 204, get updated profile
       return this.getProfile();
     }
-    
+
     return response.data[0];
   }
 
@@ -216,7 +213,7 @@ export class NVLPClient {
     await this.requireAuth();
     const response = await this.postgrestTransport.get<Budget[]>('budgets', {
       select: '*',
-      ...params
+      ...params,
     });
     return response.data || [];
   }
@@ -225,24 +222,24 @@ export class NVLPClient {
     await this.requireAuth();
     const response = await this.postgrestTransport.get<Budget[]>('budgets', {
       id: `eq.${id}`,
-      select: '*'
+      select: '*',
     });
-    
+
     if (!response.data || response.data.length === 0) {
       throw new Error('Budget not found');
     }
-    
+
     return response.data[0];
   }
 
   async createBudget(input: CreateBudgetInput): Promise<Budget> {
     await this.requireAuth();
     const response = await this.postgrestTransport.post<Budget[]>('budgets', input);
-    
+
     if (!response.data || response.data.length === 0) {
       throw new Error('Failed to create budget');
     }
-    
+
     return response.data[0];
   }
 
@@ -267,7 +264,7 @@ export class NVLPClient {
     if (budgetId) {
       filters.budget_id = `eq.${budgetId}`;
     }
-    
+
     const response = await this.postgrestTransport.get<IncomeSource[]>('income_sources', filters);
     return response.data || [];
   }
@@ -276,24 +273,24 @@ export class NVLPClient {
     await this.requireAuth();
     const response = await this.postgrestTransport.get<IncomeSource[]>('income_sources', {
       id: `eq.${id}`,
-      select: '*'
+      select: '*',
     });
-    
+
     if (!response.data || response.data.length === 0) {
       throw new Error('Income source not found');
     }
-    
+
     return response.data[0];
   }
 
   async createIncomeSource(input: CreateIncomeSourceInput): Promise<IncomeSource> {
     await this.requireAuth();
     const response = await this.postgrestTransport.post<IncomeSource[]>('income_sources', input);
-    
+
     if (!response.data || response.data.length === 0) {
       throw new Error('Failed to create income source');
     }
-    
+
     return response.data[0];
   }
 
@@ -318,7 +315,7 @@ export class NVLPClient {
     if (budgetId) {
       filters.budget_id = `eq.${budgetId}`;
     }
-    
+
     const response = await this.postgrestTransport.get<Category[]>('categories', filters);
     return response.data || [];
   }
@@ -327,24 +324,24 @@ export class NVLPClient {
     await this.requireAuth();
     const response = await this.postgrestTransport.get<Category[]>('categories', {
       id: `eq.${id}`,
-      select: '*'
+      select: '*',
     });
-    
+
     if (!response.data || response.data.length === 0) {
       throw new Error('Category not found');
     }
-    
+
     return response.data[0];
   }
 
   async createCategory(input: CreateCategoryInput): Promise<Category> {
     await this.requireAuth();
     const response = await this.postgrestTransport.post<Category[]>('categories', input);
-    
+
     if (!response.data || response.data.length === 0) {
       throw new Error('Failed to create category');
     }
-    
+
     return response.data[0];
   }
 
@@ -369,7 +366,7 @@ export class NVLPClient {
     if (budgetId) {
       filters.budget_id = `eq.${budgetId}`;
     }
-    
+
     const response = await this.postgrestTransport.get<Envelope[]>('envelopes', filters);
     return response.data || [];
   }
@@ -378,24 +375,24 @@ export class NVLPClient {
     await this.requireAuth();
     const response = await this.postgrestTransport.get<Envelope[]>('envelopes', {
       id: `eq.${id}`,
-      select: '*'
+      select: '*',
     });
-    
+
     if (!response.data || response.data.length === 0) {
       throw new Error('Envelope not found');
     }
-    
+
     return response.data[0];
   }
 
   async createEnvelope(input: CreateEnvelopeInput): Promise<Envelope> {
     await this.requireAuth();
     const response = await this.postgrestTransport.post<Envelope[]>('envelopes', input);
-    
+
     if (!response.data || response.data.length === 0) {
       throw new Error('Failed to create envelope');
     }
-    
+
     return response.data[0];
   }
 
@@ -420,7 +417,7 @@ export class NVLPClient {
     if (budgetId) {
       filters.budget_id = `eq.${budgetId}`;
     }
-    
+
     const response = await this.postgrestTransport.get<Payee[]>('payees', filters);
     return response.data || [];
   }
@@ -429,24 +426,24 @@ export class NVLPClient {
     await this.requireAuth();
     const response = await this.postgrestTransport.get<Payee[]>('payees', {
       id: `eq.${id}`,
-      select: '*'
+      select: '*',
     });
-    
+
     if (!response.data || response.data.length === 0) {
       throw new Error('Payee not found');
     }
-    
+
     return response.data[0];
   }
 
   async createPayee(input: CreatePayeeInput): Promise<Payee> {
     await this.requireAuth();
     const response = await this.postgrestTransport.post<Payee[]>('payees', input);
-    
+
     if (!response.data || response.data.length === 0) {
       throw new Error('Failed to create payee');
     }
-    
+
     return response.data[0];
   }
 
@@ -468,10 +465,10 @@ export class NVLPClient {
   /**
    * Login with email and password
    */
-  async login(email: string, password: string): Promise<{ user: any, session: any }> {
+  async login(email: string, password: string): Promise<{ user: any; session: any }> {
     const response = await this.edgeFunctionTransport.auth('login', {
       email,
-      password
+      password,
     });
 
     if (response.data && response.data.session) {
@@ -492,7 +489,7 @@ export class NVLPClient {
   async logout(): Promise<void> {
     // Store the token before clearing (needed for server logout call)
     const currentToken = this.authState.accessToken;
-    
+
     if (currentToken) {
       try {
         // Logout from server first
@@ -502,7 +499,7 @@ export class NVLPClient {
         console.warn('Logout server call failed:', error);
       }
     }
-    
+
     // Clear local authentication state
     this.clearAuth();
   }
@@ -514,7 +511,7 @@ export class NVLPClient {
     const response = await this.edgeFunctionTransport.auth('register', {
       email,
       password,
-      display_name: displayName
+      display_name: displayName,
     });
 
     return response.data;
@@ -529,7 +526,7 @@ export class NVLPClient {
     }
 
     const response = await this.edgeFunctionTransport.auth('refresh', {
-      refresh_token: this.authState.refreshToken
+      refresh_token: this.authState.refreshToken,
     });
 
     if (response.data && response.data.session) {
@@ -557,7 +554,7 @@ export class NVLPClient {
   async updatePassword(newPassword: string): Promise<void> {
     await this.requireAuth();
     await this.edgeFunctionTransport.auth('update-password', {
-      password: newPassword
+      password: newPassword,
     });
   }
 
@@ -582,18 +579,18 @@ export class NVLPClient {
   /**
    * Health check endpoint
    */
-  async healthCheck(): Promise<{ status: string, timestamp: string }> {
+  async healthCheck(): Promise<{ status: string; timestamp: string }> {
     try {
       // Try a simple request to verify connectivity
       await this.postgrestTransport.get('user_profiles', { limit: 1 });
       return {
         status: 'healthy',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     } catch (error) {
       return {
         status: 'unhealthy',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     }
   }

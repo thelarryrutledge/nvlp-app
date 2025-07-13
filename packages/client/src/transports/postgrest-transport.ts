@@ -1,11 +1,11 @@
 /**
  * PostgREST Transport Implementation
- * 
+ *
  * Direct PostgREST API calls for CRUD operations
  */
 
-import { ApiResponse, NVLPClientConfig, RequestOptions, Transport } from '../types';
 import { NetworkError, TimeoutError, createErrorFromResponse } from '../errors';
+import { ApiResponse, NVLPClientConfig, RequestOptions, Transport } from '../types';
 
 export class PostgRESTTransport implements Transport {
   private baseUrl: string;
@@ -41,9 +41,9 @@ export class PostgRESTTransport implements Transport {
 
     // Build headers
     const headers: Record<string, string> = {
-      'apikey': this.anonKey,
+      apikey: this.anonKey,
       'Content-Type': 'application/json',
-      ...options?.headers
+      ...options?.headers,
     };
 
     // Add authentication if available
@@ -65,7 +65,7 @@ export class PostgRESTTransport implements Transport {
         method,
         headers,
         body: data ? JSON.stringify(data) : null,
-        signal: abortController.signal
+        signal: abortController.signal,
       });
 
       clearTimeout(timeoutId);
@@ -73,7 +73,7 @@ export class PostgRESTTransport implements Transport {
       // Parse response body
       let responseData: any;
       const contentType = response.headers.get('content-type');
-      
+
       if (contentType && contentType.includes('application/json')) {
         responseData = await response.json();
       } else {
@@ -89,9 +89,8 @@ export class PostgRESTTransport implements Transport {
       return {
         data: responseData,
         error: null,
-        status: response.status
+        status: response.status,
       };
-
     } catch (error) {
       clearTimeout(timeoutId);
 
@@ -113,7 +112,7 @@ export class PostgRESTTransport implements Transport {
    */
   private buildQueryString(params: Record<string, any>): string {
     const searchParams = new URLSearchParams();
-    
+
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
         searchParams.append(key, String(value));
@@ -127,7 +126,11 @@ export class PostgRESTTransport implements Transport {
   /**
    * GET request with query parameters
    */
-  async get<T>(endpoint: string, params?: Record<string, any>, options?: RequestOptions): Promise<ApiResponse<T>> {
+  async get<T>(
+    endpoint: string,
+    params?: Record<string, any>,
+    options?: RequestOptions
+  ): Promise<ApiResponse<T>> {
     const queryString = params ? this.buildQueryString(params) : '';
     return this.request('GET', `${endpoint}${queryString}`, undefined, options);
   }

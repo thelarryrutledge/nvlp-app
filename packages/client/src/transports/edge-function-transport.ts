@@ -1,11 +1,11 @@
 /**
  * Edge Function Transport Implementation
- * 
+ *
  * Supabase Edge Function calls for complex operations
  */
 
-import { ApiResponse, NVLPClientConfig, RequestOptions, Transport } from '../types';
 import { NetworkError, TimeoutError, createErrorFromResponse } from '../errors';
+import { ApiResponse, NVLPClientConfig, RequestOptions, Transport } from '../types';
 
 export class EdgeFunctionTransport implements Transport {
   private baseUrl: string;
@@ -42,9 +42,9 @@ export class EdgeFunctionTransport implements Transport {
 
     // Build headers
     const headers: Record<string, string> = {
-      'Authorization': `Bearer ${this.anonKey}`,
+      Authorization: `Bearer ${this.anonKey}`,
       'Content-Type': 'application/json',
-      ...options?.headers
+      ...options?.headers,
     };
 
     // Add user authentication if available
@@ -61,7 +61,7 @@ export class EdgeFunctionTransport implements Transport {
         method,
         headers,
         body: data ? JSON.stringify(data) : null,
-        signal: abortController.signal
+        signal: abortController.signal,
       });
 
       clearTimeout(timeoutId);
@@ -69,7 +69,7 @@ export class EdgeFunctionTransport implements Transport {
       // Parse response body
       let responseData: any;
       const contentType = response.headers.get('content-type');
-      
+
       if (contentType && contentType.includes('application/json')) {
         responseData = await response.json();
       } else {
@@ -85,9 +85,8 @@ export class EdgeFunctionTransport implements Transport {
       return {
         data: responseData,
         error: null,
-        status: response.status
+        status: response.status,
       };
-
     } catch (error) {
       clearTimeout(timeoutId);
 
@@ -110,13 +109,13 @@ export class EdgeFunctionTransport implements Transport {
   async auth(action: string, data: any, options?: RequestOptions): Promise<ApiResponse<any>> {
     // Map actions to actual auth endpoints
     const endpointMap: Record<string, string> = {
-      'login': 'auth/login',
-      'logout': 'auth/logout', 
-      'refresh': 'auth/refresh',
-      'register': 'auth/register',
-      'reset': 'auth/reset-password',
+      login: 'auth/login',
+      logout: 'auth/logout',
+      refresh: 'auth/refresh',
+      register: 'auth/register',
+      reset: 'auth/reset-password',
       'update-password': 'auth/update-password',
-      'profile': 'auth/profile'
+      profile: 'auth/profile',
     };
 
     const endpoint = endpointMap[action];
@@ -132,14 +131,22 @@ export class EdgeFunctionTransport implements Transport {
   /**
    * Call transaction Edge Function (future)
    */
-  async transaction(action: string, data: any, options?: RequestOptions): Promise<ApiResponse<any>> {
+  async transaction(
+    action: string,
+    data: any,
+    options?: RequestOptions
+  ): Promise<ApiResponse<any>> {
     return this.request('POST', 'transactions', { action, ...data }, options);
   }
 
   /**
    * Call reporting Edge Function (future)
    */
-  async reports(reportType: string, data: any, options?: RequestOptions): Promise<ApiResponse<any>> {
+  async reports(
+    reportType: string,
+    data: any,
+    options?: RequestOptions
+  ): Promise<ApiResponse<any>> {
     return this.request('POST', 'reports', { reportType, ...data }, options);
   }
 
@@ -147,8 +154,8 @@ export class EdgeFunctionTransport implements Transport {
    * Generic Edge Function call
    */
   async callFunction<T>(
-    functionName: string, 
-    data?: any, 
+    functionName: string,
+    data?: any,
     options?: RequestOptions
   ): Promise<ApiResponse<T>> {
     return this.request('POST', functionName, data, options);

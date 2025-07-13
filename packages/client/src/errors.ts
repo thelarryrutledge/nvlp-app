@@ -67,11 +67,7 @@ export class ServerError extends NVLPError {
 /**
  * Creates appropriate error from HTTP response
  */
-export function createErrorFromResponse(
-  status: number,
-  body: any,
-  message?: string
-): NVLPError {
+export function createErrorFromResponse(status: number, body: any, message?: string): NVLPError {
   const errorMessage = message || body?.message || body?.error?.message || 'Unknown error';
   const errorCode = body?.code || body?.error?.code;
   const errorDetails = body?.details || body?.error?.details;

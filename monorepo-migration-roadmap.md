@@ -138,8 +138,8 @@
 
 ### 6.3 Update Projects to Use Shared Config
 - [x] Update mobile app to extend shared configs
-- [ ] Update API to extend shared configs
-- [ ] Update client to extend shared configs
+- [x] Update API to extend shared configs
+- [x] Update client to extend shared configs
 - [ ] Test all configurations
 
 ## Phase 7: Build & Development Setup

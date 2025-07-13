@@ -29,7 +29,7 @@ export interface NVLPClientConfig {
 export interface Transport {
   request<T>(
     method: string,
-    endpoint: string, 
+    endpoint: string,
     data?: any,
     options?: RequestOptions
   ): Promise<ApiResponse<T>>;
