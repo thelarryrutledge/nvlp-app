@@ -58,11 +58,13 @@
     "typescript": ">=4.5.0"
   },
   "devDependencies": {
+    "@nvlp/config": "workspace:*",
     "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "eslint": "^8.0.0",
     "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-import": "^2.29.1",
     "jsdom": "^23.0.0",
     "prettier": "^3.0.0",
     "tsup": "^8.0.0",

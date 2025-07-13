@@ -1,8 +1,8 @@
 # NVLP Monorepo Migration Memory
 
 ## Current Status
-**Phase**: 6.1 Prepare Config Package (4/4 complete)
-**Next Subtask**: Phase 6.2 - Move shared ESLint configuration
+**Phase**: 6.2 Extract Common Configs (1/4 complete)
+**Next Subtask**: Move shared Prettier configuration
 **Workflow**: Single subtask → update roadmap → update memory → commit → wait for prompt
 
 ## Migration Progress
@@ -12,6 +12,7 @@
 - Phase 4: Shared Types ✅ (created packages/types)
 - Phase 5: React Native ✅ (moved to apps/mobile, dependencies resolved)
 - Phase 6.1: Config Package ✅ (package.json, base configs, exports, documentation)
+- Phase 6.2: Extract Configs → 1/4 complete (ESLint moved to shared config)
 
 ## Key Technical Details
 - **pnpm workspaces** with workspace:* protocol for internal deps

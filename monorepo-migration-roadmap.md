@@ -131,7 +131,7 @@
 - [x] Document configuration usage
 
 ### 6.2 Extract Common Configs
-- [ ] Move shared ESLint configuration
+- [x] Move shared ESLint configuration
 - [ ] Move shared Prettier configuration
 - [ ] Move shared TypeScript base config
 - [ ] Create shared Jest configuration
@@ -248,5 +248,5 @@
 - [ ] Documentation is complete
 
 ## Current Status
-**Phase**: 6.1 Prepare Config Package (4/4 complete)
-**Next Task**: Phase 6.2 - Move shared ESLint configuration
+**Phase**: 6.2 Extract Common Configs (1/4 complete)
+**Next Task**: Phase 6.2 - Move shared Prettier configuration
