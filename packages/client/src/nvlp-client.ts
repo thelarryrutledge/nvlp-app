@@ -3,28 +3,27 @@
  */
 
 import {
-  NVLPClientConfig,
-  Transport,
-  ApiResponse,
   AuthState,
-  UserProfile,
   Budget,
-  IncomeSource,
   Category,
-  Envelope,
-  Payee,
   CreateBudgetInput,
-  UpdateBudgetInput,
-  CreateIncomeSourceInput,
-  UpdateIncomeSourceInput,
   CreateCategoryInput,
-  UpdateCategoryInput,
   CreateEnvelopeInput,
-  UpdateEnvelopeInput,
+  CreateIncomeSourceInput,
   CreatePayeeInput,
-  UpdatePayeeInput,
+  Envelope,
+  IncomeSource,
+  NVLPClientConfig,
+  Payee,
+  PersistedAuthData,
   QueryParams,
-  PersistedAuthData
+  Transport,
+  UpdateBudgetInput,
+  UpdateCategoryInput,
+  UpdateEnvelopeInput,
+  UpdateIncomeSourceInput,
+  UpdatePayeeInput,
+  UserProfile
 } from './types';
 
 import { PostgRESTTransport } from './transports/postgrest-transport';

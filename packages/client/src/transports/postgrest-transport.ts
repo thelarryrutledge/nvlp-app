@@ -4,8 +4,8 @@
  * Direct PostgREST API calls for CRUD operations
  */
 
-import { Transport, RequestOptions, ApiResponse, NVLPClientConfig } from '../types';
-import { createErrorFromResponse, NetworkError, TimeoutError } from '../errors';
+import { ApiResponse, NVLPClientConfig, RequestOptions, Transport } from '../types';
+import { NetworkError, TimeoutError, createErrorFromResponse } from '../errors';
 
 export class PostgRESTTransport implements Transport {
   private baseUrl: string;
@@ -64,7 +64,7 @@ export class PostgRESTTransport implements Transport {
       const response = await fetch(url, {
         method,
         headers,
-        body: data ? JSON.stringify(data) : undefined,
+        body: data ? JSON.stringify(data) : null,
         signal: abortController.signal
       });
 

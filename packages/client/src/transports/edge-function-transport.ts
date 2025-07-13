@@ -4,8 +4,8 @@
  * Supabase Edge Function calls for complex operations
  */
 
-import { Transport, RequestOptions, ApiResponse, NVLPClientConfig } from '../types';
-import { createErrorFromResponse, NetworkError, TimeoutError } from '../errors';
+import { ApiResponse, NVLPClientConfig, RequestOptions, Transport } from '../types';
+import { NetworkError, TimeoutError, createErrorFromResponse } from '../errors';
 
 export class EdgeFunctionTransport implements Transport {
   private baseUrl: string;
@@ -60,7 +60,7 @@ export class EdgeFunctionTransport implements Transport {
       const response = await fetch(url, {
         method,
         headers,
-        body: data ? JSON.stringify(data) : undefined,
+        body: data ? JSON.stringify(data) : null,
         signal: abortController.signal
       });
 
