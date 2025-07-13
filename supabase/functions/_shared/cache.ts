@@ -3,6 +3,8 @@
  * Provides caching with TTL (Time To Live) support
  */
 
+// Import shared types (when Edge Functions support import maps)
+// For now, we'll keep local interface until Edge Functions can import from packages
 interface CacheEntry {
   data: any;
   timestamp: number;

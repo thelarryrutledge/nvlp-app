@@ -7,10 +7,12 @@
 export * from './domain/user';
 export * from './domain/budget';
 export * from './domain/financial';
+export * from './domain/transaction';
 
 // API types
 export * from './api/requests';
 export * from './api/responses';
+export * from './api/cache';
 
 // Enums
 export * from './enums/financial';

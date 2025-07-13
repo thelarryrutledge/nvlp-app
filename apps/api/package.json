@@ -29,6 +29,7 @@
     "db:types": "cd ../../ && supabase gen types typescript --local > apps/api/src/types/database.ts"
   },
   "dependencies": {
+    "@nvlp/types": "workspace:*",
     "dotenv": "^17.0.1"
   },
   "devDependencies": {

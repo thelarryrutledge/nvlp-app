@@ -17,6 +17,9 @@ importers:
 
   apps/api:
     dependencies:
+      '@nvlp/types':
+        specifier: workspace:*
+        version: link:../../packages/types
       dotenv:
         specifier: ^17.0.1
         version: 17.2.0
