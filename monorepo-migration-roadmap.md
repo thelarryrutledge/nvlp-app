@@ -105,21 +105,21 @@
 - [x] Set up mobile-specific scripts
 
 ### 5.2 Move Mobile Code
-- [ ] Move `/NVLPMobile/` contents to `apps/mobile/`
-- [ ] Update React Native configuration files
-- [ ] Move mobile assets and resources
-- [ ] Remove old mobile directory
+- [x] Move `/NVLPMobile/` contents to `apps/mobile/`
+- [x] Update React Native configuration files
+- [x] Move mobile assets and resources
+- [x] Remove old mobile directory
 
 ### 5.3 Configure Mobile for Monorepo
-- [ ] Update Metro configuration for monorepo
-- [ ] Configure Metro to resolve workspace packages
-- [ ] Update TypeScript configuration
-- [ ] Update path aliases for monorepo structure
+- [x] Update Metro configuration for monorepo
+- [x] Configure Metro to resolve workspace packages
+- [x] Update TypeScript configuration
+- [x] Update path aliases for monorepo structure
 
 ### 5.4 Update Mobile Dependencies
-- [ ] Add `@nvlp/client` as dependency
-- [ ] Add `@nvlp/types` as dependency
-- [ ] Update import paths to use workspace packages
+- [x] Add `@nvlp/client` as dependency
+- [x] Add `@nvlp/types` as dependency
+- [x] Update import paths to use workspace packages
 - [ ] Test dependency resolution
 
 ## Phase 6: Shared Configuration
@@ -248,5 +248,5 @@
 - [ ] Documentation is complete
 
 ## Current Status
-**Phase**: 5.1 Prepare Mobile Package (4/4 complete)
-**Next Task**: Phase 5.2 - Move Mobile Code
+**Phase**: 5.2 Move Mobile Code (4/4 complete)
+**Next Task**: Phase 5.4 - Test dependency resolution
