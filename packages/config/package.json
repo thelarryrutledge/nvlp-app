@@ -10,21 +10,25 @@
       "import": "./eslint/index.js",
       "require": "./eslint/index.cjs"
     },
+    "./eslint/*": "./eslint/*",
     "./prettier": {
       "types": "./prettier/index.d.ts", 
       "import": "./prettier/index.js",
       "require": "./prettier/index.cjs"
     },
+    "./prettier/*": "./prettier/*",
     "./typescript": {
       "types": "./typescript/index.d.ts",
       "import": "./typescript/index.js",
       "require": "./typescript/index.cjs"
     },
+    "./typescript/*": "./typescript/*",
     "./jest": {
       "types": "./jest/index.d.ts",
       "import": "./jest/index.js",
       "require": "./jest/index.cjs"
-    }
+    },
+    "./jest/*": "./jest/*"
   },
   "files": [
     "eslint",
