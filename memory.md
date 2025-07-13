@@ -1,8 +1,8 @@
 # NVLP Monorepo Migration Memory
 
 ## Current Status
-**Phase**: 6.2 Extract Common Configs (3/4 complete)
-**Next Subtask**: Create shared Jest configuration
+**Phase**: 6.2 Extract Common Configs (4/4 complete)
+**Next Subtask**: Phase 6.3 - Update mobile app to extend shared configs
 **Workflow**: Single subtask → update roadmap → update memory → commit → wait for prompt
 
 ## Migration Progress
@@ -12,7 +12,7 @@
 - Phase 4: Shared Types ✅ (created packages/types)
 - Phase 5: React Native ✅ (moved to apps/mobile, dependencies resolved)
 - Phase 6.1: Config Package ✅ (package.json, base configs, exports, documentation)
-- Phase 6.2: Extract Configs → 3/4 complete (ESLint, Prettier, TypeScript moved to shared config)
+- Phase 6.2: Extract Configs ✅ (ESLint, Prettier, TypeScript, Jest moved to shared config)
 
 ## Key Technical Details
 - **pnpm workspaces** with workspace:* protocol for internal deps

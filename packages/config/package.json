@@ -36,6 +36,14 @@
       "import": "./jest/index.js",
       "require": "./jest/index.cjs"
     },
+    "./jest/react-native": {
+      "import": "./jest/react-native.js",
+      "require": "./jest/react-native.cjs"
+    },
+    "./jest/jsdom": {
+      "import": "./jest/jsdom.js",
+      "require": "./jest/jsdom.cjs"
+    },
     "./jest/*": "./jest/*"
   },
   "files": [
@@ -62,7 +70,10 @@
     "eslint-plugin-jest": "^28.6.0",
     "eslint-plugin-react": "^7.34.2",
     "eslint-plugin-react-hooks": "^4.6.2",
+    "@types/jest": "^29.5.13",
+    "jest": "^29.7.0",
     "prettier": "^3.3.2",
+    "ts-jest": "^29.2.5",
     "typescript": "^5.4.5"
   },
   "keywords": [

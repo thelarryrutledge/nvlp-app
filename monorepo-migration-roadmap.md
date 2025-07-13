@@ -134,7 +134,7 @@
 - [x] Move shared ESLint configuration
 - [x] Move shared Prettier configuration
 - [x] Move shared TypeScript base config
-- [ ] Create shared Jest configuration
+- [x] Create shared Jest configuration
 
 ### 6.3 Update Projects to Use Shared Config
 - [ ] Update mobile app to extend shared configs
@@ -248,5 +248,5 @@
 - [ ] Documentation is complete
 
 ## Current Status
-**Phase**: 6.2 Extract Common Configs (3/4 complete)
-**Next Task**: Phase 6.2 - Create shared Jest configuration
+**Phase**: 6.2 Extract Common Configs (4/4 complete)
+**Next Task**: Phase 6.3 - Update mobile app to extend shared configs

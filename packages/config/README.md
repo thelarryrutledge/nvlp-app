@@ -27,9 +27,20 @@ const tsConfig = require('@nvlp/config/typescript');
 
 ### Jest
 ```typescript
+// Base Node.js configuration
 import jestConfig from '@nvlp/config/jest';
 // or
 const jestConfig = require('@nvlp/config/jest');
+
+// React Native configuration
+import jestRNConfig from '@nvlp/config/jest/react-native';
+// or  
+const jestRNConfig = require('@nvlp/config/jest/react-native');
+
+// jsdom (browser) configuration
+import jestDOMConfig from '@nvlp/config/jest/jsdom';
+// or
+const jestDOMConfig = require('@nvlp/config/jest/jsdom');
 ```
 
 ## Usage in Projects
@@ -69,13 +80,38 @@ Create `tsconfig.json` in your project:
 ```
 
 ### Jest Configuration
-Create `jest.config.js` in your project:
 
+#### For React Native projects:
 ```javascript
+// jest.config.js
+module.exports = {
+  ...require('@nvlp/config/jest/react-native'),
+  // Project-specific overrides
+};
+```
+
+#### For Node.js/API projects:
+```javascript
+// jest.config.js
 module.exports = {
   ...require('@nvlp/config/jest'),
   // Project-specific overrides
 };
+```
+
+#### For Browser/DOM projects:
+```javascript
+// jest.config.js
+module.exports = {
+  ...require('@nvlp/config/jest/jsdom'),
+  // Project-specific overrides
+};
+```
+
+#### Setup file
+Copy the setup template and customize:
+```bash
+cp node_modules/@nvlp/config/jest/setup.template.js jest.setup.js
 ```
 
 ## Features
