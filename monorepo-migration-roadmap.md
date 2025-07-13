@@ -145,7 +145,7 @@
 ## Phase 7: Build & Development Setup
 
 ### 7.1 Root-Level Scripts
-- [ ] Create `dev` script to run all services
+- [x] Create `dev` script to run all services
 - [ ] Create `build` script for all packages
 - [ ] Create `test` script for all packages
 - [ ] Create `lint` script for all packages

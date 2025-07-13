@@ -18,9 +18,14 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "pnpm run --parallel dev",
+    "dev": "concurrently -n 'packages,api' -c 'cyan,green' 'pnpm dev:packages' 'pnpm dev:api'",
+    "dev:all": "concurrently -n 'packages,api,mobile' -c 'cyan,green,magenta' 'pnpm dev:packages' 'pnpm dev:api' 'pnpm dev:mobile:metro'",
+    "dev:packages": "pnpm --parallel --filter './packages/**' dev",
     "dev:api": "pnpm --filter @nvlp/api dev",
-    "dev:mobile": "pnpm --filter @nvlp/mobile dev",
+    "dev:mobile": "echo 'Choose platform: pnpm dev:mobile:ios or pnpm dev:mobile:android'",
+    "dev:mobile:ios": "pnpm --filter @nvlp/mobile ios:dev",
+    "dev:mobile:android": "pnpm --filter @nvlp/mobile android:dev",
+    "dev:mobile:metro": "pnpm --filter @nvlp/mobile start",
     "dev:web": "pnpm --filter @nvlp/web dev",
     "dev:db": "pnpm --filter @nvlp/api dev:db",
     "build": "pnpm run -r build",
@@ -56,6 +61,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "concurrently": "^9.2.0",
     "typescript": "^5.0.0"
   },
   "engines": {

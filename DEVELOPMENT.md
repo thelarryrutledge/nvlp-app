@@ -30,8 +30,34 @@
 
 4. Start development:
    ```bash
+   # Start API + packages (recommended for backend development)
    pnpm dev
+   
+   # Start everything including Metro bundler
+   pnpm dev:all
    ```
+
+## Development Scripts
+
+### Main Development Commands
+
+- **`pnpm dev`** - Starts API + packages (watches for changes)
+  - 📦 Packages: Auto-rebuilds @nvlp/client and @nvlp/types
+  - 🌐 API: Runs Supabase local environment and Edge Functions
+
+- **`pnpm dev:all`** - Starts everything including Metro bundler
+  - Includes everything from `pnpm dev` plus:
+  - 📱 Mobile: React Native Metro bundler
+
+- **`pnpm dev:packages`** - Watch and rebuild packages only
+- **`pnpm dev:api`** - Start API services only
+- **`pnpm dev:db`** - Start database only
+
+### Mobile Development Commands
+
+- **`pnpm dev:mobile:ios`** - Start Metro + iOS simulator
+- **`pnpm dev:mobile:android`** - Start Metro + Android emulator  
+- **`pnpm dev:mobile:metro`** - Start Metro bundler only
 
 ## Common Tasks
 
@@ -87,25 +113,61 @@ pnpm clean:all
 
 ## Mobile Development
 
-### iOS
+### Development Workflows
+
+#### Option 1: Separate Terminals (Recommended)
 ```bash
-cd apps/mobile
-pnpm ios
+# Terminal 1: Start backend services
+pnpm dev
+
+# Terminal 2: Start mobile development
+pnpm dev:mobile:ios      # For iOS
+# OR
+pnpm dev:mobile:android  # For Android
 ```
 
-### Android
+#### Option 2: All-in-One
 ```bash
-cd apps/mobile
-pnpm android
+# Start everything (you'll need to launch simulator separately)
+pnpm dev:all
+
+# Then in another terminal or manually:
+# For iOS: open -a Simulator
+# For Android: Open Android Studio AVD Manager
+```
+
+### Platform-Specific Commands
+```bash
+# iOS development
+pnpm --filter @nvlp/mobile ios
+
+# Android development  
+pnpm --filter @nvlp/mobile android
+
+# Just Metro bundler
+pnpm --filter @nvlp/mobile start
 ```
 
 ## API Development
 
-The API uses Vercel Edge Functions. To develop locally:
+The API uses Supabase Edge Functions. Development options:
 
 ```bash
+# Start full dev environment (recommended)
+pnpm dev
+
+# Start only API services
 pnpm dev:api
+
+# Start only database
+pnpm dev:db
 ```
+
+The API development server includes:
+- Local Supabase instance (PostgreSQL)
+- Edge Functions runtime
+- Authentication services
+- Realtime subscriptions
 
 ## Debugging
 
