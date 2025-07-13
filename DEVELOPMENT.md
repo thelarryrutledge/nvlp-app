@@ -39,6 +39,18 @@
 
 ## Development Scripts
 
+### Quick Start
+```bash
+# Check your development environment
+pnpm dev:check
+
+# View comprehensive development guide
+pnpm dev:guide
+
+# Start core development (recommended)
+pnpm dev
+```
+
 ### Main Development Commands
 
 - **`pnpm dev`** - Starts API + packages (watches for changes)
@@ -49,8 +61,18 @@
   - Includes everything from `pnpm dev` plus:
   - 📱 Mobile: React Native Metro bundler
 
+- **`pnpm dev:full`** - Starts all components individually with detailed output
+  - 🔷 Types: Individual watch mode with blue output
+  - 🟡 Client: Individual watch mode with yellow output  
+  - 🟢 API: Supabase services with green output
+  - 🟣 Mobile: Metro bundler with magenta output
+
+### Focused Development Commands
+
 - **`pnpm dev:packages`** - Watch and rebuild packages only
+- **`pnpm dev:apps`** - Start apps (API + Mobile Metro) only
 - **`pnpm dev:api`** - Start API services only
+- **`pnpm dev:mobile`** - Start React Native Metro bundler only
 - **`pnpm dev:db`** - Start database only
 
 ### Mobile Development Commands
@@ -58,6 +80,11 @@
 - **`pnpm dev:mobile:ios`** - Start Metro + iOS simulator
 - **`pnpm dev:mobile:android`** - Start Metro + Android emulator  
 - **`pnpm dev:mobile:metro`** - Start Metro bundler only
+
+### Development Utilities
+
+- **`pnpm dev:check`** - Check development environment and prerequisites
+- **`pnpm dev:guide`** - Display comprehensive development workflow guide
 
 ## Common Tasks
 
