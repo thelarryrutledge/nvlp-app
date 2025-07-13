@@ -21,7 +21,11 @@
     "code-quality": "npm run type-check && npm run lint && npm run format:check",
     "clean": "rm -rf node_modules && rm -rf ios/Pods && rm -rf android/build && rm -rf android/app/build",
     "pod-install": "cd ios && pod install",
-    "reset-cache": "npx react-native start --reset-cache"
+    "reset-cache": "npx react-native start --reset-cache",
+    "build": "echo 'Use platform-specific build commands: build:ios or build:android'",
+    "build:ios": "cd ios && xcodebuild -workspace NVLPMobile.xcworkspace -scheme NVLPMobile -configuration Release -archivePath ./build/NVLPMobile.xcarchive archive",
+    "build:android": "cd android && ./gradlew assembleRelease",
+    "build:android:bundle": "cd android && ./gradlew bundleRelease"
   },
   "dependencies": {
     "@nvlp/client": "workspace:*",

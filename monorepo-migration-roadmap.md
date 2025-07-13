@@ -146,7 +146,7 @@
 
 ### 7.1 Root-Level Scripts
 - [x] Create `dev` script to run all services
-- [ ] Create `build` script for all packages
+- [x] Create `build` script for all packages
 - [ ] Create `test` script for all packages
 - [ ] Create `lint` script for all packages
 - [ ] Create `clean` script for cleanup
