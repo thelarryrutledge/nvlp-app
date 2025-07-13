@@ -1,11 +1,27 @@
 module.exports = {
-  ...require('@nvlp/config/eslint'),
+  env: {
+    browser: true,
+    es2021: true,
+    node: true,
+    'react-native/react-native': true,
+  },
   extends: [
-    ...require('@nvlp/config/eslint').extends,
+    'eslint:recommended',
+    'plugin:@typescript-eslint/recommended',
     '@react-native',
+    'prettier',
   ],
+  parser: '@typescript-eslint/parser',
+  parserOptions: {
+    ecmaVersion: 'latest',
+    sourceType: 'module',
+    ecmaFeatures: {
+      jsx: true,
+    },
+  },
   plugins: [
-    ...require('@nvlp/config/eslint').plugins,
+    '@typescript-eslint',
+    'import',
     'react',
     'react-hooks',
     'react-native',
@@ -16,7 +32,34 @@ module.exports = {
     },
   },
   rules: {
-    ...require('@nvlp/config/eslint').rules,
+    '@typescript-eslint/no-unused-vars': [
+      'error', 
+      { 
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_'
+      }
+    ],
+    '@typescript-eslint/explicit-function-return-type': 'off',
+    '@typescript-eslint/explicit-module-boundary-types': 'off',
+    '@typescript-eslint/no-explicit-any': 'warn',
+    'import/order': [
+      'error',
+      {
+        groups: [
+          'builtin',
+          'external',
+          'internal',
+          'parent',
+          'sibling',
+          'index',
+        ],
+        'newlines-between': 'always',
+        alphabetize: {
+          order: 'asc',
+          caseInsensitive: true,
+        },
+      },
+    ],
     // React Native specific rules
     'react/react-in-jsx-scope': 'off', // Not needed in React Native
     'react-hooks/rules-of-hooks': 'error',
