@@ -7,7 +7,7 @@
 export * from '@nvlp/types';
 
 // Import specific types needed for client-specific interfaces
-import type { RequestOptions, ApiResponse } from '@nvlp/types';
+import type { ApiResponse, RequestOptions } from '@nvlp/types';
 
 // Base configuration for client initialization
 export interface NVLPClientConfig {
