@@ -66,7 +66,7 @@
 
 ### 3.2 Move Client Code
 - [x] Move `/src/client/` to `packages/client/src/`
-- [ ] Move client type definitions
+- [x] Move client type definitions
 - [ ] Update client import paths
 - [ ] Remove client code from original location
 
