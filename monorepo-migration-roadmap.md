@@ -68,7 +68,7 @@
 - [x] Move `/src/client/` to `packages/client/src/`
 - [x] Move client type definitions
 - [x] Update client import paths
-- [ ] Remove client code from original location
+- [x] Remove client code from original location
 
 ### 3.3 Configure Client Package
 - [ ] Set up TypeScript build for client
@@ -248,5 +248,5 @@
 - [ ] Documentation is complete
 
 ## Current Status
-**Phase**: 3.1 Prepare Client Package (4/4 complete)
-**Next Task**: Phase 3.2 - Move Client Code
+**Phase**: 3.2 Move Client Code (4/4 complete)
+**Next Task**: Phase 3.3 - Configure Client Package

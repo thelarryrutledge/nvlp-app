@@ -2,7 +2,8 @@
 // This allows for cleaner imports: import { User, Budget, Envelope } from '@/types'
 
 // Re-export types from the NVLP client library
-export * from '../../../src/client/types';
+// Note: This will be updated to use @nvlp/types package in Phase 5 (mobile app migration)
+export * from '../../../packages/client/src/types';
 
 // Add mobile-specific types here
 export interface NavigationProps {
