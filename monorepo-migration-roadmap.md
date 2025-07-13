@@ -137,7 +137,7 @@
 - [x] Create shared Jest configuration
 
 ### 6.3 Update Projects to Use Shared Config
-- [ ] Update mobile app to extend shared configs
+- [x] Update mobile app to extend shared configs
 - [ ] Update API to extend shared configs
 - [ ] Update client to extend shared configs
 - [ ] Test all configurations
@@ -248,5 +248,5 @@
 - [ ] Documentation is complete
 
 ## Current Status
-**Phase**: 6.2 Extract Common Configs (4/4 complete)
-**Next Task**: Phase 6.3 - Update mobile app to extend shared configs
+**Phase**: 6.3 Update Projects to Use Shared Config (1/4 complete)
+**Next Task**: Phase 6.3 - Update API to extend shared configs
