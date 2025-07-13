@@ -127,7 +127,7 @@
 ### 6.1 Prepare Config Package
 - [x] Create `packages/config/package.json`
 - [x] Create base configuration files
-- [ ] Set up configuration exports
+- [x] Set up configuration exports
 - [ ] Document configuration usage
 
 ### 6.2 Extract Common Configs
@@ -248,5 +248,5 @@
 - [ ] Documentation is complete
 
 ## Current Status
-**Phase**: 6.1 Prepare Config Package (2/4 complete)
-**Next Task**: Phase 6.1 - Set up configuration exports
+**Phase**: 6.1 Prepare Config Package (3/4 complete)
+**Next Task**: Phase 6.1 - Document configuration usage
