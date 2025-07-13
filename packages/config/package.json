@@ -22,6 +22,14 @@
       "import": "./typescript/index.js",
       "require": "./typescript/index.cjs"
     },
+    "./typescript/browser": {
+      "import": "./typescript/browser.js",
+      "require": "./typescript/browser.cjs"
+    },
+    "./typescript/node": {
+      "import": "./typescript/node.js",
+      "require": "./typescript/node.cjs"
+    },
     "./typescript/*": "./typescript/*",
     "./jest": {
       "types": "./jest/index.d.ts",
@@ -35,6 +43,9 @@
     "prettier",
     "typescript",
     "jest",
+    "typescript.json",
+    "typescript-browser.json",
+    "typescript-node.json",
     "README.md"
   ],
   "scripts": {

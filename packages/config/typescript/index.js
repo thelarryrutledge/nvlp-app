@@ -1,7 +1,10 @@
+// Base TypeScript configuration for packages
 export default {
   compilerOptions: {
-    target: 'ES2022',
-    lib: ['ES2022'],
+    target: 'ES2020',
+    lib: ['ES2020'],
+    module: 'ESNext',
+    moduleResolution: 'bundler',
     allowJs: true,
     skipLibCheck: true,
     esModuleInterop: true,
@@ -9,21 +12,19 @@ export default {
     strict: true,
     forceConsistentCasingInFileNames: true,
     noFallthroughCasesInSwitch: true,
-    module: 'ESNext',
-    moduleResolution: 'bundler',
     resolveJsonModule: true,
     isolatedModules: true,
-    noEmit: true,
     declaration: true,
     declarationMap: true,
     sourceMap: true,
     outDir: './dist',
     rootDir: './src',
+    // Enhanced type safety
     exactOptionalPropertyTypes: true,
     noImplicitReturns: true,
     noPropertyAccessFromIndexSignature: true,
     noUncheckedIndexedAccess: true,
   },
   include: ['src/**/*'],
-  exclude: ['node_modules', 'dist'],
+  exclude: ['node_modules', 'dist', '**/*.test.ts', '**/*.spec.ts'],
 };

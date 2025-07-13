@@ -133,7 +133,7 @@
 ### 6.2 Extract Common Configs
 - [x] Move shared ESLint configuration
 - [x] Move shared Prettier configuration
-- [ ] Move shared TypeScript base config
+- [x] Move shared TypeScript base config
 - [ ] Create shared Jest configuration
 
 ### 6.3 Update Projects to Use Shared Config
@@ -248,5 +248,5 @@
 - [ ] Documentation is complete
 
 ## Current Status
-**Phase**: 6.2 Extract Common Configs (2/4 complete)
-**Next Task**: Phase 6.2 - Move shared TypeScript base config
+**Phase**: 6.2 Extract Common Configs (3/4 complete)
+**Next Task**: Phase 6.2 - Create shared Jest configuration

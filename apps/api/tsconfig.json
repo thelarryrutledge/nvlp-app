@@ -1,38 +1,17 @@
 {
-  "extends": "../../tsconfig.json",
+  "extends": "@nvlp/config/typescript-node.json",
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "ESNext",
-    "moduleResolution": "node",
-    "lib": ["ES2020"],
-    "outDir": "./dist",
-    "rootDir": "./src",
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
       "@nvlp/client": ["../../packages/client/src"],
       "@nvlp/types": ["../../packages/types/src"]
     },
-    "resolveJsonModule": true,
-    "allowJs": true,
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
     "noEmit": false
   },
   "include": [
     "src/**/*",
     "api/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "**/*.test.ts",
-    "**/*.spec.ts"
   ],
   "references": [
     { "path": "../../packages/client" },
