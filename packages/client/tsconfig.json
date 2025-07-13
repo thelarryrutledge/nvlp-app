@@ -9,8 +9,7 @@
     "rootDir": "./src",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "@nvlp/types": ["../types/src"]
+      "@/*": ["./src/*"]
     },
     "resolveJsonModule": true,
     "allowJs": false,
@@ -40,6 +39,6 @@
     "**/*.stories.ts"
   ],
   "references": [
-    { "path": "../types" }
+    // Note: Types package reference will be added when types package is created
   ]
 }
