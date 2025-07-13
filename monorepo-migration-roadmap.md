@@ -120,12 +120,12 @@
 - [x] Add `@nvlp/client` as dependency
 - [x] Add `@nvlp/types` as dependency
 - [x] Update import paths to use workspace packages
-- [ ] Test dependency resolution
+- [x] Test dependency resolution
 
 ## Phase 6: Shared Configuration
 
 ### 6.1 Prepare Config Package
-- [ ] Create `packages/config/package.json`
+- [x] Create `packages/config/package.json`
 - [ ] Create base configuration files
 - [ ] Set up configuration exports
 - [ ] Document configuration usage
@@ -248,5 +248,5 @@
 - [ ] Documentation is complete
 
 ## Current Status
-**Phase**: 5.2 Move Mobile Code (4/4 complete)
-**Next Task**: Phase 5.4 - Test dependency resolution
+**Phase**: 6.1 Prepare Config Package (1/4 complete)
+**Next Task**: Phase 6.1 - Create base configuration files
