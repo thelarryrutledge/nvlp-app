@@ -69,6 +69,9 @@
     "typescript": "^5.0.0",
     "vitest": "^1.0.0"
   },
+  "dependencies": {
+    "@nvlp/types": "workspace:*"
+  },
   "engines": {
     "node": ">=16.0.0"
   },

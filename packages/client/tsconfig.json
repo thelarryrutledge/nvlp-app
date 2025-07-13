@@ -38,7 +38,5 @@
     "**/*.spec.ts",
     "**/*.stories.ts"
   ],
-  "references": [
-    // Note: Types package reference will be added when types package is created
-  ]
+  "references": []
 }
