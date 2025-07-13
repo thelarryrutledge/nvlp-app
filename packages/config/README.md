@@ -84,3 +84,37 @@ module.exports = {
 - **TypeScript Support**: Full type definitions included
 - **Consistent Standards**: Shared formatting and linting rules across the monorepo
 - **Extensible**: Easy to override or extend in individual packages
+- **Project-Specific Examples**: Tailored configurations for React Native, Node.js, and library packages
+- **IDE Integration**: VS Code settings and workspace configuration
+
+## Documentation
+
+- [Usage Guide](./USAGE.md) - Detailed examples for different project types
+- [Changelog](./CHANGELOG.md) - Version history and changes
+
+## Package Structure
+
+```
+packages/config/
+├── eslint/
+│   ├── index.js      # ESM export
+│   ├── index.cjs     # CommonJS export
+│   └── index.d.ts    # TypeScript declarations
+├── prettier/
+│   ├── index.js
+│   ├── index.cjs
+│   └── index.d.ts
+├── typescript/
+│   ├── index.js
+│   ├── index.cjs
+│   └── index.d.ts
+├── jest/
+│   ├── index.js
+│   ├── index.cjs
+│   └── index.d.ts
+├── README.md
+├── USAGE.md
+├── CHANGELOG.md
+├── package.json
+└── tsconfig.json
+```
