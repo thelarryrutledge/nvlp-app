@@ -19,9 +19,14 @@
     "deploy:notifications": "cd ../../ && supabase functions deploy notifications",
     "lint": "cd ../../ && deno lint supabase/functions/",
     "lint:fix": "cd ../../ && deno lint --fix supabase/functions/",
+    "lint:eslint": "eslint . --ext .ts,.js",
+    "lint:eslint:fix": "eslint . --ext .ts,.js --fix",
     "format": "cd ../../ && deno fmt supabase/functions/",
     "format:check": "cd ../../ && deno fmt --check supabase/functions/",
+    "format:prettier": "prettier --write \"src/**/*.{ts,js}\"",
+    "format:prettier:check": "prettier --check \"src/**/*.{ts,js}\"",
     "typecheck": "cd ../../ && deno check supabase/functions/**/*.ts",
+    "typecheck:tsc": "tsc --noEmit",
     "clean": "rm -rf .temp",
     "test": "cd ../../ && deno test supabase/functions/",
     "db:reset": "cd ../../ && supabase db reset",
@@ -33,7 +38,15 @@
     "dotenv": "^17.0.1"
   },
   "devDependencies": {
-    "supabase": "^1.200.0"
+    "@nvlp/config": "workspace:*",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.29.1",
+    "prettier": "^3.3.2",
+    "supabase": "^1.200.0",
+    "typescript": "^5.5.2"
   },
   "engines": {
     "deno": ">=1.40.0"

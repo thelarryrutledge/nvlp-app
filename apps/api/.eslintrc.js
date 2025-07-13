@@ -1,13 +1,21 @@
 module.exports = {
-  ...require('@nvlp/config/eslint'),
   env: {
-    ...require('@nvlp/config/eslint').env,
+    browser: true,
+    es2021: true,
     node: true,
   },
+  extends: [
+    'eslint:recommended',
+    'plugin:@typescript-eslint/recommended',
+    'prettier',
+  ],
+  parser: '@typescript-eslint/parser',
+  parserOptions: {
+    ecmaVersion: 'latest',
+    sourceType: 'module',
+  },
+  plugins: ['@typescript-eslint', 'import'],
   rules: {
-    ...require('@nvlp/config/eslint').rules,
-    // API/Server specific rules
-    'no-console': 'off', // Allow console in API/server code
     '@typescript-eslint/no-unused-vars': [
       'error', 
       { 
@@ -15,6 +23,29 @@ module.exports = {
         varsIgnorePattern: '^_'
       }
     ],
+    '@typescript-eslint/explicit-function-return-type': 'off',
+    '@typescript-eslint/explicit-module-boundary-types': 'off',
+    '@typescript-eslint/no-explicit-any': 'warn',
+    'import/order': [
+      'error',
+      {
+        groups: [
+          'builtin',
+          'external',
+          'internal',
+          'parent',
+          'sibling',
+          'index',
+        ],
+        'newlines-between': 'always',
+        alphabetize: {
+          order: 'asc',
+          caseInsensitive: true,
+        },
+      },
+    ],
+    // API/Server specific rules
+    'no-console': 'off', // Allow console in API/server code
   },
   ignorePatterns: [
     'node_modules',
