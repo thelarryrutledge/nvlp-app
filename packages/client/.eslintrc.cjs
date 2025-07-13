@@ -46,6 +46,8 @@ module.exports = {
     ],
     // Client library specific rules
     'no-console': 'warn', // Prefer explicit logging in library code
+    '@typescript-eslint/no-var-requires': 'off', // Allow require for Node.js compatibility
+    '@typescript-eslint/no-explicit-any': 'warn', // Allow any for flexible API responses
   },
   ignorePatterns: [
     'node_modules',

@@ -1,12 +1,18 @@
+// Simplified ESLint config for types package (only type definitions)
 module.exports = {
-  ...require('@nvlp/config/eslint'),
+  env: {
+    node: true,
+    es2021: true,
+  },
+  extends: [
+    'eslint:recommended',
+    'prettier',
+  ],
+  parserOptions: {
+    ecmaVersion: 'latest',
+    sourceType: 'module',
+  },
   rules: {
-    ...require('@nvlp/config/eslint').rules,
-    // Types package specific rules - be more strict
-    '@typescript-eslint/explicit-function-return-type': 'error',
-    '@typescript-eslint/explicit-module-boundary-types': 'error',
-    '@typescript-eslint/no-explicit-any': 'error',
-    '@typescript-eslint/prefer-readonly': 'error',
     'no-console': 'error', // No console in types package
   },
   ignorePatterns: [

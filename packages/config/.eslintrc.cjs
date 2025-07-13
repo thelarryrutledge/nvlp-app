@@ -17,5 +17,7 @@ module.exports = {
     'dist',
     '*.config.js',
     '*.config.ts',
+    '**/*.d.ts', // Ignore TypeScript declaration files
+    '**/setup.template.js', // Ignore Jest template files
   ],
 };

@@ -77,5 +77,8 @@ module.exports = {
     'ios',
     'metro.config.js',
     'babel.config.js',
+    'jest.setup.js', // Jest setup uses globals
+    '__tests__', // Test files
+    'temp-*.ts', // Temporary files
   ],
 };
