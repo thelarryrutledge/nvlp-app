@@ -61,7 +61,8 @@
   ],
   "scripts": {
     "lint": "eslint . --ext .js,.ts",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "clean": "echo '✅ @nvlp/config: No build artifacts to clean'"
   },
   "devDependencies": {
     "@types/node": "^20.14.2",
