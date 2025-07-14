@@ -4,10 +4,8 @@
   "private": true,
   "description": "NVLP API - Supabase Edge Functions and Backend Services",
   "scripts": {
-    "dev": "cd ../../ && supabase start && supabase functions serve --env-file .env",
-    "dev:db": "cd ../../ && supabase start",
-    "dev:functions": "cd ../../ && supabase functions serve --env-file .env",
-    "dev:watch": "../dev-watch-api.sh",
+    "dev": "echo 'API development uses remote Supabase. Edit functions in supabase/functions/ and deploy with pnpm deploy:api'",
+    "dev:remote": "echo 'Using remote Supabase instance. Check your .env for SUPABASE_URL'",
     "build": "echo 'Supabase Edge Functions are deployed directly'",
     "deploy": "cd ../../ && supabase functions deploy",
     "deploy:auth": "cd ../../ && supabase functions deploy auth",
