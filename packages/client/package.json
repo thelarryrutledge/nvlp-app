@@ -22,6 +22,8 @@
   "scripts": {
     "dev": "tsup src/index.ts --format esm,cjs --dts --watch",
     "build": "tsup src/index.ts --format esm,cjs --dts --clean",
+    "build:prod": "tsup --config tsup.config.prod.ts",
+    "build:analyze": "tsup --metafile && npx esbuild-visualizer --metadata ./dist/metafile-*.json",
     "build:watch": "pnpm build --watch",
     "lint": "eslint src --ext .ts,.tsx",
     "lint:fix": "eslint src --ext .ts,.tsx --fix",
@@ -32,7 +34,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "clean": "rm -rf dist .turbo node_modules/.cache",
-    "prepublishOnly": "pnpm run build"
+    "prepublishOnly": "pnpm run build:prod"
   },
   "keywords": [
     "nvlp",

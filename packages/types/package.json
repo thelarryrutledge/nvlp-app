@@ -14,6 +14,8 @@
   },
   "scripts": {
     "build": "tsup",
+    "build:prod": "tsup --config tsup.config.prod.ts",
+    "build:analyze": "tsup --metafile && echo 'Build metadata generated'",
     "build:watch": "tsup --watch",
     "dev": "tsup --watch",
     "clean": "rm -rf dist",

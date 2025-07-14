@@ -1,0 +1,36 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", ".next/**", "build/**"],
+      "env": ["NODE_ENV"]
+    },
+    "build:prod": {
+      "dependsOn": ["^build:prod"],
+      "outputs": ["dist/**", ".next/**", "build/**"],
+      "env": ["NODE_ENV", "VERCEL_ENV", "CI"]
+    },
+    "dev": {
+      "persistent": true,
+      "cache": false
+    },
+    "lint": {
+      "outputs": []
+    },
+    "test": {
+      "outputs": [],
+      "dependsOn": ["build"]
+    },
+    "typecheck": {
+      "outputs": []
+    },
+    "clean": {
+      "cache": false
+    },
+    "deploy": {
+      "dependsOn": ["build:prod"],
+      "cache": false
+    }
+  }
+}

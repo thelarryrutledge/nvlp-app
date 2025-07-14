@@ -26,7 +26,12 @@
     "build": "echo 'Use platform-specific build commands: build:ios or build:android'",
     "build:ios": "cd ios && xcodebuild -workspace NVLPMobile.xcworkspace -scheme NVLPMobile -configuration Release -archivePath ./build/NVLPMobile.xcarchive archive",
     "build:android": "cd android && ./gradlew assembleRelease",
-    "build:android:bundle": "cd android && ./gradlew bundleRelease"
+    "build:android:bundle": "cd android && ./gradlew bundleRelease",
+    "build:ios:prod": "NODE_ENV=production cd ios && xcodebuild -workspace NVLPMobile.xcworkspace -scheme NVLPMobile -configuration Release -archivePath ./build/Release/NVLPMobile.xcarchive archive MARKETING_VERSION=$(node -p \"require('./package.json').version\")",
+    "build:android:prod": "NODE_ENV=production cd android && ./gradlew bundleRelease -PversionName=$(node -p \"require('./package.json').version\")",
+    "build:analyze": "npx react-native-bundle-visualizer",
+    "prebuild:ios:prod": "pnpm typecheck && pnpm lint",
+    "prebuild:android:prod": "pnpm typecheck && pnpm lint"
   },
   "dependencies": {
     "@nvlp/client": "workspace:*",
