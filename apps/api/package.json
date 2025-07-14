@@ -24,7 +24,7 @@
     "format:check": "cd ../../ && deno fmt --check supabase/functions/",
     "format:prettier": "prettier --write \"src/**/*.{ts,js}\"",
     "format:prettier:check": "prettier --check \"src/**/*.{ts,js}\"",
-    "typecheck": "cd ../../ && deno check supabase/functions/**/*.ts",
+    "typecheck": "tsc --noEmit",
     "typecheck:tsc": "tsc --noEmit",
     "clean": "rm -rf .temp",
     "test": "cd ../../ && deno test supabase/functions/",

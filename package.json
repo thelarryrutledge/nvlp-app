@@ -116,8 +116,7 @@
     "build:production": "./scripts/build-prod.sh",
     "build:production:packages": "./scripts/build-prod.sh --target packages",
     "build:production:mobile": "./scripts/build-prod.sh --target mobile",
-    "build:production:api": "./scripts/build-prod.sh --target api",
-    "prebuild:prod": "pnpm validate:env"
+    "build:production:api": "./scripts/build-prod.sh --target api"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

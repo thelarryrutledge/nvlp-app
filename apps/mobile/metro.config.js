@@ -10,6 +10,23 @@ const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
  */
 const config = {
   resolver: {
+    // Fix for @babel/runtime resolution
+    extraNodeModules: new Proxy({}, {
+      get: (target, name) => {
+        // First try mobile's node_modules
+        const mobilePath = path.join(__dirname, 'node_modules', name);
+        if (require('fs').existsSync(mobilePath)) {
+          return mobilePath;
+        }
+        // Then try root node_modules
+        const rootPath = path.join(__dirname, '../../node_modules', name);
+        if (require('fs').existsSync(rootPath)) {
+          return rootPath;
+        }
+        // Fallback to requiring from current directory
+        return path.join(__dirname, 'node_modules', name);
+      }
+    }),
     alias: {
       '@': path.resolve(__dirname, 'src'),
       '@/components': path.resolve(__dirname, 'src/components'),
@@ -44,6 +61,8 @@ const config = {
     path.resolve(__dirname, '../../packages/client/dist'),
     path.resolve(__dirname, '../../packages/types/src'),
     path.resolve(__dirname, '../../packages/client/src'),
+    // Include root node_modules for monorepo dependencies
+    path.resolve(__dirname, '../../node_modules'),
   ],
 };
 

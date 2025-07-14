@@ -4,20 +4,14 @@ export default defineConfig({
   entry: ['src/index.ts'],
   format: ['esm', 'cjs'],
   dts: true,
-  splitting: false,
-  sourcemap: false, // No source maps in production
   clean: true,
-  outDir: 'dist',
-  minify: true, // Minify for production
+  sourcemap: false, // Disable sourcemaps for production
+  minify: true, // Enable minification for production
+  treeshake: true, // Enable tree shaking
   target: 'es2020',
-  treeshake: true,
+  outDir: 'dist',
   env: {
     NODE_ENV: 'production'
   },
-  esbuildOptions(options) {
-    options.drop = ['console', 'debugger'] // Remove console logs in production
-  },
-  onSuccess: async () => {
-    console.log('✅ @nvlp/types production build completed')
-  }
+  onSuccess: 'echo "✅ @nvlp/types production build completed"'
 })

@@ -1,12 +1,22 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { NVLPClient } from '@nvlp/client';
 
 const HotReloadTest: React.FC = () => {
   const [count, setCount] = useState(0);
+  const [lastUpdate] = useState(new Date().toLocaleTimeString());
+  
+  // Test shared client import
+  const testClient = () => {
+    console.log('Testing NVLPClient import...');
+    console.log('NVLPClient type:', typeof NVLPClient);
+    console.log('NVLPClient constructor:', NVLPClient);
+    alert(`NVLPClient is ${typeof NVLPClient === 'function' ? 'available ✅' : 'not available ❌'}`);
+  };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Hot Reload Test</Text>
+      <Text style={styles.title}>🚀 Monorepo Hot Reload Demo</Text>
       <Text style={styles.counter}>Count: {count}</Text>
       <TouchableOpacity
         style={styles.button}
@@ -14,8 +24,17 @@ const HotReloadTest: React.FC = () => {
       >
         <Text style={styles.buttonText}>Increment</Text>
       </TouchableOpacity>
+      <TouchableOpacity
+        style={[styles.button, styles.clientButton]}
+        onPress={testClient}
+      >
+        <Text style={styles.buttonText}>Test Client Import</Text>
+      </TouchableOpacity>
       <Text style={styles.instructions}>
-        Try changing this text to test hot reload!
+        🔥 Hot reload test - Component loaded at {lastUpdate}
+      </Text>
+      <Text style={styles.instructions}>
+        📦 Testing monorepo package imports
       </Text>
     </View>
   );
@@ -54,6 +73,9 @@ const styles = StyleSheet.create({
     color: '#888',
     textAlign: 'center',
     fontStyle: 'italic',
+  },
+  clientButton: {
+    backgroundColor: '#28a745',
   },
 });
 

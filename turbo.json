@@ -3,23 +3,36 @@
   "globalDependencies": [
     "package.json",
     "pnpm-lock.yaml",
-    "turbo.json",
-    ".env.example"
+    "turbo.json"
   ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "inputs": ["src/**", "package.json", "tsconfig.json", "tsup.config.ts"],
-      "outputs": ["dist/**", ".next/**", "build/**"],
+      "inputs": [
+        "src/**", 
+        "package.json", 
+        "tsconfig.json", 
+        "tsup.config.ts",
+        "tsup.config.js"
+      ],
+      "outputs": ["dist/**", ".next/**", "build/**", "*.log"],
       "env": ["NODE_ENV"],
-      "outputLogs": "new-only"
+      "outputLogs": "new-only",
+      "persistent": false
     },
     "build:prod": {
       "dependsOn": ["^build:prod"],
-      "inputs": ["src/**", "package.json", "tsconfig.json", "tsup.config.prod.ts"],
-      "outputs": ["dist/**", ".next/**", "build/**"],
+      "inputs": [
+        "src/**", 
+        "package.json", 
+        "tsconfig.json", 
+        "tsup.config.prod.ts",
+        "tsup.config.ts"
+      ],
+      "outputs": ["dist/**", ".next/**", "build/**", "*.log"],
       "env": ["NODE_ENV", "VERCEL_ENV", "CI"],
-      "outputLogs": "errors-only"
+      "outputLogs": "errors-only",
+      "persistent": false
     },
     "build:analyze": {
       "dependsOn": ["^build"],
@@ -88,5 +101,7 @@
   },
   "remoteCache": {
     "enabled": false
-  }
+  },
+  "ui": "tui",
+  "daemon": false
 }
