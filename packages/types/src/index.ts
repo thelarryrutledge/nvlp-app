@@ -15,4 +15,3 @@ export * from './api/responses';
 export * from './api/cache';
 
 // Enums
-export * from './enums/financial';

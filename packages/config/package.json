@@ -60,8 +60,11 @@
     "README.md"
   ],
   "scripts": {
+    "build": "echo '✅ @nvlp/config: Configuration package - no build needed'",
+    "build:prod": "echo '✅ @nvlp/config: Configuration package - no production build needed'",
     "lint": "eslint . --ext .js,.ts",
     "type-check": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
     "clean": "echo '✅ @nvlp/config: No build artifacts to clean'"
   },
   "devDependencies": {

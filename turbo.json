@@ -1,36 +1,92 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": [
+    "package.json",
+    "pnpm-lock.yaml",
+    "turbo.json",
+    ".env.example"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
+      "inputs": ["src/**", "package.json", "tsconfig.json", "tsup.config.ts"],
       "outputs": ["dist/**", ".next/**", "build/**"],
-      "env": ["NODE_ENV"]
+      "env": ["NODE_ENV"],
+      "outputLogs": "new-only"
     },
     "build:prod": {
       "dependsOn": ["^build:prod"],
+      "inputs": ["src/**", "package.json", "tsconfig.json", "tsup.config.prod.ts"],
       "outputs": ["dist/**", ".next/**", "build/**"],
-      "env": ["NODE_ENV", "VERCEL_ENV", "CI"]
+      "env": ["NODE_ENV", "VERCEL_ENV", "CI"],
+      "outputLogs": "errors-only"
+    },
+    "build:analyze": {
+      "dependsOn": ["^build"],
+      "inputs": ["src/**", "package.json", "tsconfig.json"],
+      "outputs": ["dist/**", "metafile-*.json"],
+      "env": ["NODE_ENV"]
     },
     "dev": {
+      "dependsOn": ["^build"],
       "persistent": true,
-      "cache": false
+      "cache": false,
+      "inputs": ["src/**"],
+      "outputLogs": "full"
     },
     "lint": {
+      "dependsOn": ["^build"],
+      "inputs": ["src/**", "package.json", ".eslintrc.*", "eslint.config.*"],
+      "outputs": [],
+      "outputLogs": "new-only"
+    },
+    "lint:fix": {
+      "dependsOn": ["^build"],
+      "inputs": ["src/**", "package.json", ".eslintrc.*", "eslint.config.*"],
+      "outputs": [],
+      "cache": false
+    },
+    "format": {
+      "inputs": ["src/**", "package.json", ".prettierrc", "prettier.config.*"],
+      "outputs": [],
+      "cache": false
+    },
+    "format:check": {
+      "inputs": ["src/**", "package.json", ".prettierrc", "prettier.config.*"],
       "outputs": []
     },
     "test": {
-      "outputs": [],
-      "dependsOn": ["build"]
+      "dependsOn": ["^build"],
+      "inputs": ["src/**", "test/**", "tests/**", "__tests__/**", "package.json", "jest.config.*", "vitest.config.*"],
+      "outputs": ["coverage/**"],
+      "env": ["NODE_ENV"]
+    },
+    "test:watch": {
+      "dependsOn": ["^build"],
+      "persistent": true,
+      "cache": false,
+      "inputs": ["src/**", "test/**", "tests/**", "__tests__/**"]
     },
     "typecheck": {
-      "outputs": []
+      "dependsOn": ["^build"],
+      "inputs": ["src/**", "package.json", "tsconfig.json"],
+      "outputs": [],
+      "outputLogs": "errors-only"
     },
     "clean": {
-      "cache": false
+      "cache": false,
+      "inputs": [],
+      "outputs": []
     },
     "deploy": {
-      "dependsOn": ["build:prod"],
-      "cache": false
+      "dependsOn": ["build:prod", "lint", "typecheck", "test"],
+      "inputs": ["dist/**", "supabase/**", "package.json"],
+      "outputs": [],
+      "cache": false,
+      "env": ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"]
     }
+  },
+  "remoteCache": {
+    "enabled": false
   }
 }
