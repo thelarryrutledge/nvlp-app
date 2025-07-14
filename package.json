@@ -34,6 +34,8 @@
     "dev:hot": "./scripts/dev-watch.sh",
     "dev:guide": "./scripts/dev-guide.sh",
     "dev:check": "./scripts/check-dev-environment.sh",
+    "test:mobile:workflow": "./scripts/test-mobile-workflow.sh",
+    "demo:mobile": "./scripts/demo-mobile-workflow.sh",
     "build": "pnpm build:packages && echo '✅ All packages built successfully!'",
     "build:all": "pnpm build:packages && pnpm build:apps",
     "build:apps": "pnpm --filter './apps/**' build",
