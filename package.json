@@ -31,6 +31,7 @@
     "dev:web": "pnpm --filter @nvlp/web dev",
     "dev:db": "pnpm --filter @nvlp/api dev:db",
     "dev:watch": "pnpm dev:full",
+    "dev:hot": "./scripts/dev-watch.sh",
     "dev:guide": "./scripts/dev-guide.sh",
     "dev:check": "./scripts/check-dev-environment.sh",
     "build": "pnpm build:packages && echo '✅ All packages built successfully!'",

@@ -39,6 +39,11 @@ const config = {
     path.resolve(__dirname, 'assets'),
     // Watch the workspace packages for hot reloading
     path.resolve(__dirname, '../../packages'),
+    // Watch specific package dist folders for faster detection
+    path.resolve(__dirname, '../../packages/types/dist'),
+    path.resolve(__dirname, '../../packages/client/dist'),
+    path.resolve(__dirname, '../../packages/types/src'),
+    path.resolve(__dirname, '../../packages/client/src'),
   ],
 };
 

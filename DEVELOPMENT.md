@@ -67,6 +67,11 @@ pnpm dev
   - 🟢 API: Supabase services with green output
   - 🟣 Mobile: Metro bundler with magenta output
 
+- **`pnpm dev:hot`** - Enhanced hot reload with dependency-aware watching
+  - 🔥 Monitors package dependency chain (types → client → apps)
+  - 🔄 Automatic reload cascading across dependent packages
+  - 📊 Real-time build status and dependency updates
+
 ### Focused Development Commands
 
 - **`pnpm dev:packages`** - Watch and rebuild packages only
@@ -195,6 +200,25 @@ The API development server includes:
 - Edge Functions runtime
 - Authentication services
 - Realtime subscriptions
+
+## Hot Reload & Development
+
+### Hot Reload Features
+- **Package Changes**: Types and Client auto-rebuild and trigger dependent app reloads
+- **Mobile Fast Refresh**: React Native components update instantly
+- **API Functions**: Supabase Edge Functions reload automatically
+- **Cross-Package**: Changes in shared packages propagate to consuming apps
+
+### Enhanced Development
+```bash
+# Use enhanced hot reload for cross-package development
+pnpm dev:hot
+
+# Standard development (still has hot reload)
+pnpm dev:all
+```
+
+See `HOT_RELOAD.md` for detailed configuration and troubleshooting.
 
 ## Debugging
 

@@ -35,6 +35,9 @@ print_command "pnpm dev:all" \
 print_command "pnpm dev:full" \
 "Start all components individually with detailed output"
 
+print_command "pnpm dev:hot" \
+"Enhanced hot reload with dependency-aware watching"
+
 print_command "pnpm dev:packages" \
 "Start only packages (types, client) in watch mode"
 
@@ -83,8 +86,10 @@ print_section "Development Tips"
 
 echo -e "${CYAN}Hot Reloading:${NC}"
 echo "  • Types & Client: Auto-rebuild on file changes"
-echo "  • Mobile: Metro bundler with fast refresh"
+echo "  • Mobile: Metro bundler with fast refresh + package watching"
 echo "  • API: Supabase auto-reload on function changes"
+echo "  • Enhanced: Use 'pnpm dev:hot' for dependency-aware reload"
+echo "  • Docs: See HOT_RELOAD.md for detailed configuration"
 echo ""
 
 echo -e "${CYAN}Process Management:${NC}"

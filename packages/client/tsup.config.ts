@@ -18,5 +18,6 @@ export default defineConfig({
   },
   onSuccess: async () => {
     console.log('✅ @nvlp/client build completed successfully')
+    console.log('🔄 Dependent packages (mobile, api) should auto-reload')
   }
 })

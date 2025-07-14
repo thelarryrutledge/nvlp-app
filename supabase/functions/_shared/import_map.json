@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "@nvlp/types": "../../../packages/types/dist/index.js",
+    "@nvlp/types/": "../../../packages/types/dist/"
+  }
+}
