@@ -173,7 +173,7 @@
 
 ### 8.2 Development Experience
 - [x] Verify IntelliSense works across packages
-- [ ] Test go-to-definition across packages
+- [x] Test go-to-definition across packages
 - [ ] Verify TypeScript errors propagate correctly
 - [ ] Test debugging capabilities
 
