@@ -99,3 +99,8 @@ apps/mobile/.bundle/
 **/.nyc_output/
 **/tmp/
 **/temp/
+
+# Build and cache files
+**/.eslintcache
+*.tsbuildinfo
+**/*.tsbuildinfo

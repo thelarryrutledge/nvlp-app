@@ -117,9 +117,29 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .turbo
-          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          key: v1-turbo-${{ runner.os }}-${{ hashFiles('turbo.json', 'package.json', '**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-turbo-
+            v1-turbo-${{ runner.os }}-
+            
+      - name: Setup TypeScript cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            **/*.tsbuildinfo
+            packages/*/tsconfig.tsbuildinfo
+          key: v1-typescript-${{ runner.os }}-${{ hashFiles('**/tsconfig.json', '**/tsconfig.*.json') }}
+          restore-keys: |
+            v1-typescript-${{ runner.os }}-
+            
+      - name: Setup ESLint cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .eslintcache
+            **/.eslintcache
+          key: v1-eslint-${{ runner.os }}-${{ hashFiles('**/.eslintrc.*', '**/eslint.config.*') }}
+          restore-keys: |
+            v1-eslint-${{ runner.os }}-
             
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

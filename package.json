@@ -123,7 +123,15 @@
     "build:production:mobile": "./scripts/build-prod.sh --target mobile",
     "build:production:api": "./scripts/build-prod.sh --target api",
     "build:vercel": "pnpm build:packages && echo '✅ Vercel build complete'",
-    "build:vercel:prod": "NODE_ENV=production pnpm build:packages && echo '✅ Vercel production build complete'"
+    "build:vercel:prod": "NODE_ENV=production pnpm build:packages && echo '✅ Vercel production build complete'",
+    "cache:status": "./scripts/cache-management.sh status",
+    "cache:clean": "./scripts/cache-management.sh clean",
+    "cache:clean:turbo": "./scripts/cache-management.sh clean-turbo",
+    "cache:stats": "./scripts/cache-management.sh stats",
+    "cache:optimize": "./scripts/cache-management.sh optimize",
+    "cache:validate": "./scripts/validate-build-cache.sh",
+    "ci:validate": "./scripts/validate-ci-cd-flow.sh",
+    "ci:test": "./scripts/test-ci-cd-complete.sh"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

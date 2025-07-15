@@ -13,12 +13,15 @@
         "package.json", 
         "tsconfig.json", 
         "tsup.config.ts",
-        "tsup.config.js"
+        "tsup.config.js",
+        "vite.config.ts",
+        "rollup.config.js"
       ],
-      "outputs": ["dist/**", ".next/**", "build/**", "*.log"],
+      "outputs": ["dist/**", ".next/**", "build/**", "*.log", ".turbo/**"],
       "env": ["NODE_ENV"],
       "outputLogs": "new-only",
-      "persistent": false
+      "persistent": false,
+      "cache": true
     },
     "build:prod": {
       "dependsOn": ["^build:prod"],
@@ -49,9 +52,16 @@
     },
     "lint": {
       "dependsOn": ["^build"],
-      "inputs": ["src/**", "package.json", ".eslintrc.*", "eslint.config.*"],
-      "outputs": [],
-      "outputLogs": "new-only"
+      "inputs": [
+        "src/**", 
+        "package.json", 
+        ".eslintrc.*", 
+        "eslint.config.*",
+        ".eslintignore"
+      ],
+      "outputs": ["eslint-report.json", "lint-results.xml"],
+      "outputLogs": "new-only",
+      "cache": true
     },
     "lint:fix": {
       "dependsOn": ["^build"],
@@ -70,9 +80,19 @@
     },
     "test": {
       "dependsOn": ["^build"],
-      "inputs": ["src/**", "test/**", "tests/**", "__tests__/**", "package.json", "jest.config.*", "vitest.config.*"],
-      "outputs": ["coverage/**"],
-      "env": ["NODE_ENV"]
+      "inputs": [
+        "src/**", 
+        "test/**", 
+        "tests/**", 
+        "__tests__/**", 
+        "package.json", 
+        "jest.config.*", 
+        "vitest.config.*",
+        "setupTests.*"
+      ],
+      "outputs": ["coverage/**", "test-results/**", "*.xml"],
+      "env": ["NODE_ENV", "CI"],
+      "cache": true
     },
     "test:watch": {
       "dependsOn": ["^build"],
@@ -82,9 +102,15 @@
     },
     "typecheck": {
       "dependsOn": ["^build"],
-      "inputs": ["src/**", "package.json", "tsconfig.json"],
-      "outputs": [],
-      "outputLogs": "errors-only"
+      "inputs": [
+        "src/**", 
+        "package.json", 
+        "tsconfig.json",
+        "tsconfig.*.json"
+      ],
+      "outputs": ["*.tsbuildinfo"],
+      "outputLogs": "errors-only",
+      "cache": true
     },
     "clean": {
       "cache": false,
@@ -100,8 +126,15 @@
     }
   },
   "remoteCache": {
-    "enabled": false
+    "enabled": false,
+    "timeout": 30
   },
+  "globalPassThroughEnv": [
+    "NODE_ENV",
+    "CI",
+    "VERCEL_ENV",
+    "GITHUB_TOKEN"
+  ],
   "ui": "tui",
   "daemon": false
 }
