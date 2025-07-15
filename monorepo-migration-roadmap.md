@@ -169,7 +169,7 @@
 - [x] Test mobile app startup and hot reload
 - [x] Test API endpoints functionality
 - [x] Test client library in mobile app
-- [ ] Test type checking across packages
+- [x] Test type checking across packages
 
 ### 8.2 Development Experience
 - [ ] Verify IntelliSense works across packages
