@@ -1,8 +1,8 @@
 # NVLP Monorepo Migration Memory
 
 ## Current Status
-**Phase**: 9.1 Update Vercel Configuration (1/4 complete)
-**Next Phase**: 9.1 continued - Set up API deployment from apps/api
+**Phase**: 9.1 Update Vercel Configuration (2/4 complete)
+**Next Phase**: 9.1 continued - Update build commands
 **Workflow**: Single subtask → update roadmap → update memory → commit → wait for prompt
 
 ## Migration Progress
@@ -44,8 +44,9 @@
   - Confirmed Supabase Edge Functions deploy correctly from monorepo with shared dependencies
   - Validated environment variables work across all patterns: mobile (react-native-config), Edge Functions (Deno.env), workspace packages (config objects)
   - Created comprehensive CI/CD pipeline with GitHub Actions workflows and change detection for monorepo optimization
-- Phase 9.1: Update Vercel Configuration (1/4 complete)
+- Phase 9.1: Update Vercel Configuration (2/4 complete)
   - Configured Vercel for monorepo with proper build commands and package dependencies
+  - Set up API deployment from apps/api directory with working scripts for both root and apps/api deployment
 
 ## Key Technical Details
 - **pnpm workspaces** with workspace:* protocol for internal deps

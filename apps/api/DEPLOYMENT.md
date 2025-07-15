@@ -116,6 +116,6 @@ The main Vercel deployment proxies requests:
 2. Use `supabase functions logs <function-name>` for real-time logs
 3. Test functions locally with `pnpm dev:functions`
 
-## Migration from Root Structure
+## Monorepo Structure Note
 
-The API functions were moved from the root `/supabase/functions/` to `apps/api/src/functions/`. All deployment commands now work from the monorepo structure while preserving the same deployment targets.
+The Supabase Edge Functions remain in the root `/supabase/functions/` directory to maintain compatibility with Supabase CLI. The `apps/api` package provides deployment scripts and utilities that work with this structure.

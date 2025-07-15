@@ -7,7 +7,7 @@
     "dev": "echo 'API development uses remote Supabase. Edit functions in supabase/functions/ and deploy with pnpm deploy:api'",
     "dev:remote": "echo 'Using remote Supabase instance. Check your .env for SUPABASE_URL'",
     "build": "echo 'Supabase Edge Functions are deployed directly'",
-    "deploy": "cd ../../ && supabase functions deploy",
+    "deploy:all": "cd ../../ && supabase functions deploy --prune",
     "deploy:auth": "cd ../../ && supabase functions deploy auth",
     "deploy:dashboard": "cd ../../ && supabase functions deploy dashboard",
     "deploy:transactions": "cd ../../ && supabase functions deploy transactions",
