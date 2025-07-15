@@ -27,10 +27,12 @@
     "build:ios": "cd ios && xcodebuild -workspace NVLPMobile.xcworkspace -scheme NVLPMobile -configuration Release -archivePath ./build/NVLPMobile.xcarchive archive",
     "build:android": "cd android && ./gradlew assembleRelease",
     "build:android:bundle": "cd android && ./gradlew bundleRelease",
-    "build:ios:prod": "NODE_ENV=production cd ios && xcodebuild -workspace NVLPMobile.xcworkspace -scheme NVLPMobile -configuration Release -archivePath ./build/Release/NVLPMobile.xcarchive archive MARKETING_VERSION=$(node -p \"require('./package.json').version\")",
+    "build:ios:prod": "NODE_ENV=production ./ios/scripts/sync-version.sh && cd ios && xcodebuild -workspace NVLPMobile.xcworkspace -scheme NVLPMobile -configuration Release -archivePath ./build/Release/NVLPMobile.xcarchive archive",
     "build:android:prod": "NODE_ENV=production cd android && ./gradlew bundleRelease -PversionName=$(node -p \"require('./package.json').version\")",
     "build:analyze": "npx react-native-bundle-visualizer",
-    "prebuild:ios:prod": "pnpm typecheck && pnpm lint",
+    "build:validate:ios": "./ios/scripts/build-config.sh",
+    "prebuild:ios": "./ios/scripts/sync-version.sh",
+    "prebuild:ios:prod": "./ios/scripts/sync-version.sh && pnpm typecheck && pnpm lint",
     "prebuild:android:prod": "pnpm typecheck && pnpm lint"
   },
   "dependencies": {
