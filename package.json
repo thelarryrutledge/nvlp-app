@@ -68,6 +68,7 @@
     "test:watch": "concurrently -n 'client,mobile' -c 'yellow,magenta' 'pnpm --filter @nvlp/client test:watch' 'pnpm --filter @nvlp/mobile test --watch'",
     "test:coverage": "echo 'Coverage available via: pnpm --filter @nvlp/client test:coverage (requires @vitest/coverage setup)'",
     "test:script": "./scripts/test-all.sh",
+    "test:ci": "./scripts/test-ci-pipeline.sh",
     "lint": "pnpm lint:packages && pnpm lint:apps",
     "lint:all": "pnpm lint:packages && pnpm lint:apps",
     "lint:packages": "pnpm lint:types && pnpm lint:client && pnpm lint:config",
