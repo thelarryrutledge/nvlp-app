@@ -3,6 +3,33 @@ apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.gradle"
 
+// Function to get version name from package.json
+def getVersionName() {
+    def packageJsonFile = file("../../package.json")
+    if (packageJsonFile.exists()) {
+        def packageJson = new groovy.json.JsonSlurper().parseText(packageJsonFile.text)
+        return packageJson.version
+    }
+    return "1.0.0"
+}
+
+// Function to get version code from git commits or project property
+def getVersionCode() {
+    // Check if versionName is provided as project property (for CI/CD)
+    if (project.hasProperty('versionCode')) {
+        return project.versionCode.toInteger()
+    }
+    
+    // Try to get from git commit count
+    try {
+        def gitCommitCount = 'git rev-list --count HEAD'.execute().text.trim()
+        return gitCommitCount.toInteger()
+    } catch (Exception e) {
+        println "Warning: Could not get git commit count, using default version code: ${e.message}"
+        return 1
+    }
+}
+
 /**
  * This is the configuration block to customize your React Native Android app.
  * By default you don't need to apply any configuration, just uncomment the lines you need.
@@ -58,7 +85,7 @@ react {
 /**
  * Set this to true to Run Proguard on Release builds to minify the Java bytecode.
  */
-def enableProguardInReleaseBuilds = false
+def enableProguardInReleaseBuilds = true
 
 /**
  * The preferred build flavor of JavaScriptCore (JSC)
@@ -78,13 +105,13 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.nvlpmobile"
+    namespace "com.nvlp.mobile"
     defaultConfig {
-        applicationId "com.nvlpmobile"
+        applicationId "com.nvlp.mobile"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode getVersionCode()
+        versionName getVersionName()
     }
     signingConfigs {
         debug {
@@ -97,13 +124,33 @@ android {
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
+            applicationIdSuffix ".debug"
+            versionNameSuffix "-debug"
+            debuggable true
+            minifyEnabled false
+            shrinkResources false
         }
         release {
             // Caution! In production, you need to generate your own keystore file.
             // see https://reactnative.dev/docs/signed-apk-android.
             signingConfig signingConfigs.debug
             minifyEnabled enableProguardInReleaseBuilds
+            shrinkResources enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            debuggable false
+        }
+    }
+    
+    // Bundle configuration
+    bundle {
+        language {
+            enableSplit = false
+        }
+        density {
+            enableSplit = true
+        }
+        abi {
+            enableSplit = true
         }
     }
 }
