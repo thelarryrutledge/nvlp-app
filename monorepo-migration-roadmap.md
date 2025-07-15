@@ -172,7 +172,7 @@
 - [x] Test type checking across packages
 
 ### 8.2 Development Experience
-- [ ] Verify IntelliSense works across packages
+- [x] Verify IntelliSense works across packages
 - [ ] Test go-to-definition across packages
 - [ ] Verify TypeScript errors propagate correctly
 - [ ] Test debugging capabilities
