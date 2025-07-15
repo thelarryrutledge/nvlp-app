@@ -78,6 +78,12 @@ jobs:
           key: packages-build-${{ github.sha }}
           restore-keys: |
             packages-build-
+  
+  # Per-package testing with detailed results
+  test-packages:
+    name: Per-Package Tests
+    uses: ./.github/workflows/test-packages.yml
+    needs: packages
 
   # Test API deployment
   api:
@@ -247,7 +253,7 @@ jobs:
   deploy-staging:
     name: Deploy to Staging
     runs-on: ubuntu-latest
-    needs: [packages, api, mobile, vercel-test]
+    needs: [packages, test-packages, api, mobile, vercel-test]
     if: github.ref == 'refs/heads/feat/monorepo-migration'
     
     steps:
@@ -290,7 +296,7 @@ jobs:
   deploy-production:
     name: Deploy to Production
     runs-on: ubuntu-latest
-    needs: [packages, api, mobile, vercel-test]
+    needs: [packages, test-packages, api, mobile, vercel-test]
     if: github.ref == 'refs/heads/main'
     
     steps:

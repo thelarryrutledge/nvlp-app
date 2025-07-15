@@ -193,7 +193,7 @@
 
 ### 9.2 Update CI/CD
 - [x] Update GitHub Actions for monorepo
-- [ ] Configure per-package testing
+- [x] Configure per-package testing
 - [ ] Set up build caching
 - [ ] Test complete CI/CD flow
 
