@@ -1,0 +1,38 @@
+{
+  "_comment": "Mobile app deployment configuration",
+  "_note": "React Native apps are not directly deployed to Vercel",
+  "_deployment_info": {
+    "platform": "react-native",
+    "build_outputs": [
+      "android: APK/AAB files for Google Play Store",
+      "ios: IPA files for Apple App Store"
+    ],
+    "ci_cd": "Built via GitHub Actions or Expo EAS Build",
+    "distribution": "App stores or internal distribution (TestFlight, Play Console)"
+  },
+  "monorepo_setup": {
+    "workspace_dependencies": [
+      "@nvlp/client",
+      "@nvlp/types", 
+      "@nvlp/config"
+    ],
+    "build_command": "pnpm build:packages && react-native bundle",
+    "pre_build": [
+      "pnpm install",
+      "pnpm build:packages"
+    ]
+  },
+  "environment_variables": {
+    "required": [
+      "SUPABASE_URL",
+      "SUPABASE_ANON_KEY",
+      "APP_ENV"
+    ],
+    "optional": [
+      "API_URL",
+      "DB_API_URL", 
+      "EDGE_API_URL",
+      "ENABLE_LOGGING"
+    ]
+  }
+}

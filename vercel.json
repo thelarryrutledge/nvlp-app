@@ -1,10 +1,16 @@
 {
+  "version": 2,
+  "name": "nvlp-app",
   "builds": [
     {
       "src": "public/**/*",
       "use": "@vercel/static"
     }
   ],
+  "buildCommand": "pnpm build:packages",
+  "installCommand": "pnpm install",
+  "framework": null,
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD ./",
   "routes": [
     {
       "src": "/public/(.*)",
