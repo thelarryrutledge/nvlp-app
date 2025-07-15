@@ -192,7 +192,7 @@
 - [x] Test Vercel deployment
 
 ### 9.2 Update CI/CD
-- [ ] Update GitHub Actions for monorepo
+- [x] Update GitHub Actions for monorepo
 - [ ] Configure per-package testing
 - [ ] Set up build caching
 - [ ] Test complete CI/CD flow
