@@ -179,7 +179,7 @@
 
 ### 8.3 Build & Deploy Testing
 - [x] Test production build of mobile app
-- [ ] Test API deployment process
+- [x] Test API deployment process
 - [ ] Verify all environment variables work
 - [ ] Test CI/CD pipeline
 
