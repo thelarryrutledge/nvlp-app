@@ -7,10 +7,17 @@
       "use": "@vercel/static"
     }
   ],
-  "buildCommand": "pnpm build:packages",
-  "installCommand": "pnpm install",
+  "buildCommand": "pnpm build:vercel:prod",
+  "installCommand": "pnpm install --frozen-lockfile",
   "framework": null,
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD ./",
+  "env": {
+    "TURBO_TOKEN": "@turbo_token",
+    "TURBO_TEAM": "@turbo_team"
+  },
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- packages/ apps/api/ vercel.json package.json pnpm-lock.yaml",
+  "outputDirectory": "public",
+  "devCommand": "pnpm dev:packages",
+  "commandTimeout": 300,
   "routes": [
     {
       "src": "/public/(.*)",

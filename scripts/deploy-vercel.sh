@@ -74,15 +74,15 @@ print_success "Vercel configuration is valid"
 
 print_step "Building packages for deployment"
 
-# Build packages first (required for monorepo)
-pnpm build:packages
+# Build packages using Vercel-optimized build command
+pnpm build:vercel:prod
 
 if [ $? -ne 0 ]; then
-    print_error "Package build failed"
+    print_error "Vercel build failed"
     exit 1
 fi
 
-print_success "Packages built successfully"
+print_success "Vercel build completed successfully"
 
 print_step "Preparing deployment"
 

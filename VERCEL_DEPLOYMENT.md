@@ -8,14 +8,16 @@ This document outlines the Vercel deployment configuration for the NVLP monorepo
 
 ### Root Configuration (`/vercel.json`)
 - **Purpose**: Main deployment configuration for the monorepo
-- **Build Command**: `pnpm build:packages`
-- **Install Command**: `pnpm install`
+- **Build Command**: `pnpm build:vercel:prod` (production optimized)
+- **Install Command**: `pnpm install --frozen-lockfile` (deterministic builds)
 - **Framework**: None (static + API proxy)
 - **Features**: 
   - Static file serving from `/public`
   - API proxy routing to Supabase Edge Functions
   - Security headers
   - CORS configuration
+  - Turbo cache integration for faster builds
+  - Selective deployment based on file changes
 
 ### API Configuration (`/apps/api/vercel.json`)
 - **Purpose**: Documentation and configuration for Supabase Edge Functions
@@ -33,8 +35,9 @@ This document outlines the Vercel deployment configuration for the NVLP monorepo
 
 ### Prerequisites
 1. Install Vercel CLI: `npm install -g vercel`
-2. Ensure all packages are built: `pnpm build:packages`
+2. Ensure all packages are built: `pnpm build:vercel:prod`
 3. Verify configuration: `node -e "console.log(require('./vercel.json'))"`
+4. Optional: Set up Turbo cache tokens for faster builds
 
 ### Deployment Commands
 
@@ -65,9 +68,11 @@ pnpm deploy:vercel:production
 ## Monorepo Considerations
 
 ### Build Process
-1. **Package Building**: All workspace packages are built before deployment
-2. **Dependency Resolution**: pnpm workspaces ensure proper dependency linking
-3. **Turbo Integration**: Uses Turbo for efficient package building
+1. **Package Building**: All workspace packages are built using `pnpm build:vercel:prod`
+2. **Dependency Resolution**: pnpm workspaces with frozen lockfile for deterministic builds
+3. **Turbo Integration**: Uses Turbo for efficient package building with caching
+4. **Environment Optimization**: Production builds use NODE_ENV=production
+5. **Selective Deployment**: Only deploys when relevant files change
 
 ### API Routing
 - **Edge Functions**: Routed through Vercel to Supabase Edge Functions
@@ -130,7 +135,7 @@ pnpm deploy:vercel:production
 node -e "console.log(require('./vercel.json'))"
 
 # Test package builds
-pnpm build:packages
+pnpm build:vercel:prod
 
 # Test deployment readiness
 ./scripts/deploy-vercel.sh dry-run

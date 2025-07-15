@@ -121,7 +121,9 @@
     "build:production": "./scripts/build-prod.sh",
     "build:production:packages": "./scripts/build-prod.sh --target packages",
     "build:production:mobile": "./scripts/build-prod.sh --target mobile",
-    "build:production:api": "./scripts/build-prod.sh --target api"
+    "build:production:api": "./scripts/build-prod.sh --target api",
+    "build:vercel": "pnpm build:packages && echo '✅ Vercel build complete'",
+    "build:vercel:prod": "NODE_ENV=production pnpm build:packages && echo '✅ Vercel production build complete'"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

@@ -188,7 +188,7 @@
 ### 9.1 Update Vercel Configuration
 - [x] Configure Vercel for monorepo
 - [x] Set up API deployment from `apps/api`
-- [ ] Update build commands
+- [x] Update build commands
 - [ ] Test Vercel deployment
 
 ### 9.2 Update CI/CD
