@@ -189,7 +189,7 @@
 - [x] Configure Vercel for monorepo
 - [x] Set up API deployment from `apps/api`
 - [x] Update build commands
-- [ ] Test Vercel deployment
+- [x] Test Vercel deployment
 
 ### 9.2 Update CI/CD
 - [ ] Update GitHub Actions for monorepo
