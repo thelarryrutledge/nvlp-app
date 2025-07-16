@@ -1,7 +1,7 @@
 # CLAUDE.md - Project Context and Preferences
 
-## Current Status: Phase 10.3 In Progress | Next: Create troubleshooting guide
-**Migration Progress**: Phase 10.3 Developer Guide (2/4 complete)
+## Current Status: Phase 10.3 In Progress | Next: Document workspace commands
+**Migration Progress**: Phase 10.3 Developer Guide (3/4 complete)
 **Workflow**: Single subtask → update roadmap → update memory → commit → wait for prompt
 
 ## Important Development Notes
