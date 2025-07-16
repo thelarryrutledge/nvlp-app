@@ -26,6 +26,7 @@ Comprehensive documentation for the NVLP (Virtual Envelope Budget) application -
 - **[Production Build Guide](./PRODUCTION_BUILD.md)** - Build process and optimization
 
 ### 🗂️ Project Architecture
+- **[Architecture Overview](./ARCHITECTURE.md)** - Comprehensive system architecture with diagrams
 - **[Implementation Plan](./IMPLEMENTATION_PLAN.md)** - High-level architecture and features
 - **[Performance Analysis](./PERFORMANCE_ANALYSIS.md)** - Performance considerations and optimization
 - **[Caching Implementation](./CACHING_IMPLEMENTATION.md)** - Caching strategy and implementation
@@ -51,9 +52,10 @@ Comprehensive documentation for the NVLP (Virtual Envelope Budget) application -
 4. **Production Builds**: [Production Build Guide](./PRODUCTION_BUILD.md)
 
 ### For Project Management
-1. **Architecture**: [Implementation Plan](./IMPLEMENTATION_PLAN.md)
-2. **Progress**: [Migration Roadmap](./migration/monorepo-migration-roadmap.md)
-3. **Performance**: [Performance Analysis](./PERFORMANCE_ANALYSIS.md)
+1. **System Architecture**: [Architecture Overview](./ARCHITECTURE.md)
+2. **Implementation**: [Implementation Plan](./IMPLEMENTATION_PLAN.md)
+3. **Progress**: [Migration Roadmap](./migration/monorepo-migration-roadmap.md)
+4. **Performance**: [Performance Analysis](./PERFORMANCE_ANALYSIS.md)
 
 ## Project Structure
 
