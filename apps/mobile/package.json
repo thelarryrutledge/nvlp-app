@@ -34,8 +34,8 @@
     "build:validate:android": "./android/scripts/build-config.sh",
     "prebuild:ios": "./ios/scripts/sync-version.sh",
     "prebuild:android": "./android/scripts/sync-version.sh",
-    "prebuild:ios:prod": "./ios/scripts/sync-version.sh && pnpm typecheck && pnpm lint",
-    "prebuild:android:prod": "./android/scripts/sync-version.sh && pnpm typecheck && pnpm lint"
+    "prebuild:ios:prod": "./ios/scripts/sync-version.sh && pnpm type-check && pnpm lint",
+    "prebuild:android:prod": "./android/scripts/sync-version.sh && pnpm type-check && pnpm lint"
   },
   "dependencies": {
     "@babel/runtime": "^7.27.6",
