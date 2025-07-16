@@ -14,7 +14,7 @@ Comprehensive documentation for the NVLP (Virtual Envelope Budget) application -
 ### 🔌 API & Backend  
 - **[API Documentation](../apps/api/docs/)** - Supabase Edge Functions and database
 - **[API Deployment Guide](../apps/api/docs/DEPLOYMENT.md)** - API deployment process
-- **[Vercel Deployment](../apps/api/docs/VERCEL_DEPLOYMENT.md)** - Alternative deployment option
+- **[API Specification](../apps/api/docs/api-specification.yaml)** - OpenAPI specification
 - **[API README](../apps/api/README.md)** - Quick start and overview
 
 ### 🏗️ Development & Build
