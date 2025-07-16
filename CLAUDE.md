@@ -1,7 +1,7 @@
 # CLAUDE.md - Project Context and Preferences
 
-## Current Status: Phase 10.2 In Progress | Next: Clean up obsolete files
-**Migration Progress**: Phase 10.2 Migration Cleanup (1/4 complete) → Phase 10.3 Developer Guide
+## Current Status: Phase 10.2 In Progress | Next: Update import paths
+**Migration Progress**: Phase 10.2 Migration Cleanup (2/4 complete) → Phase 10.3 Developer Guide
 **Workflow**: Single subtask → update roadmap → update memory → commit → wait for prompt
 
 ## Important Development Notes
