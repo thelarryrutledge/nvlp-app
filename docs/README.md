@@ -22,6 +22,7 @@ Comprehensive documentation for the NVLP (Virtual Envelope Budget) application -
 - **[Development Setup Guide](./development/SETUP_GUIDE.md)** - Complete development environment setup
 - **[Development Workflow](./development/WORKFLOW.md)** - Day-to-day development workflows  
 - **[Hot Reload Setup](./development/HOT_RELOAD.md)** - Development environment configuration
+- **[Deployment Overview](./development/DEPLOYMENT_OVERVIEW.md)** - Complete deployment guide for all components
 - **[Production Build Guide](./PRODUCTION_BUILD.md)** - Build process and optimization
 
 ### 🗂️ Project Architecture
@@ -44,9 +45,10 @@ Comprehensive documentation for the NVLP (Virtual Envelope Budget) application -
 4. **API Development**: Use [API Documentation](../apps/api/docs/)
 
 ### For DevOps/Deployment
-1. **Mobile Deployment**: [Mobile Deployment Guide](../apps/mobile/docs/DEPLOYMENT_GUIDE.md)
-2. **API Deployment**: [API Deployment Guide](../apps/api/docs/DEPLOYMENT.md)
-3. **Production Builds**: [Production Build Guide](./PRODUCTION_BUILD.md)
+1. **Complete Overview**: [Deployment Overview](./development/DEPLOYMENT_OVERVIEW.md)
+2. **Mobile Deployment**: [Mobile Deployment Guide](../apps/mobile/docs/DEPLOYMENT_GUIDE.md)
+3. **API Deployment**: [API Deployment Guide](../apps/api/docs/DEPLOYMENT.md)
+4. **Production Builds**: [Production Build Guide](./PRODUCTION_BUILD.md)
 
 ### For Project Management
 1. **Architecture**: [Implementation Plan](./IMPLEMENTATION_PLAN.md)
