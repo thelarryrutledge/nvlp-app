@@ -1,4 +1,4 @@
-package com.nvlpmobile
+package com.nvlp.mobile
 
 import android.app.Application
 import com.facebook.react.PackageList
