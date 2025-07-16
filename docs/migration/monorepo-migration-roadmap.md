@@ -220,7 +220,7 @@
 
 ### 10.3 Developer Guide
 - [x] Create getting started guide
-- [ ] Document common tasks
+- [x] Document common tasks
 - [ ] Create troubleshooting guide
 - [ ] Document workspace commands
 
@@ -248,5 +248,5 @@
 - [ ] Documentation is complete
 
 ## Current Status
-**Phase**: 10.3 Developer Guide (1/4 complete)
-**Next Task**: Phase 10.3 subtask 2 - Document common tasks
+**Phase**: 10.3 Developer Guide (2/4 complete)
+**Next Task**: Phase 10.3 subtask 3 - Create troubleshooting guide
