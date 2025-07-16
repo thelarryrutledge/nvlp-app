@@ -1,7 +1,7 @@
 # CLAUDE.md - Project Context and Preferences
 
-## Current Status: Phase 11.1 In Progress | Next: Security audit
-**Migration Progress**: Phase 11.1 Complete Testing (2/4 complete)
+## Current Status: Phase 11.1 In Progress | Next: Dependency audit
+**Migration Progress**: Phase 11.1 Complete Testing (3/4 complete)
 **Workflow**: Single subtask → update roadmap → update memory → commit → wait for prompt
 
 ## Important Development Notes

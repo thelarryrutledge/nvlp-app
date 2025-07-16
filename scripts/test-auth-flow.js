@@ -13,7 +13,7 @@ const fs = require('fs');
 // Configuration for production API using custom domain
 const config = {
   supabaseUrl: 'https://qnpatlosomopoimtsmsr.supabase.co',
-  supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFucGF0bG9zb21vcG9pbXRzbXNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE2NTg5MzcsImV4cCI6MjA2NzIzNDkzN30.__GhvGGWqhC_i1ztp1-A1VEsL3JVWrtdpQG_uJS8tB8',
+  supabaseAnonKey: process.env.SUPABASE_ANON_KEY || 'your-supabase-anon-key',
   apiBaseUrl: 'https://api.nvlp.app', // Use custom domain for Edge Functions
   persistTokens: true,
   autoRefresh: true
