@@ -4,7 +4,7 @@
  * Tests login, token persistence, refresh, and logout using api.nvlp.app Edge Functions
  */
 
-const { NVLPClient } = require('./dist/client/index');
+const { NVLPClient } = require('../packages/client/dist/index');
 const readline = require('readline');
 const os = require('os');
 const path = require('path');
