@@ -1,7 +1,7 @@
 # CLAUDE.md - Project Context and Preferences
 
-## Current Status: Phase 10.1 In Progress | Next: Development Setup Docs
-**Migration Progress**: Phase 10.1 Update Documentation (2/5 complete) → Phase 10.2 Migration Cleanup
+## Current Status: Phase 10.1 In Progress | Next: Deployment Process Docs
+**Migration Progress**: Phase 10.1 Update Documentation (3/5 complete) → Phase 10.2 Migration Cleanup
 **Workflow**: Single subtask → update roadmap → update memory → commit → wait for prompt
 
 ## Important Development Notes

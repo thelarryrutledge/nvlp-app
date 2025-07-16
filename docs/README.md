@@ -19,8 +19,10 @@ Comprehensive documentation for the NVLP (Virtual Envelope Budget) application -
 
 ### 🏗️ Development & Build
 - **[Development Guide](./DEVELOPMENT.md)** - General development workflow
-- **[Production Build Guide](./PRODUCTION_BUILD.md)** - Build process and optimization
+- **[Development Setup Guide](./development/SETUP_GUIDE.md)** - Complete development environment setup
+- **[Development Workflow](./development/WORKFLOW.md)** - Day-to-day development workflows  
 - **[Hot Reload Setup](./development/HOT_RELOAD.md)** - Development environment configuration
+- **[Production Build Guide](./PRODUCTION_BUILD.md)** - Build process and optimization
 
 ### 🗂️ Project Architecture
 - **[Implementation Plan](./IMPLEMENTATION_PLAN.md)** - High-level architecture and features
@@ -36,9 +38,10 @@ Comprehensive documentation for the NVLP (Virtual Envelope Budget) application -
 ## Quick Start Guides
 
 ### For Developers
-1. **Setup**: Follow [Mobile Development Guide](../apps/mobile/docs/DEVELOPMENT_GUIDE.md)
-2. **API**: Setup backend with [API Documentation](../apps/api/docs/)
-3. **Development**: Use [Development Guide](./DEVELOPMENT.md) for workflow
+1. **Environment Setup**: Follow [Development Setup Guide](./development/SETUP_GUIDE.md)
+2. **Daily Workflow**: Use [Development Workflow](./development/WORKFLOW.md) 
+3. **Mobile-Specific**: See [Mobile Development Guide](../apps/mobile/docs/DEVELOPMENT_GUIDE.md)
+4. **API Development**: Use [API Documentation](../apps/api/docs/)
 
 ### For DevOps/Deployment
 1. **Mobile Deployment**: [Mobile Deployment Guide](../apps/mobile/docs/DEPLOYMENT_GUIDE.md)
