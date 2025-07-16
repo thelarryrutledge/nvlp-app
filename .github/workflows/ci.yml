@@ -55,15 +55,10 @@ jobs:
             ${{ runner.os }}-turbo-
           
       - name: Install dependencies
-        run: |
-          # Install without running prepare script due to turbo issue
-          pnpm install --frozen-lockfile --ignore-scripts
+        run: pnpm install --frozen-lockfile
         
       - name: Build packages
-        run: |
-          # Build packages individually due to turbo configuration issue
-          pnpm --filter @nvlp/types build
-          pnpm --filter @nvlp/client build
+        run: pnpm build:packages
         
       - name: Run type checking
         run: pnpm run typecheck
@@ -129,9 +124,7 @@ jobs:
           key: packages-build-${{ github.sha }}
           
       - name: Install dependencies
-        run: |
-          # Install without running prepare script due to turbo issue
-          pnpm install --frozen-lockfile --ignore-scripts
+        run: pnpm install --frozen-lockfile
         
       - name: Lint Edge Functions
         run: deno lint supabase/functions/
@@ -187,9 +180,7 @@ jobs:
           key: packages-build-${{ github.sha }}
           
       - name: Install dependencies
-        run: |
-          # Install without running prepare script due to turbo issue
-          pnpm install --frozen-lockfile --ignore-scripts
+        run: pnpm install --frozen-lockfile
         
       - name: Rebuild packages if cache miss
         run: pnpm build:packages
@@ -247,9 +238,7 @@ jobs:
           key: packages-build-${{ github.sha }}
           
       - name: Install dependencies
-        run: |
-          # Install without running prepare script due to turbo issue
-          pnpm install --frozen-lockfile --ignore-scripts
+        run: pnpm install --frozen-lockfile
         
       - name: Test Vercel build command
         run: pnpm build:vercel:prod
@@ -292,9 +281,7 @@ jobs:
           version: latest
           
       - name: Install dependencies
-        run: |
-          # Install without running prepare script due to turbo issue
-          pnpm install --frozen-lockfile --ignore-scripts
+        run: pnpm install --frozen-lockfile
         
       - name: Deploy Edge Functions (simulation)
         run: |
@@ -337,9 +324,7 @@ jobs:
           version: latest
           
       - name: Install dependencies
-        run: |
-          # Install without running prepare script due to turbo issue
-          pnpm install --frozen-lockfile --ignore-scripts
+        run: pnpm install --frozen-lockfile
         
       - name: Deploy Edge Functions (simulation)
         run: |

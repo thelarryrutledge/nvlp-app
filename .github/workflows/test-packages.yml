@@ -64,9 +64,7 @@ jobs:
             ${{ runner.os }}-pnpm-store-
             
       - name: Install dependencies
-        run: |
-          # Install without running prepare script due to turbo issue
-          pnpm install --frozen-lockfile --ignore-scripts
+        run: pnpm install --frozen-lockfile
         
       - name: Build @nvlp/types
         run: pnpm --filter @nvlp/types build
@@ -144,9 +142,7 @@ jobs:
             v1-eslint-${{ runner.os }}-
             
       - name: Install dependencies
-        run: |
-          # Install without running prepare script due to turbo issue
-          pnpm install --frozen-lockfile --ignore-scripts
+        run: pnpm install --frozen-lockfile
         
       - name: Build dependencies
         run: pnpm --filter @nvlp/types build
@@ -210,9 +206,7 @@ jobs:
             ${{ runner.os }}-pnpm-store-
             
       - name: Install dependencies
-        run: |
-          # Install without running prepare script due to turbo issue
-          pnpm install --frozen-lockfile --ignore-scripts
+        run: pnpm install --frozen-lockfile
         
       - name: Build @nvlp/config
         run: pnpm --filter @nvlp/config build
@@ -271,9 +265,7 @@ jobs:
           version: ${{ env.PNPM_VERSION }}
           
       - name: Install dependencies
-        run: |
-          # Install without running prepare script due to turbo issue
-          pnpm install --frozen-lockfile --ignore-scripts
+        run: pnpm install --frozen-lockfile
         
       - name: Build dependencies
         run: |
@@ -312,9 +304,7 @@ jobs:
           version: ${{ env.PNPM_VERSION }}
           
       - name: Install dependencies
-        run: |
-          # Install without running prepare script due to turbo issue
-          pnpm install --frozen-lockfile --ignore-scripts
+        run: pnpm install --frozen-lockfile
         
       - name: Build all packages
         run: pnpm build:packages
