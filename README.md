@@ -10,7 +10,7 @@ A comprehensive personal finance management system with React Native mobile app 
 - **[Mobile Development](./apps/mobile/docs/DEVELOPMENT_GUIDE.md)** - React Native app setup and development  
 - **[API Documentation](./apps/api/docs/)** - Supabase Edge Functions and database
 - **[Deployment Guides](./docs/README.md#for-devopsdeployment)** - Production deployment processes
-- **[Migration Status](./docs/migration/)** - Monorepo migration progress (Phase 9.3 ✅ Complete)
+- **[Migration Status](./docs/migration/)** - Monorepo migration progress (95% Complete)
 
 ## Architecture
 
