@@ -151,13 +151,16 @@ jobs:
       - name: Install dependencies
         run: |
           echo "Installing dependencies with cache..."
-          pnpm install --frozen-lockfile --prefer-offline
+          # Install without running prepare script due to turbo issue
+          pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
           
       # Build packages with Turbo cache
       - name: Build packages
         run: |
-          echo "Building with Turbo cache..."
-          pnpm build:packages
+          echo "Building with individual package commands..."
+          # Build packages individually due to turbo configuration issue
+          pnpm --filter @nvlp/types build
+          pnpm --filter @nvlp/client build
           
       # Cache validation
       - name: Validate cache effectiveness
@@ -214,8 +217,11 @@ jobs:
           rm -rf .turbo node_modules
           
           start_time=$(date +%s)
-          pnpm install --frozen-lockfile
-          pnpm build:packages
+          # Install without running prepare script due to turbo issue
+          pnpm install --frozen-lockfile --ignore-scripts
+          # Build packages individually due to turbo configuration issue
+          pnpm --filter @nvlp/types build
+          pnpm --filter @nvlp/client build
           end_time=$(date +%s)
           
           cold_duration=$((end_time - start_time))

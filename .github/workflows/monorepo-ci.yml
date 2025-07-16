@@ -95,10 +95,15 @@ jobs:
             ${{ runner.os }}-turbo-
         
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: |
+          # Install without running prepare script due to turbo issue
+          pnpm install --frozen-lockfile --ignore-scripts
         
       - name: Build packages
-        run: pnpm build:packages
+        run: |
+          # Build packages individually due to turbo configuration issue
+          pnpm --filter @nvlp/types build
+          pnpm --filter @nvlp/client build
         
       - name: Run package tests
         run: pnpm test:packages
@@ -182,7 +187,9 @@ jobs:
           version: ${{ env.PNPM_VERSION }}
           
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: |
+          # Install without running prepare script due to turbo issue
+          pnpm install --frozen-lockfile --ignore-scripts
           
       - name: Restore built packages
         uses: actions/cache@v4
