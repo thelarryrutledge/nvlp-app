@@ -177,21 +177,9 @@ export const networkInterceptor: RequestInterceptor = {
       state: networkState,
     });
     
-    // More robust network checking with fallback
-    // Only block if we're certain there's no connectivity
-    const definitelyOffline = networkState.isConnected === false && 
-                             networkState.isInternetReachable === false;
-    
-    if (definitelyOffline) {
-      console.warn('[Network Interceptor] Blocking request - definitely offline');
-      throw new Error('Network connection failed. Please check your internet connection.');
-    }
-    
-    // If NetInfo is uncertain, allow the request to proceed
-    // The actual network request will fail if there's really no connectivity
-    if (!isConnected) {
-      console.warn('[Network Interceptor] NetInfo uncertain, allowing request to proceed');
-    }
+    // TEMPORARILY DISABLED: NetInfo is unreliable in iOS simulator
+    // Always allow requests while we debug auth issues
+    console.warn('[Network Interceptor] Temporarily disabled - allowing all requests');
     
     // Add network debug headers
     config.headers['X-Network-Type'] = networkState.type || 'unknown';

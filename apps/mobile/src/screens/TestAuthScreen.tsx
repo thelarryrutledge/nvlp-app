@@ -33,15 +33,8 @@ export function TestAuthScreen() {
   const handleLogin = async () => {
     setLoading(true);
     
-    // Debug: Check environment variables
-    console.log('Environment check:', {
-      supabaseUrl: Config.SUPABASE_URL,
-      hasAnonKey: !!Config.SUPABASE_ANON_KEY,
-      anonKeyPrefix: Config.SUPABASE_ANON_KEY?.substring(0, 20),
-    });
-    
     try {
-      console.log('Attempting login with:', { email, passwordLength: password.length });
+      console.log('Attempting login with:', { email, password });
       const result = await login(email, password);
       Alert.alert('Success', 'Logged in successfully!');
       console.log('Login result:', result);
