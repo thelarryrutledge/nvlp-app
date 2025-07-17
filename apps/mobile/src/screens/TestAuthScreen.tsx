@@ -18,6 +18,7 @@ import {
 import Config from 'react-native-config';
 import { useAuth, useAuthState } from '../context/AuthContext';
 import { useTokenMonitor, useTokenExpirationWarning } from '../hooks/useTokenMonitor';
+import { useNetworkStatus } from '../hooks/useNetworkStatus';
 import { tokenManager } from '../services/auth/tokenManager';
 
 export function TestAuthScreen() {
@@ -29,6 +30,7 @@ export function TestAuthScreen() {
   const { isAuthenticated, user } = useAuthState();
   const tokenState = useTokenMonitor();
   const expirationWarning = useTokenExpirationWarning(5); // 5 minute warning
+  const networkStatus = useNetworkStatus();
 
   const handleLogin = async () => {
     setLoading(true);
@@ -126,6 +128,26 @@ export function TestAuthScreen() {
             <Text style={styles.info}>ID: {user.id}</Text>
           </>
         )}
+      </View>
+
+      {/* Network State */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Network State</Text>
+        <Text style={styles.info}>
+          Status: {networkStatus.isOnline ? '🟢 Online' : '🔴 Offline'}
+        </Text>
+        <Text style={styles.info}>
+          Connected: {networkStatus.isConnected ? '✅ Yes' : '❌ No'}
+        </Text>
+        <Text style={styles.info}>
+          Internet Reachable: {networkStatus.isInternetReachable ? '✅ Yes' : '❌ No'}
+        </Text>
+        <Text style={styles.info}>
+          Type: {networkStatus.type || 'Unknown'}
+        </Text>
+        <Text style={styles.info}>
+          Quality: {networkStatus.connectionQuality}
+        </Text>
       </View>
 
       {/* Token State */}

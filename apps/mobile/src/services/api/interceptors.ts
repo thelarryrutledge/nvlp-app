@@ -171,17 +171,27 @@ export const networkInterceptor: RequestInterceptor = {
     const isConnected = networkUtils.isConnected();
     const networkState = networkUtils.getCurrentState();
     
-    // Log network state for debugging
-    console.log('[Network Interceptor] State:', {
-      isConnected,
-      state: networkState,
-    });
+    // Log network state for debugging (only in development)
+    if (__DEV__) {
+      console.log('[Network Interceptor] State:', {
+        isConnected,
+        state: networkState,
+      });
+    }
     
-    // TEMPORARILY DISABLED: NetInfo is unreliable in iOS simulator
-    // Always allow requests while we debug auth issues
-    console.warn('[Network Interceptor] Temporarily disabled - allowing all requests');
+    // Only block requests if we're definitively offline
+    // This prevents false positives in simulators while still catching real offline states
+    const definitelyOffline = 
+      networkState.isConnected === false && 
+      networkState.isInternetReachable === false &&
+      networkState.type !== null; // null type indicates NetInfo hasn't initialized yet
     
-    // Add network debug headers
+    if (definitelyOffline) {
+      console.warn('[Network Interceptor] Blocking request - device is offline');
+      throw new Error('No internet connection. Please check your network and try again.');
+    }
+    
+    // Add network debug headers for monitoring
     config.headers['X-Network-Type'] = networkState.type || 'unknown';
     config.headers['X-Network-Connected'] = String(networkState.isConnected);
     config.headers['X-Network-Reachable'] = String(networkState.isInternetReachable);

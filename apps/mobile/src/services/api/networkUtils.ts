@@ -27,32 +27,51 @@ class NetworkUtils {
   }
 
   private initialize() {
-    // Configure NetInfo for better reliability
+    // Configure NetInfo for better reliability in React Native
     NetInfo.configure({
       reachabilityUrl: 'https://clients3.google.com/generate_204',
       reachabilityTest: async (response) => response.status === 204,
-      reachabilityLongTimeout: 60 * 1000, // 60s
-      reachabilityShortTimeout: 5 * 1000, // 5s
-      reachabilityRequestTimeout: 15 * 1000, // 15s
+      reachabilityLongTimeout: 30 * 1000, // 30s
+      reachabilityShortTimeout: 3 * 1000, // 3s
+      reachabilityRequestTimeout: 10 * 1000, // 10s
+      useNativeReachability: false, // Use custom reachability for better simulator support
     });
 
-    // Get initial network state
-    NetInfo.fetch().then(state => {
-      this.updateState(this.mapNetInfoState(state));
-    }).catch(error => {
-      console.warn('NetInfo fetch failed:', error);
-      // Default to allowing network requests if NetInfo fails
-      this.updateState({
-        isConnected: true,
-        type: 'unknown',
-        isInternetReachable: true,
-      });
-    });
+    // Get initial network state with retry logic
+    this.initializeWithRetry();
 
     // Listen for network changes
     NetInfo.addEventListener(state => {
       this.updateState(this.mapNetInfoState(state));
     });
+  }
+
+  /**
+   * Initialize network state with retry logic
+   */
+  private async initializeWithRetry(retries = 3) {
+    for (let i = 0; i < retries; i++) {
+      try {
+        const state = await NetInfo.fetch();
+        this.updateState(this.mapNetInfoState(state));
+        console.log('[NetworkUtils] Initialized successfully:', this.currentState);
+        return;
+      } catch (error) {
+        console.warn(`[NetworkUtils] Fetch attempt ${i + 1} failed:`, error);
+        if (i === retries - 1) {
+          // Final fallback - assume connected
+          console.warn('[NetworkUtils] All attempts failed, defaulting to connected state');
+          this.updateState({
+            isConnected: true,
+            type: 'unknown',
+            isInternetReachable: true,
+          });
+        } else {
+          // Wait before retry
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
+    }
   }
 
   /**
