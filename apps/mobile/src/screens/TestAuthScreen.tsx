@@ -15,6 +15,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
+import Config from 'react-native-config';
 import { useAuth, useAuthState } from '../context/AuthContext';
 import { useTokenMonitor, useTokenExpirationWarning } from '../hooks/useTokenMonitor';
 import { tokenManager } from '../services/auth/tokenManager';
@@ -34,9 +35,9 @@ export function TestAuthScreen() {
     
     // Debug: Check environment variables
     console.log('Environment check:', {
-      supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,
-      hasAnonKey: !!process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
-      anonKeyPrefix: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY?.substring(0, 20),
+      supabaseUrl: Config.SUPABASE_URL,
+      hasAnonKey: !!Config.SUPABASE_ANON_KEY,
+      anonKeyPrefix: Config.SUPABASE_ANON_KEY?.substring(0, 20),
     });
     
     try {

@@ -6,12 +6,13 @@
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Config from 'react-native-config';
 import { NVLPClient, NVLPClientConfig } from '@nvlp/client';
 
 // Configuration for the NVLP client
 const clientConfig: NVLPClientConfig = {
-  supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://qnpatlosomopoimtsmsr.supabase.co',
-  supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '',
+  supabaseUrl: Config.SUPABASE_URL || 'https://qnpatlosomopoimtsmsr.supabase.co',
+  supabaseAnonKey: Config.SUPABASE_ANON_KEY || '',
   
   // Token storage configuration for React Native
   tokenStorageKey: '@nvlp:auth_tokens',
