@@ -1,9 +1,15 @@
 # CLAUDE.md - Project Context and Preferences
 
-## Current Status: MONOREPO MIGRATION COMPLETE ✅
+## Project Overview: NVLP (Virtual Envelope Budgeting App)
+**App Type**: Personal finance management with virtual envelope budgeting methodology
+**Platforms**: React Native mobile app (iOS/Android) + future web app
+**Backend**: Supabase (PostgreSQL + Edge Functions) with hybrid API architecture
+**Current Focus**: Mobile app development (React Native roadmap phases 3-12)
+
+## Current Status: MONOREPO SETUP COMPLETE ✅
 **Migration Progress**: Successfully completed all phases and merged to main branch
 **Date Completed**: July 16, 2025
-**Total Commits**: 111 commits from feat/monorepo-migration
+**Next Phase**: Mobile app implementation following react-native-roadmap.md
 
 ## Important Development Notes
 
@@ -27,20 +33,11 @@
 - `pnpm clean` - Clean build artifacts
 - `pnpm deploy:api` - Deploy Edge Functions
 
-## Migration Progress Summary
-
-### ✅ Completed Phases
-- **Phase 1-5**: Environment, API, Client, Types, Mobile → monorepo structure
-- **Phase 6**: Shared Configuration (@nvlp/config with ESLint/Prettier/TS/Jest)
-- **Phase 7**: Root-level scripts (dev, build, test, lint, clean systems)
-- **Phase 8**: Testing & Validation (functionality, dev experience, build/deploy)
-- **Phase 9.1**: Vercel Configuration (monorepo builds, deployment validation)
-- **Phase 9.2**: CI/CD (GitHub Actions, caching, per-package testing, build optimization)
-- **Phase 9.3**: Mobile Deployment Prep (iOS/Android build config, production builds, deployment docs)
-
-### 🚀 Current Phase: 10.1 Update Documentation
-- Documentation reorganization complete (removed 16 obsolete files, consolidated guides)
-- Next: Final documentation updates and cleanup
+## Architecture Decisions
+- **Hybrid API**: PostgREST for fast CRUD (<50ms) + Edge Functions for complex logic
+- **Remote-only Supabase**: No local containers, test against production instance
+- **Monorepo structure**: Shared packages for types, client, config across mobile/web
+- **Performance focus**: PostgREST avoids Edge Function cold starts (2-10s delay)
 
 ## Key Technical Details
 
@@ -73,8 +70,15 @@
 ## Core App Info
 - **Supabase project**: qnpatlosomopoimtsmsr
 - **Test user**: larryjrutledge@gmail.com / Test1234!
-- **App type**: Virtual envelope budgeting with React Native + Supabase
-- **API architecture**: Hybrid PostgREST + Edge Functions
+- **App purpose**: Virtual envelope budgeting system for personal finance management
+- **Core features**: Budget creation, envelope allocation, transaction tracking, financial insights
+- **API architecture**: Hybrid PostgREST (fast CRUD) + Edge Functions (complex logic)
+
+## Mobile App Development Status
+**Roadmap**: 12-phase React Native implementation plan
+**Current Phase**: Ready to begin Phase 3 (Authentication & Onboarding)
+**Completed**: Project setup, core dependencies, state management (Zustand)
+**Tech Stack**: React Native 0.80, TypeScript, React Navigation 6, Reanimated 3
 
 ## Development Workflow
 1. Install: `pnpm install`
@@ -84,18 +88,15 @@
 5. Quality checks: `pnpm type-check && pnpm lint && pnpm test`
 6. Deploy API: `pnpm deploy:api`
 
-## Documentation Structure (After Reorganization)
-- `docs/README.md` - Documentation index and navigation
-- `docs/migration/` - Migration plan, roadmap, and status
-- `docs/development/` - Development guides and workflows
-- `apps/mobile/docs/` - Mobile development and deployment guides
-- `apps/api/docs/` - API documentation and deployment
-- Main `README.md` - Project overview with quick links
+## Key References
+- `apps/mobile/docs/react-native-roadmap.md` - 12-phase mobile development plan
+- `packages/types/` - Shared TypeScript definitions (@nvlp/types)
+- `packages/client/` - API client library (@nvlp/client)
+- Supabase dashboard: https://supabase.com/dashboard/project/qnpatlosomopoimtsmsr
 
-## Next Phase Tasks (Phase 10)
-- Phase 10.1: Update Documentation ← **CURRENT**
-- Phase 10.2: Migration Cleanup
-- Phase 10.3: Developer Guide
-- Phase 11: Final Validation
-
-Migration is 95% complete - primarily documentation and cleanup remaining.
+## Important Notes for Development
+- Always run `pnpm build:packages` before starting development
+- Mobile app follows strict roadmap phases - check react-native-roadmap.md
+- Use workspace dependencies with `workspace:*` protocol
+- Test against remote Supabase only (no local setup)
+- Edge Functions deploy with `supabase functions deploy`
