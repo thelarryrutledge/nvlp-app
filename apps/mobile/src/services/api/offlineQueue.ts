@@ -85,7 +85,7 @@ class OfflineQueue {
       timestamp: Date.now(),
       retryCount: 0,
       maxRetries: this.options.maxRetries,
-      metadata: config.metadata,
+      ...(config.metadata && { metadata: config.metadata }),
     };
 
     // Check queue size limit
@@ -187,7 +187,7 @@ class OfflineQueue {
         request.url,
         request.data,
         { 
-          headers: request.headers,
+          ...(request.headers && { headers: request.headers }),
           timeout: 10000, // 10 second timeout for queued requests
         }
       );

@@ -3,10 +3,11 @@ import { StatusBar, useColorScheme, View, TouchableOpacity, Text, StyleSheet, Sa
 import { AuthProvider } from './src/context/AuthContext';
 import { TestAuthScreen } from './src/screens/TestAuthScreen';
 import { TestOfflineScreen } from './src/screens/TestOfflineScreen';
+import { TestApiScreen } from './src/screens/TestApiScreen';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
-  const [activeTab, setActiveTab] = useState<'auth' | 'offline'>('auth');
+  const [activeTab, setActiveTab] = useState<'auth' | 'offline' | 'api'>('auth');
 
   return (
     <AuthProvider>
@@ -19,7 +20,7 @@ function App() {
             onPress={() => setActiveTab('auth')}
           >
             <Text style={[styles.tabText, activeTab === 'auth' && styles.activeTabText]}>
-              Auth Test
+              Auth
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -27,14 +28,24 @@ function App() {
             onPress={() => setActiveTab('offline')}
           >
             <Text style={[styles.tabText, activeTab === 'offline' && styles.activeTabText]}>
-              Offline Test
+              Offline
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'api' && styles.activeTab]}
+            onPress={() => setActiveTab('api')}
+          >
+            <Text style={[styles.tabText, activeTab === 'api' && styles.activeTabText]}>
+              API Tests
             </Text>
           </TouchableOpacity>
         </View>
         
         {/* Content */}
         <View style={styles.content}>
-          {activeTab === 'auth' ? <TestAuthScreen /> : <TestOfflineScreen />}
+          {activeTab === 'auth' && <TestAuthScreen />}
+          {activeTab === 'offline' && <TestOfflineScreen />}
+          {activeTab === 'api' && <TestApiScreen />}
         </View>
       </SafeAreaView>
     </AuthProvider>
