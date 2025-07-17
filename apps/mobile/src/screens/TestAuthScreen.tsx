@@ -31,13 +31,23 @@ export function TestAuthScreen() {
 
   const handleLogin = async () => {
     setLoading(true);
+    
+    // Debug: Check environment variables
+    console.log('Environment check:', {
+      supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,
+      hasAnonKey: !!process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
+      anonKeyPrefix: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY?.substring(0, 20),
+    });
+    
     try {
+      console.log('Attempting login with:', { email, passwordLength: password.length });
       const result = await login(email, password);
       Alert.alert('Success', 'Logged in successfully!');
       console.log('Login result:', result);
     } catch (error: any) {
       Alert.alert('Login Failed', error.message || 'Unknown error occurred');
       console.error('Login error:', error);
+      console.error('Full error details:', JSON.stringify(error, null, 2));
     } finally {
       setLoading(false);
     }
