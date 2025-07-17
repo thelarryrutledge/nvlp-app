@@ -1,1 +1,0 @@
-/Users/larryrutledge/Projects/nvlp-app/apps/mobile/android/app/build/intermediates/cxx/Debug/2f3p3v2b/obj/armeabi-v7a

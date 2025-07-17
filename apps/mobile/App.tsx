@@ -1,13 +1,4 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View, ScrollView } from 'react-native';
-import HotReloadTest from './src/components/HotReloadTest';
+import { StatusBar, StyleSheet, useColorScheme, View, Image } from 'react-native';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -15,10 +6,11 @@ function App() {
   return (
     <View style={styles.container}>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <ScrollView style={styles.scrollView}>
-        <HotReloadTest />
-        <NewAppScreen templateFileName="App.tsx" />
-      </ScrollView>
+      <Image 
+        source={require('./src/assets/FullLogo_Transparent_NoBuffer.png')}
+        style={styles.logo}
+        resizeMode="contain"
+      />
     </View>
   );
 }
@@ -26,9 +18,13 @@ function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
   },
-  scrollView: {
-    flex: 1,
+  logo: {
+    width: 300,
+    height: 200,
   },
 });
 
