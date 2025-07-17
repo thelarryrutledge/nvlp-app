@@ -28,8 +28,59 @@ export interface ApiError {
  * Transform raw errors into structured ApiError objects
  */
 export function transformError(error: any): ApiError {
-  // Handle network errors
-  if (!error.response && error.code) {
+  // Handle NVLP client library errors first
+  if (error.name === 'NVLPError' || error.constructor?.name === 'NVLPError') {
+    switch (error.code) {
+      case 'AUTHENTICATION_ERROR':
+        return {
+          type: ErrorType.AUTHENTICATION,
+          message: 'Authentication failed. Please check your credentials and try again.',
+          originalError: error,
+          statusCode: error.status || 401,
+        };
+      case 'AUTHORIZATION_ERROR':
+        return {
+          type: ErrorType.AUTHORIZATION,
+          message: 'You do not have permission to perform this action.',
+          originalError: error,
+          statusCode: error.status || 403,
+        };
+      case 'VALIDATION_ERROR':
+        return {
+          type: ErrorType.VALIDATION,
+          message: error.message || 'Invalid data provided.',
+          originalError: error,
+          statusCode: error.status || 422,
+        };
+      case 'NETWORK_ERROR':
+        return {
+          type: ErrorType.NETWORK,
+          message: 'Network connection failed. Please check your internet connection.',
+          originalError: error,
+        };
+      case 'TIMEOUT_ERROR':
+        return {
+          type: ErrorType.NETWORK,
+          message: 'Request timed out. Please try again.',
+          originalError: error,
+        };
+      default:
+        return {
+          type: ErrorType.UNKNOWN,
+          message: error.message || 'An unexpected error occurred.',
+          originalError: error,
+          statusCode: error.status,
+        };
+    }
+  }
+
+  // Handle network errors (only if no response and specific network codes)
+  if (!error.response && error.code && (
+    error.code === 'NETWORK_ERROR' || 
+    error.code === 'ECONNREFUSED' || 
+    error.code === 'ENOTFOUND' ||
+    error.code === 'TIMEOUT'
+  )) {
     return {
       type: ErrorType.NETWORK,
       message: 'Network connection failed. Please check your internet connection.',
