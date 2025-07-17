@@ -31,6 +31,15 @@ export {
   retryInterceptor,
   performanceInterceptor,
 } from './interceptors';
+
+// Authentication interceptors
+export { 
+  enhancedAuthInterceptor,
+  authResponseInterceptor,
+  tokenValidationInterceptor,
+  initializeAuthInterceptors,
+} from './authInterceptor';
+
 export type { RequestInterceptor, ResponseInterceptor, RequestConfig } from './interceptors';
 
 // Error handling

@@ -309,10 +309,22 @@ function isRetryableError(error: any): boolean {
  * Initialize default interceptors
  */
 export function initializeInterceptors() {
-  interceptorManager.addRequestInterceptor(authInterceptor);
+  // Import auth interceptors dynamically to avoid circular dependency
+  const { 
+    enhancedAuthInterceptor, 
+    authResponseInterceptor, 
+    tokenValidationInterceptor 
+  } = require('./authInterceptor');
+
+  // Request interceptors (order matters)
   interceptorManager.addRequestInterceptor(networkInterceptor);
+  interceptorManager.addRequestInterceptor(tokenValidationInterceptor);
+  interceptorManager.addRequestInterceptor(enhancedAuthInterceptor);
+  interceptorManager.addRequestInterceptor(authInterceptor); // Keep for fallback
   interceptorManager.addRequestInterceptor(requestLoggingInterceptor);
   
+  // Response interceptors (order matters)
+  interceptorManager.addResponseInterceptor(authResponseInterceptor);
   interceptorManager.addResponseInterceptor(responseLoggingInterceptor);
   interceptorManager.addResponseInterceptor(retryInterceptor);
   interceptorManager.addResponseInterceptor(performanceInterceptor);
