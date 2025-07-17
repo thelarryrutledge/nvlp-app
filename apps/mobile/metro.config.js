@@ -13,17 +13,6 @@ const config = {
     // Fix for @babel/runtime resolution
     extraNodeModules: new Proxy({}, {
       get: (target, name) => {
-        // Polyfill Node.js modules that don't exist in React Native
-        if (name === 'fs') {
-          return require.resolve('react-native-fs');
-        }
-        if (name === 'path') {
-          return require.resolve('path-browserify');
-        }
-        if (name === 'crypto') {
-          return require.resolve('crypto-browserify');
-        }
-        
         // First try mobile's node_modules
         const mobilePath = path.join(__dirname, 'node_modules', name);
         if (require('fs').existsSync(mobilePath)) {
