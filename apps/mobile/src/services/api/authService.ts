@@ -4,7 +4,7 @@
  * Service layer for authentication operations with error handling
  */
 
-import { apiClient } from './client';
+import { enhancedApiClient } from './clientWrapper';
 import { transformError, logError, type ApiError } from './errors';
 
 export interface LoginCredentials {
@@ -29,7 +29,7 @@ class AuthService {
    */
   async login(credentials: LoginCredentials): Promise<AuthResult> {
     try {
-      const result = await apiClient.login(credentials.email, credentials.password);
+      const result = await enhancedApiClient.login(credentials.email, credentials.password);
       return result;
     } catch (error) {
       const apiError = transformError(error);
@@ -43,7 +43,7 @@ class AuthService {
    */
   async register(credentials: RegisterCredentials): Promise<AuthResult> {
     try {
-      const result = await apiClient.register(
+      const result = await enhancedApiClient.register(
         credentials.email, 
         credentials.password, 
         credentials.displayName
@@ -61,7 +61,7 @@ class AuthService {
    */
   async logout(): Promise<void> {
     try {
-      await apiClient.logout();
+      await enhancedApiClient.logout();
     } catch (error) {
       const apiError = transformError(error);
       logError(apiError, 'AuthService.logout');
@@ -74,7 +74,7 @@ class AuthService {
    */
   async resetPassword(email: string): Promise<void> {
     try {
-      await apiClient.resetPassword(email);
+      await enhancedApiClient.resetPassword(email);
     } catch (error) {
       const apiError = transformError(error);
       logError(apiError, 'AuthService.resetPassword');
@@ -87,7 +87,7 @@ class AuthService {
    */
   async updatePassword(newPassword: string): Promise<void> {
     try {
-      await apiClient.updatePassword(newPassword);
+      await enhancedApiClient.getUnderlyingClient().updatePassword(newPassword);
     } catch (error) {
       const apiError = transformError(error);
       logError(apiError, 'AuthService.updatePassword');
@@ -100,7 +100,7 @@ class AuthService {
    */
   async refreshToken(): Promise<{ session: any }> {
     try {
-      const result = await apiClient.refreshToken();
+      const result = await enhancedApiClient.refreshToken();
       return result;
     } catch (error) {
       const apiError = transformError(error);
@@ -113,21 +113,21 @@ class AuthService {
    * Get current authentication state
    */
   getAuthState() {
-    return apiClient.getAuthState();
+    return enhancedApiClient.getAuthState();
   }
 
   /**
    * Check if user is authenticated
    */
   isAuthenticated(): boolean {
-    return apiClient.isAuthenticated();
+    return enhancedApiClient.isAuthenticated();
   }
 
   /**
    * Check if token needs refresh
    */
   needsTokenRefresh(): boolean {
-    return apiClient.needsTokenRefresh();
+    return enhancedApiClient.needsTokenRefresh();
   }
 }
 

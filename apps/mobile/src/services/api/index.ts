@@ -14,8 +14,24 @@ export { budgetService } from './budgetService';
 export { envelopeService } from './envelopeService';
 export { userService } from './userService';
 
+// Enhanced client with interceptors
+export { enhancedApiClient } from './clientWrapper';
+
 // Centralized API service
 export { apiService } from './apiService';
+
+// Interceptors
+export { 
+  interceptorManager, 
+  initializeInterceptors,
+  requestLoggingInterceptor,
+  responseLoggingInterceptor,
+  networkInterceptor,
+  authInterceptor,
+  retryInterceptor,
+  performanceInterceptor,
+} from './interceptors';
+export type { RequestInterceptor, ResponseInterceptor, RequestConfig } from './interceptors';
 
 // Error handling
 export { transformError, showError, logError, ErrorType } from './errors';

@@ -5,7 +5,7 @@
  * with consistent error handling and logging
  */
 
-import { apiClient } from './client';
+import { enhancedApiClient } from './clientWrapper';
 import { authService } from './authService';
 import { budgetService } from './budgetService';
 import { envelopeService } from './envelopeService';
@@ -23,7 +23,7 @@ class ApiService {
    * Get direct access to the client for advanced operations
    */
   getClient() {
-    return apiClient;
+    return enhancedApiClient;
   }
 
   /**
@@ -31,7 +31,7 @@ class ApiService {
    */
   async healthCheck() {
     try {
-      const result = await apiClient.healthCheck();
+      const result = await enhancedApiClient.healthCheck();
       return result;
     } catch (error) {
       const apiError = transformError(error);

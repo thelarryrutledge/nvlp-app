@@ -4,7 +4,7 @@
  * Service layer for envelope operations with error handling
  */
 
-import { apiClient } from './client';
+import { enhancedApiClient } from './clientWrapper';
 import { transformError, logError } from './errors';
 import type { Envelope, CreateEnvelopeInput, UpdateEnvelopeInput, QueryParams } from '@nvlp/types';
 
@@ -14,7 +14,7 @@ class EnvelopeService {
    */
   async getEnvelopes(budgetId?: string, params?: QueryParams): Promise<Envelope[]> {
     try {
-      const envelopes = await apiClient.getEnvelopes(budgetId, params);
+      const envelopes = await enhancedApiClient.getEnvelopes(budgetId, params);
       return envelopes;
     } catch (error) {
       const apiError = transformError(error);
@@ -28,7 +28,7 @@ class EnvelopeService {
    */
   async getEnvelope(id: string): Promise<Envelope> {
     try {
-      const envelope = await apiClient.getEnvelope(id);
+      const envelope = await enhancedApiClient.getEnvelope(id);
       return envelope;
     } catch (error) {
       const apiError = transformError(error);
@@ -42,7 +42,7 @@ class EnvelopeService {
    */
   async createEnvelope(input: CreateEnvelopeInput): Promise<Envelope> {
     try {
-      const envelope = await apiClient.createEnvelope(input);
+      const envelope = await enhancedApiClient.createEnvelope(input);
       return envelope;
     } catch (error) {
       const apiError = transformError(error);
@@ -56,7 +56,7 @@ class EnvelopeService {
    */
   async updateEnvelope(id: string, updates: UpdateEnvelopeInput): Promise<Envelope> {
     try {
-      const envelope = await apiClient.updateEnvelope(id, updates);
+      const envelope = await enhancedApiClient.updateEnvelope(id, updates);
       return envelope;
     } catch (error) {
       const apiError = transformError(error);
@@ -70,7 +70,7 @@ class EnvelopeService {
    */
   async deleteEnvelope(id: string): Promise<void> {
     try {
-      await apiClient.deleteEnvelope(id);
+      await enhancedApiClient.deleteEnvelope(id);
     } catch (error) {
       const apiError = transformError(error);
       logError(apiError, 'EnvelopeService.deleteEnvelope');

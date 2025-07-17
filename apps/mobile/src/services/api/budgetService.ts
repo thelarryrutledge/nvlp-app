@@ -4,7 +4,7 @@
  * Service layer for budget operations with error handling
  */
 
-import { apiClient } from './client';
+import { enhancedApiClient } from './clientWrapper';
 import { transformError, logError } from './errors';
 import type { Budget, CreateBudgetInput, UpdateBudgetInput, QueryParams } from '@nvlp/types';
 
@@ -14,7 +14,7 @@ class BudgetService {
    */
   async getBudgets(params?: QueryParams): Promise<Budget[]> {
     try {
-      const budgets = await apiClient.getBudgets(params);
+      const budgets = await enhancedApiClient.getBudgets(params);
       return budgets;
     } catch (error) {
       const apiError = transformError(error);
@@ -28,7 +28,7 @@ class BudgetService {
    */
   async getBudget(id: string): Promise<Budget> {
     try {
-      const budget = await apiClient.getBudget(id);
+      const budget = await enhancedApiClient.getBudget(id);
       return budget;
     } catch (error) {
       const apiError = transformError(error);
@@ -42,7 +42,7 @@ class BudgetService {
    */
   async createBudget(input: CreateBudgetInput): Promise<Budget> {
     try {
-      const budget = await apiClient.createBudget(input);
+      const budget = await enhancedApiClient.createBudget(input);
       return budget;
     } catch (error) {
       const apiError = transformError(error);
@@ -56,7 +56,7 @@ class BudgetService {
    */
   async updateBudget(id: string, updates: UpdateBudgetInput): Promise<Budget> {
     try {
-      const budget = await apiClient.updateBudget(id, updates);
+      const budget = await enhancedApiClient.updateBudget(id, updates);
       return budget;
     } catch (error) {
       const apiError = transformError(error);
@@ -70,7 +70,7 @@ class BudgetService {
    */
   async deleteBudget(id: string): Promise<void> {
     try {
-      await apiClient.deleteBudget(id);
+      await enhancedApiClient.deleteBudget(id);
     } catch (error) {
       const apiError = transformError(error);
       logError(apiError, 'BudgetService.deleteBudget');

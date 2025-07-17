@@ -14,7 +14,7 @@ class UserService {
    */
   async getProfile(): Promise<UserProfile> {
     try {
-      const profile = await apiClient.getProfile();
+      const profile = await enhancedApiClient.getProfile();
       return profile;
     } catch (error) {
       const apiError = transformError(error);
@@ -28,7 +28,7 @@ class UserService {
    */
   async updateProfile(updates: Partial<UserProfile>): Promise<UserProfile> {
     try {
-      const profile = await apiClient.updateProfile(updates);
+      const profile = await enhancedApiClient.updateProfile(updates);
       return profile;
     } catch (error) {
       const apiError = transformError(error);
