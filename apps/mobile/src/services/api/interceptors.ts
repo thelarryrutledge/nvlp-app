@@ -31,6 +31,8 @@ export interface RequestConfig {
     startTime?: number;
     attempt?: number;
     context?: string;
+    userId?: string;
+    priority?: 'high' | 'medium' | 'low';
   };
 }
 
@@ -334,8 +336,12 @@ export function initializeInterceptors() {
     tokenValidationInterceptor 
   } = require('./authInterceptor');
 
+  // Import offline interceptor
+  const { offlineInterceptor } = require('./offlineInterceptor');
+
   // Request interceptors (order matters)
   interceptorManager.addRequestInterceptor(networkInterceptor);
+  interceptorManager.addRequestInterceptor(offlineInterceptor); // Add offline interceptor after network check
   interceptorManager.addRequestInterceptor(tokenValidationInterceptor);
   interceptorManager.addRequestInterceptor(enhancedAuthInterceptor);
   interceptorManager.addRequestInterceptor(authInterceptor); // Keep for fallback
