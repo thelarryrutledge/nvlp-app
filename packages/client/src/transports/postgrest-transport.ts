@@ -94,7 +94,8 @@ export class PostgRESTTransport implements Transport {
     } catch (error) {
       clearTimeout(timeoutId);
 
-      if (error instanceof DOMException && error.name === 'AbortError') {
+      // Check for abort error (works in both browser and React Native)
+      if ((error as any)?.name === 'AbortError' || (error as any)?.message?.includes('aborted')) {
         throw new TimeoutError(`Request timeout after ${timeout}ms`);
       }
 
