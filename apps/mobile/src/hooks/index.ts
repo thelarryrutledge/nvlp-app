@@ -11,6 +11,9 @@ export {
 // API Client hooks
 export { useApiClient, useAuth } from './useApiClient';
 
+// API Service hooks
+export { useApiService, useBudgets, useEnvelopes, useUserProfile } from './useApiService';
+
 // Custom hooks will be added here as they're created
 // Examples:
 // export { useBudget } from './useBudget';
