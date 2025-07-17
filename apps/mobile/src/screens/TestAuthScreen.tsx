@@ -35,7 +35,7 @@ export function TestAuthScreen() {
     
     try {
       console.log('Attempting login with:', { email, password });
-      const result = await login(email, password);
+      const result = await login({ email, password });
       Alert.alert('Success', 'Logged in successfully!');
       console.log('Login result:', result);
     } catch (error: any) {
@@ -50,7 +50,7 @@ export function TestAuthScreen() {
   const handleRegister = async () => {
     setLoading(true);
     try {
-      const result = await register(email, password);
+      const result = await register({ email, password, displayName: email.split('@')[0] });
       Alert.alert('Success', 'Registered successfully!');
       console.log('Register result:', result);
     } catch (error: any) {
