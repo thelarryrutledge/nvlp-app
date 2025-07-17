@@ -6,7 +6,7 @@
 // Import shared types (when Edge Functions support import maps)
 // For now, we'll keep local interface until Edge Functions can import from packages
 interface CacheEntry {
-  data: any;
+  data: unknown;
   timestamp: number;
   ttl: number; // Time to live in seconds
 }
