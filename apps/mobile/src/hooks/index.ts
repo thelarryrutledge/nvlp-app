@@ -8,9 +8,11 @@ export {
   useHydrationProgress,
 } from './useHydration';
 
+// API Client hooks
+export { useApiClient, useAuth } from './useApiClient';
+
 // Custom hooks will be added here as they're created
 // Examples:
-// export { useAuth } from './useAuth';
 // export { useBudget } from './useBudget';
 // export { useEnvelopes } from './useEnvelopes';
 // export { useTransactions } from './useTransactions';

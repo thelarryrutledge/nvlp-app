@@ -1,5 +1,8 @@
-// API services will be exported from here
-// Example: export { apiClient } from './apiClient';
+/**
+ * API Services
+ * 
+ * Centralized exports for all API-related services and utilities
+ */
 
-// Placeholder export to make this a valid module
-export {};
+export { apiClient, default as client } from './client';
+export type { NVLPClient } from './client';
