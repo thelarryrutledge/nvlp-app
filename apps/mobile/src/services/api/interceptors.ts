@@ -169,14 +169,22 @@ export const networkInterceptor: RequestInterceptor = {
   id: 'network-check',
   handler: async (config) => {
     const isConnected = networkUtils.isConnected();
+    const networkState = networkUtils.getCurrentState();
     
-    if (!isConnected) {
-      throw new Error('No network connection available');
+    // Log network state for debugging
+    console.log('[Network Interceptor] State:', {
+      isConnected,
+      state: networkState,
+    });
+    
+    // Be more lenient in development - only block if explicitly disconnected
+    if (isConnected === false && networkState.isInternetReachable === false) {
+      throw new Error('Network connection failed. Please check your internet connection.');
     }
     
     // Add network type to headers for debugging
-    const networkState = networkUtils.getCurrentState();
     config.headers['X-Network-Type'] = networkState.type || 'unknown';
+    config.headers['X-Network-Connected'] = String(isConnected);
     
     return config;
   },
