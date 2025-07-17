@@ -177,14 +177,26 @@ export const networkInterceptor: RequestInterceptor = {
       state: networkState,
     });
     
-    // Be more lenient in development - only block if explicitly disconnected
-    if (isConnected === false && networkState.isInternetReachable === false) {
+    // More robust network checking with fallback
+    // Only block if we're certain there's no connectivity
+    const definitelyOffline = networkState.isConnected === false && 
+                             networkState.isInternetReachable === false;
+    
+    if (definitelyOffline) {
+      console.warn('[Network Interceptor] Blocking request - definitely offline');
       throw new Error('Network connection failed. Please check your internet connection.');
     }
     
-    // Add network type to headers for debugging
+    // If NetInfo is uncertain, allow the request to proceed
+    // The actual network request will fail if there's really no connectivity
+    if (!isConnected) {
+      console.warn('[Network Interceptor] NetInfo uncertain, allowing request to proceed');
+    }
+    
+    // Add network debug headers
     config.headers['X-Network-Type'] = networkState.type || 'unknown';
-    config.headers['X-Network-Connected'] = String(isConnected);
+    config.headers['X-Network-Connected'] = String(networkState.isConnected);
+    config.headers['X-Network-Reachable'] = String(networkState.isInternetReachable);
     
     return config;
   },

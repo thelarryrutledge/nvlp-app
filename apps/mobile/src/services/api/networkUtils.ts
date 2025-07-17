@@ -2,21 +2,22 @@
  * Network Utilities
  * 
  * Utilities for checking network connectivity and handling offline scenarios
+ * Updated to use NetInfo v11.4+ API patterns
  */
 
-import NetInfo from '@react-native-community/netinfo';
+import NetInfo, { NetInfoState } from '@react-native-community/netinfo';
 
 export interface NetworkState {
   isConnected: boolean;
   type: string | null;
-  isInternetReachable: boolean | null;
+  isInternetReachable: boolean;
 }
 
 class NetworkUtils {
   private currentState: NetworkState = {
     isConnected: false,
     type: null,
-    isInternetReachable: null,
+    isInternetReachable: false,
   };
 
   private listeners: ((state: NetworkState) => void)[] = [];
@@ -26,23 +27,43 @@ class NetworkUtils {
   }
 
   private initialize() {
+    // Configure NetInfo for better reliability
+    NetInfo.configure({
+      reachabilityUrl: 'https://clients3.google.com/generate_204',
+      reachabilityTest: async (response) => response.status === 204,
+      reachabilityLongTimeout: 60 * 1000, // 60s
+      reachabilityShortTimeout: 5 * 1000, // 5s
+      reachabilityRequestTimeout: 15 * 1000, // 15s
+    });
+
     // Get initial network state
     NetInfo.fetch().then(state => {
+      this.updateState(this.mapNetInfoState(state));
+    }).catch(error => {
+      console.warn('NetInfo fetch failed:', error);
+      // Default to allowing network requests if NetInfo fails
       this.updateState({
-        isConnected: state.isConnected ?? false,
-        type: state.type,
-        isInternetReachable: state.isInternetReachable,
+        isConnected: true,
+        type: 'unknown',
+        isInternetReachable: true,
       });
     });
 
     // Listen for network changes
     NetInfo.addEventListener(state => {
-      this.updateState({
-        isConnected: state.isConnected ?? false,
-        type: state.type,
-        isInternetReachable: state.isInternetReachable,
-      });
+      this.updateState(this.mapNetInfoState(state));
     });
+  }
+
+  /**
+   * Map NetInfo state to our NetworkState interface
+   */
+  private mapNetInfoState(state: NetInfoState): NetworkState {
+    return {
+      isConnected: state.isConnected ?? false,
+      type: state.type,
+      isInternetReachable: state.isInternetReachable ?? false,
+    };
   }
 
   private updateState(newState: NetworkState) {
@@ -59,10 +80,10 @@ class NetworkUtils {
 
   /**
    * Check if device is connected to internet
+   * Updated for NetInfo v11.4+ boolean types
    */
   isConnected(): boolean {
-    return this.currentState.isConnected && 
-           this.currentState.isInternetReachable !== false;
+    return this.currentState.isConnected && this.currentState.isInternetReachable;
   }
 
   /**
@@ -109,7 +130,7 @@ class NetworkUtils {
       }, timeout);
 
       const unsubscribe = this.addListener((state) => {
-        if (state.isConnected && state.isInternetReachable !== false) {
+        if (state.isConnected && state.isInternetReachable) {
           clearTimeout(timeoutId);
           unsubscribe();
           resolve(true);
