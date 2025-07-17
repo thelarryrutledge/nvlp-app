@@ -1,31 +1,17 @@
-import { StatusBar, StyleSheet, useColorScheme, View, Image } from 'react-native';
+import { StatusBar, useColorScheme } from 'react-native';
+import { AuthProvider } from './src/context/AuthContext';
+import { TestAuthScreen } from './src/screens/TestAuthScreen';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
 
   return (
-    <View style={styles.container}>
+    <AuthProvider>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <Image 
-        source={require('./src/assets/FullLogo_Transparent_NoBuffer.png')}
-        style={styles.logo}
-        resizeMode="contain"
-      />
-    </View>
+      <TestAuthScreen />
+    </AuthProvider>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
-  },
-  logo: {
-    width: 300,
-    height: 200,
-  },
-});
 
 export default App;

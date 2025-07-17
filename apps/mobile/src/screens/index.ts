@@ -1,6 +1,9 @@
 // Export all screens from this file
 // This allows for cleaner imports: import { LoginScreen, DashboardScreen } from '@/screens'
 
+// Test screens
+export { TestAuthScreen } from './TestAuthScreen';
+
 // Auth screens
 export * from './auth';
 

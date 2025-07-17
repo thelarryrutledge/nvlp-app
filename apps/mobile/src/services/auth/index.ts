@@ -1,5 +1,8 @@
-// Auth services will be exported from here
-// Example: export { authService } from './authService';
+/**
+ * Authentication Services
+ * 
+ * Centralized exports for authentication-related services and utilities
+ */
 
-// Placeholder export to make this a valid module
-export {};
+export { tokenManager } from './tokenManager';
+export type { TokenData, TokenManagerConfig } from './tokenManager';
