@@ -16,7 +16,7 @@ on:
       pnpm-version:
         required: false
         type: string
-        default: '8'
+        default: '10.13.1'
         description: 'pnpm version to use'
   push:
     branches: [ main, feat/monorepo-migration ]
