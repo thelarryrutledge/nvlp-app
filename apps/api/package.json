@@ -1,0 +1,45 @@
+{
+  "name": "@nvlp/api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "NVLP API - Supabase Edge Functions and Backend Services",
+  "scripts": {
+    "dev": "echo 'API development uses remote Supabase. Edit functions in supabase/functions/ and deploy with pnpm deploy:api'",
+    "dev:remote": "echo 'Using remote Supabase instance. Check your .env for SUPABASE_URL'",
+    "build": "echo 'Supabase Edge Functions are deployed directly'",
+    "deploy:all": "cd ../../ && supabase functions deploy --prune",
+    "deploy:auth": "cd ../../ && supabase functions deploy auth",
+    "deploy:dashboard": "cd ../../ && supabase functions deploy dashboard",
+    "deploy:transactions": "cd ../../ && supabase functions deploy transactions",
+    "deploy:reports": "cd ../../ && supabase functions deploy reports",
+    "deploy:audit": "cd ../../ && supabase functions deploy audit",
+    "deploy:export": "cd ../../ && supabase functions deploy export",
+    "deploy:health": "cd ../../ && supabase functions deploy health",
+    "deploy:notifications": "cd ../../ && supabase functions deploy notifications",
+    "lint": "cd ../../ && deno lint supabase/functions/",
+    "lint:fix": "cd ../../ && deno lint --fix supabase/functions/",
+    "lint:eslint": "eslint . --ext .ts,.js",
+    "lint:eslint:fix": "eslint . --ext .ts,.js --fix",
+    "format": "cd ../../ && deno fmt supabase/functions/",
+    "format:check": "cd ../../ && deno fmt --check supabase/functions/",
+    "format:prettier": "prettier --write \"src/**/*.{ts,js}\"",
+    "format:prettier:check": "prettier --check \"src/**/*.{ts,js}\"",
+    "typecheck": "tsc --noEmit",
+    "typecheck:tsc": "tsc --noEmit",
+    "clean": "rm -rf .temp",
+    "test": "cd ../../ && deno test supabase/functions/",
+    "db:reset": "cd ../../ && supabase db reset",
+    "db:migrate": "cd ../../ && supabase db push",
+    "db:types": "cd ../../ && supabase gen types typescript --local > apps/api/src/types/database.ts"
+  },
+  "dependencies": {
+    "@nvlp/types": "workspace:*",
+    "dotenv": "^17.0.1"
+  },
+  "devDependencies": {
+    "@nvlp/config": "workspace:*"
+  },
+  "engines": {
+    "deno": ">=1.40.0"
+  }
+}

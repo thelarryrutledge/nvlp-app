@@ -1,3 +1,0 @@
-id,budget_id,name,description,is_active,expected_monthly_amount,created_at,updated_at,should_notify,frequency,custom_day,next_expected_date
-64e5d625-63cc-4f1a-9409-9479702bd177,741fac4e-6439-4018-ab5e-b49d23a0352f,Other Income,Miscellaneous income sources,true,,2025-07-07T02:01:07.627839+00:00,2025-07-07T02:01:07.627839+00:00,false,monthly,,2025-08-07
-c9ca2944-08a3-4c59-a39a-aae634b862ed,741fac4e-6439-4018-ab5e-b49d23a0352f,Salary,Primary salary income,true,,2025-07-07T02:01:07.627839+00:00,2025-07-07T02:01:07.627839+00:00,false,monthly,,2025-08-07

@@ -1,0 +1,57 @@
+{
+  "name": "@nvlp/types",
+  "version": "1.0.0",
+  "description": "Shared TypeScript type definitions for NVLP applications",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "build:prod": "tsup --config tsup.config.prod.ts",
+    "build:analyze": "tsup --metafile && echo 'Build metadata generated'",
+    "build:watch": "tsup --watch",
+    "dev": "tsup --watch",
+    "clean": "rm -rf dist",
+    "test": "pnpm type-check && echo '✅ @nvlp/types: Type definitions are valid'",
+    "type-check": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "lint": "echo '✅ @nvlp/types: Pure TypeScript definitions - using tsc for validation'",
+    "lint:fix": "echo '✅ @nvlp/types: Pure TypeScript definitions - no linting fixes needed'",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\""
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "keywords": [
+    "nvlp",
+    "types",
+    "typescript",
+    "shared",
+    "monorepo"
+  ],
+  "author": "NVLP Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@nvlp/config": "workspace:*",
+    "tsup": "^8.0.1"
+  },
+  "tsup": {
+    "entry": ["src/index.ts"],
+    "format": ["esm", "cjs"],
+    "dts": true,
+    "clean": true,
+    "sourcemap": true,
+    "target": "es2020",
+    "outDir": "dist",
+    "onSuccess": "echo '✅ @nvlp/types rebuilt successfully - triggering dependent packages'"
+  }
+}

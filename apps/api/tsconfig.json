@@ -1,0 +1,20 @@
+{
+  "extends": "@nvlp/config/typescript-node.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@nvlp/client": ["../../packages/client/src"],
+      "@nvlp/types": ["../../packages/types/src"]
+    },
+    "noEmit": false
+  },
+  "include": [
+    "src/**/*",
+    "api/**/*"
+  ],
+  "references": [
+    { "path": "../../packages/client" },
+    { "path": "../../packages/types" }
+  ]
+}

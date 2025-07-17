@@ -17,8 +17,8 @@ const securityHeaders = {
 }
 
 // Helper function for consistent error responses
-function createErrorResponse(error: string, code: string, status: number = 400, details?: any) {
-  const errorObj: any = { error, code }
+function createErrorResponse(error: string, code: string, status: number = 400, details?: unknown) {
+  const errorObj: Record<string, unknown> = { error, code }
   if (details) errorObj.details = details
   
   console.error(`[AUTH ERROR] ${code}: ${error}`, details ? details : '')
@@ -37,7 +37,7 @@ function createErrorResponse(error: string, code: string, status: number = 400, 
 }
 
 // Helper function for consistent success responses
-function createSuccessResponse(data: any, status: number = 200) {
+function createSuccessResponse(data: unknown, status: number = 200) {
   return new Response(
     JSON.stringify(data),
     { 
@@ -52,7 +52,7 @@ function createSuccessResponse(data: any, status: number = 200) {
 }
 
 // Helper function to validate JWT token and get user
-async function validateTokenAndGetUser(supabase: any, authHeader: string | null) {
+async function validateTokenAndGetUser(supabase: unknown, authHeader: string | null) {
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     throw { error: 'Missing or invalid authorization header', code: 'UNAUTHORIZED', status: 401 }
   }
@@ -85,7 +85,7 @@ const ValidationRules = {
 }
 
 // Sanitize and validate email
-function sanitizeEmail(email: any): string | null {
+function sanitizeEmail(email: unknown): string | null {
   if (typeof email !== 'string') return null
   
   // Remove leading/trailing whitespace and convert to lowercase

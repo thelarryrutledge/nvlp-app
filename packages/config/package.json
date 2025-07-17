@@ -1,0 +1,86 @@
+{
+  "name": "@nvlp/config",
+  "version": "1.0.0",
+  "description": "Shared configuration files for NVLP monorepo",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./eslint": {
+      "types": "./eslint/index.d.ts",
+      "import": "./eslint/index.js",
+      "require": "./eslint/index.cjs"
+    },
+    "./eslint/*": "./eslint/*",
+    "./prettier": {
+      "types": "./prettier/index.d.ts", 
+      "import": "./prettier/index.js",
+      "require": "./prettier/index.cjs"
+    },
+    "./prettier/*": "./prettier/*",
+    "./typescript": {
+      "types": "./typescript/index.d.ts",
+      "import": "./typescript/index.js",
+      "require": "./typescript/index.cjs"
+    },
+    "./typescript.json": "./typescript.json",
+    "./typescript-browser.json": "./typescript-browser.json", 
+    "./typescript-node.json": "./typescript-node.json",
+    "./typescript/browser": {
+      "import": "./typescript/browser.js",
+      "require": "./typescript/browser.cjs"
+    },
+    "./typescript/node": {
+      "import": "./typescript/node.js",
+      "require": "./typescript/node.cjs"
+    },
+    "./typescript/*": "./typescript/*",
+    "./jest": {
+      "types": "./jest/index.d.ts",
+      "import": "./jest/index.js",
+      "require": "./jest/index.cjs"
+    },
+    "./jest/react-native": {
+      "import": "./jest/react-native.js",
+      "require": "./jest/react-native.cjs"
+    },
+    "./jest/jsdom": {
+      "import": "./jest/jsdom.js",
+      "require": "./jest/jsdom.cjs"
+    },
+    "./jest/*": "./jest/*"
+  },
+  "files": [
+    "eslint",
+    "prettier",
+    "typescript",
+    "jest",
+    "typescript.json",
+    "typescript-browser.json",
+    "typescript-node.json",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "echo '✅ @nvlp/config: Configuration package - no build needed'",
+    "build:prod": "echo '✅ @nvlp/config: Configuration package - no production build needed'",
+    "lint": "eslint . --ext .js,.ts",
+    "type-check": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "clean": "echo '✅ @nvlp/config: No build artifacts to clean'"
+  },
+  "devDependencies": {
+    "eslint-plugin-jest": "^28.6.0",
+    "eslint-plugin-react": "^7.34.2",
+    "eslint-plugin-react-hooks": "^4.6.2",
+    "ts-jest": "^29.2.5"
+  },
+  "keywords": [
+    "nvlp",
+    "config",
+    "eslint",
+    "prettier",
+    "typescript",
+    "jest"
+  ],
+  "author": "NVLP Team",
+  "license": "MIT"
+}

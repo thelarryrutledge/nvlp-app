@@ -1,0 +1,309 @@
+name: Build Cache Management
+
+on:
+  workflow_call:
+    inputs:
+      cache-prefix:
+        required: false
+        type: string
+        default: 'v1'
+        description: 'Cache prefix for versioning'
+      node-version:
+        required: false
+        type: string
+        default: '18'
+        description: 'Node.js version to use'
+      pnpm-version:
+        required: false
+        type: string
+        default: '10.13.1'
+        description: 'pnpm version to use'
+  push:
+    branches: [ main, feat/monorepo-migration ]
+    paths:
+      - '**/*.json'
+      - '**/*.lock'
+      - 'turbo.json'
+      - '.github/workflows/build-cache.yml'
+  schedule:
+    # Clean cache weekly on Sundays at 2 AM UTC
+    - cron: '0 2 * * 0'
+
+env:
+  CACHE_VERSION: ${{ inputs.cache-prefix || 'v1' }}
+  NODE_VERSION: ${{ inputs.node-version || '18' }}
+  PNPM_VERSION: ${{ inputs.pnpm-version || '8' }}
+
+jobs:
+  # Setup and validate cache keys
+  cache-setup:
+    name: Setup Build Cache
+    runs-on: ubuntu-latest
+    outputs:
+      pnpm-cache-key: ${{ steps.cache-keys.outputs.pnpm-key }}
+      turbo-cache-key: ${{ steps.cache-keys.outputs.turbo-key }}
+      node-modules-key: ${{ steps.cache-keys.outputs.node-modules-key }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Generate cache keys
+        id: cache-keys
+        run: |
+          # Create deterministic cache keys based on file contents
+          PNPM_HASH=$(sha256sum pnpm-lock.yaml | cut -d' ' -f1)
+          TURBO_HASH=$(sha256sum turbo.json package.json | cut -d' ' -f1)
+          NODE_MODULES_HASH=$(sha256sum pnpm-lock.yaml package.json | cut -d' ' -f1)
+          
+          echo "pnpm-key=${{ env.CACHE_VERSION }}-pnpm-${{ runner.os }}-${PNPM_HASH}" >> $GITHUB_OUTPUT
+          echo "turbo-key=${{ env.CACHE_VERSION }}-turbo-${{ runner.os }}-${TURBO_HASH}" >> $GITHUB_OUTPUT
+          echo "node-modules-key=${{ env.CACHE_VERSION }}-node-modules-${{ runner.os }}-${NODE_MODULES_HASH}" >> $GITHUB_OUTPUT
+          
+          echo "Generated cache keys:"
+          echo "- pnpm: ${{ env.CACHE_VERSION }}-pnpm-${{ runner.os }}-${PNPM_HASH}"
+          echo "- turbo: ${{ env.CACHE_VERSION }}-turbo-${{ runner.os }}-${TURBO_HASH}"
+          echo "- node_modules: ${{ env.CACHE_VERSION }}-node-modules-${{ runner.os }}-${NODE_MODULES_HASH}"
+
+  # Build with advanced caching
+  build-with-cache:
+    name: Build with Cache
+    runs-on: ubuntu-latest
+    needs: cache-setup
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+        
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+          
+      # Multi-layer pnpm caching
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+          
+      - name: Setup pnpm store cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ needs.cache-setup.outputs.pnpm-cache-key }}
+          restore-keys: |
+            ${{ env.CACHE_VERSION }}-pnpm-${{ runner.os }}-
+            
+      # Node modules cache (faster install)
+      - name: Setup node_modules cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+          key: ${{ needs.cache-setup.outputs.node-modules-key }}
+          restore-keys: |
+            ${{ env.CACHE_VERSION }}-node-modules-${{ runner.os }}-
+            
+      # Turbo cache for build artifacts
+      - name: Setup Turbo cache
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: ${{ needs.cache-setup.outputs.turbo-cache-key }}
+          restore-keys: |
+            ${{ env.CACHE_VERSION }}-turbo-${{ runner.os }}-
+            
+      # TypeScript build info cache
+      - name: Setup TypeScript cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            **/*.tsbuildinfo
+            packages/*/tsconfig.tsbuildinfo
+            apps/*/tsconfig.tsbuildinfo
+          key: ${{ env.CACHE_VERSION }}-typescript-${{ runner.os }}-${{ hashFiles('**/tsconfig.json', '**/tsconfig.*.json') }}
+          restore-keys: |
+            ${{ env.CACHE_VERSION }}-typescript-${{ runner.os }}-
+            
+      # ESLint cache
+      - name: Setup ESLint cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .eslintcache
+            **/.eslintcache
+            packages/*/.eslintcache
+            apps/*/.eslintcache
+          key: ${{ env.CACHE_VERSION }}-eslint-${{ runner.os }}-${{ hashFiles('**/.eslintrc.*', '**/eslint.config.*') }}
+          restore-keys: |
+            ${{ env.CACHE_VERSION }}-eslint-${{ runner.os }}-
+            
+      # Install dependencies (uses cache)
+      - name: Install dependencies
+        run: |
+          echo "Installing dependencies with cache..."
+          pnpm install --frozen-lockfile --prefer-offline
+          
+      # Build packages with Turbo cache
+      - name: Build packages
+        run: |
+          echo "Building with Turbo..."
+          pnpm build:packages
+          
+      # Cache validation
+      - name: Validate cache effectiveness
+        run: |
+          echo "## Cache Statistics"
+          echo "### Turbo Cache"
+          du -sh .turbo/ 2>/dev/null || echo "No Turbo cache directory"
+          
+          echo "### Node Modules"
+          du -sh node_modules/ 2>/dev/null || echo "No node_modules"
+          
+          echo "### TypeScript Build Info"
+          find . -name "*.tsbuildinfo" -exec ls -la {} \; || echo "No tsbuildinfo files"
+          
+          echo "### ESLint Cache"
+          find . -name ".eslintcache" -exec ls -la {} \; || echo "No eslint cache files"
+          
+      # Store build artifacts
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts-${{ github.sha }}
+          path: |
+            packages/*/dist/
+            .turbo/
+            **/*.tsbuildinfo
+          retention-days: 7
+          if-no-files-found: warn
+
+  # Performance testing
+  cache-performance:
+    name: Cache Performance Test
+    runs-on: ubuntu-latest
+    needs: [cache-setup, build-with-cache]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+          
+      # Test cold cache performance
+      - name: Cold cache build test
+        run: |
+          echo "## Cold Cache Performance Test"
+          rm -rf .turbo node_modules
+          
+          start_time=$(date +%s)
+          pnpm install --frozen-lockfile
+          pnpm build:packages
+          end_time=$(date +%s)
+          
+          cold_duration=$((end_time - start_time))
+          echo "Cold cache build time: ${cold_duration}s"
+          echo "COLD_CACHE_TIME=${cold_duration}" >> $GITHUB_ENV
+          
+      # Restore cache and test warm performance
+      - name: Restore caches
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ${{ env.STORE_PATH }}
+            .turbo
+            **/*.tsbuildinfo
+          key: ${{ needs.cache-setup.outputs.pnpm-cache-key }}
+          restore-keys: |
+            ${{ env.CACHE_VERSION }}-pnpm-${{ runner.os }}-
+            
+      - name: Warm cache build test
+        run: |
+          echo "## Warm Cache Performance Test"
+          
+          start_time=$(date +%s)
+          pnpm build:packages
+          end_time=$(date +%s)
+          
+          warm_duration=$((end_time - start_time))
+          echo "Warm cache build time: ${warm_duration}s"
+          echo "WARM_CACHE_TIME=${warm_duration}" >> $GITHUB_ENV
+          
+          # Calculate improvement
+          if [ "${COLD_CACHE_TIME}" -gt 0 ] && [ "${warm_duration}" -gt 0 ]; then
+            improvement=$(echo "scale=1; (${COLD_CACHE_TIME} - ${warm_duration}) * 100 / ${COLD_CACHE_TIME}" | bc -l)
+            echo "Cache improvement: ${improvement}%"
+          fi
+
+  # Cache cleanup (runs on schedule)
+  cache-cleanup:
+    name: Cache Cleanup
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    
+    steps:
+      - name: Clean old caches
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Clean caches older than 7 days
+            const { data: caches } = await github.rest.actions.getActionsCaches({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            
+            const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+            
+            for (const cache of caches.actions_caches) {
+              const cacheDate = new Date(cache.created_at);
+              if (cacheDate < oneWeekAgo) {
+                console.log(`Deleting cache: ${cache.key} (created: ${cache.created_at})`);
+                await github.rest.actions.deleteActionsCacheById({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  cache_id: cache.id,
+                });
+              }
+            }
+
+  # Summary
+  cache-summary:
+    name: Cache Summary
+    runs-on: ubuntu-latest
+    needs: [cache-setup, build-with-cache, cache-performance]
+    if: always()
+    
+    steps:
+      - name: Cache summary
+        run: |
+          echo "## Build Cache Summary"
+          echo ""
+          echo "### Cache Keys Generated"
+          echo "- pnpm: ${{ needs.cache-setup.outputs.pnpm-cache-key }}"
+          echo "- turbo: ${{ needs.cache-setup.outputs.turbo-cache-key }}"
+          echo "- node_modules: ${{ needs.cache-setup.outputs.node-modules-key }}"
+          echo ""
+          echo "### Build Results"
+          echo "- Build with cache: ${{ needs.build-with-cache.result }}"
+          echo "- Performance test: ${{ needs.cache-performance.result }}"
+          echo ""
+          echo "✅ Build caching configuration complete!"

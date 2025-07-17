@@ -1,4 +1,0 @@
-id,type,amount,description,date,reference_number,notes,is_cleared,is_reconciled,from_envelope,to_envelope,payee,income_source,created_at,updated_at
-0b647ee6-2da7-4802-b2c9-147699716320,income,5000,Monthly salary,2025-01-15,,January salary payment,false,false,,,,Other Income,2025-07-07T17:38:38.080556+00:00,2025-07-07T17:38:38.080556+00:00
-3558f162-5a0c-418b-89a1-8a654a487fbb,allocation,1000,Fund emergency savings,2025-01-16,,Building emergency fund,false,false,,Emergency Fund,,,2025-07-07T17:39:21.381463+00:00,2025-07-07T17:39:21.381463+00:00
-6a442fe8-e59f-40cd-a9a5-06ce8412bfcb,expense,150.5,Grocery shopping,2025-01-20,,Weekly groceries,false,false,Emergency Fund,,Bank,,2025-07-07T17:39:53.568706+00:00,2025-07-07T17:39:53.568706+00:00

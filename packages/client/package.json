@@ -1,0 +1,79 @@
+{
+  "name": "@nvlp/client",
+  "version": "1.0.0",
+  "description": "NVLP TypeScript Client Library - Universal API client for NVLP backend services",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
+  "scripts": {
+    "dev": "tsup src/index.ts --format esm,cjs --dts --watch",
+    "build": "tsup src/index.ts --format esm,cjs --dts --clean",
+    "build:prod": "tsup --config tsup.config.prod.ts",
+    "build:analyze": "tsup --metafile && npx esbuild-visualizer --metadata ./dist/metafile-*.json",
+    "build:watch": "pnpm build --watch",
+    "lint": "eslint src --ext .ts,.tsx",
+    "lint:fix": "eslint src --ext .ts,.tsx --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx}\"",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "clean": "rm -rf dist .turbo node_modules/.cache",
+    "prepublishOnly": "pnpm run build:prod"
+  },
+  "keywords": [
+    "nvlp",
+    "budget",
+    "finance",
+    "api-client",
+    "typescript",
+    "supabase",
+    "envelope-budgeting"
+  ],
+  "author": "",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thelarryrutledge/nvlp-app.git",
+    "directory": "packages/client"
+  },
+  "bugs": {
+    "url": "https://github.com/thelarryrutledge/nvlp-app/issues"
+  },
+  "homepage": "https://github.com/thelarryrutledge/nvlp-app/tree/main/packages/client#readme",
+  "peerDependencies": {
+    "typescript": ">=4.5.0"
+  },
+  "devDependencies": {
+    "@nvlp/config": "workspace:*",
+    "@vitest/coverage-v8": "^3.2.4",
+    "jsdom": "^23.0.0",
+    "tsup": "^8.0.0",
+    "vitest": "^1.0.0"
+  },
+  "dependencies": {
+    "@nvlp/types": "workspace:*"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": false
+}

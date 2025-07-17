@@ -189,7 +189,7 @@ const NotificationQueries = {
         name,
         notify_date,
         current_balance,
-        target_amount,
+        notify_above_amount,
         budget_id,
         budgets!inner(name),
         categories(name)
@@ -218,7 +218,7 @@ const NotificationQueries = {
           metadata: {
             envelope_name: envelope.name,
             current_balance: envelope.current_balance,
-            target_amount: envelope.target_amount,
+            notify_above_amount: envelope.notify_above_amount,
             category_name: envelope.categories?.name
           }
         })
@@ -231,31 +231,31 @@ const NotificationQueries = {
       .select(`
         id,
         name,
-        notify_amount,
+        notify_below_amount,
         current_balance,
-        target_amount,
+        notify_above_amount,
         budget_id,
         budgets!inner(name),
         categories(name)
       `)
       .in('budget_id', budgetIds)
       .eq('should_notify', true)
-      .not('notify_amount', 'is', null)
+      .not('notify_below_amount', 'is', null)
       .eq('is_active', true)
 
     if (amountError) throw amountError
 
     amountEnvelopes?.forEach(envelope => {
-      // Check if current balance has reached or exceeded the notify amount
-      if (envelope.current_balance >= envelope.notify_amount) {
+      // Check if current balance has fallen below the notify threshold
+      if (envelope.current_balance <= envelope.notify_below_amount) {
         const notificationKey = `envelope_amount_threshold_${envelope.id}_${today}`
         if (!acknowledgedNotifications.has(notificationKey)) {
           notifications.push({
             id: `envelope_amount_threshold_${envelope.id}_${today}`,
             type: 'envelope_amount_threshold',
             priority: 'low',
-            title: 'Envelope Threshold Reached',
-            message: `${envelope.name} has reached $${envelope.notify_amount} (currently $${envelope.current_balance})`,
+            title: 'Envelope Below Threshold',
+            message: `${envelope.name} has fallen below $${envelope.notify_below_amount} (currently $${envelope.current_balance})`,
             budget_id: envelope.budget_id,
             budget_name: envelope.budgets.name,
             related_entity_type: 'envelope',
@@ -264,8 +264,8 @@ const NotificationQueries = {
             metadata: {
               envelope_name: envelope.name,
               current_balance: envelope.current_balance,
-              notify_amount: envelope.notify_amount,
-              target_amount: envelope.target_amount,
+              notify_below_amount: envelope.notify_below_amount,
+              notify_above_amount: envelope.notify_above_amount,
               category_name: envelope.categories?.name
             }
           })
@@ -280,7 +280,7 @@ const NotificationQueries = {
         id,
         name,
         current_balance,
-        target_amount,
+        notify_above_amount,
         budget_id,
         budgets!inner(name),
         categories(name)
@@ -308,7 +308,7 @@ const NotificationQueries = {
           metadata: {
             envelope_name: envelope.name,
             current_balance: envelope.current_balance,
-            target_amount: envelope.target_amount,
+            notify_above_amount: envelope.notify_above_amount,
             over_amount: Math.abs(envelope.current_balance),
             category_name: envelope.categories?.name
           }
