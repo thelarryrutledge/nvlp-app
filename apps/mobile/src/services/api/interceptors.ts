@@ -121,7 +121,11 @@ class InterceptorManager {
       if (interceptor.rejected) {
         try {
           processedError = await interceptor.rejected(processedError);
-        } catch (newError) {
+        } catch (newError: any) {
+          // Don't log offline queue errors as failures - they are expected
+          if (newError.isOfflineQueued) {
+            throw newError;
+          }
           console.error(`Error interceptor ${interceptor.id} failed:`, newError);
           // Continue with other interceptors
         }
@@ -228,6 +232,11 @@ export const retryInterceptor: ResponseInterceptor = {
   id: 'retry-logic',
   fulfilled: (response) => response,
   rejected: async (error) => {
+    // Don't retry offline queued errors - they are not real errors
+    if (error.isOfflineQueued) {
+      throw error;
+    }
+
     const config = error.config;
     const maxRetries = config?.retries || 3;
     const currentAttempt = config?.metadata?.attempt || 1;
