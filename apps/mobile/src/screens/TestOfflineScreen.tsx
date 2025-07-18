@@ -34,8 +34,7 @@ export const TestOfflineScreen: React.FC = () => {
       // Using a real endpoint that would work when online
       await enhancedApiClient.createBudget({
         name: 'Test Offline Budget',
-        start_date: new Date().toISOString(),
-        currency: 'USD',
+        description: 'Created during offline test',
       });
 
       Alert.alert('Success', 'Request completed successfully');

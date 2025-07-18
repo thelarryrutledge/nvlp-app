@@ -62,8 +62,7 @@ export const TestApiScreen: React.FC = () => {
       try {
         await enhancedApiClient.createBudget({
           name: `Offline Test ${Date.now()}`,
-          start_date: new Date().toISOString(),
-          currency: 'USD',
+          description: 'Test budget for offline queue',
         });
         
         // Should not reach here
@@ -120,8 +119,7 @@ export const TestApiScreen: React.FC = () => {
         try {
           await enhancedApiClient.createBudget({
             name: `Priority Test ${req.data.id}`,
-            start_date: new Date().toISOString(),
-            currency: 'USD',
+            description: `Priority: ${req.priority}`,
           }, {
             metadata: { priority: req.priority as any },
           });
@@ -225,10 +223,8 @@ export const TestApiScreen: React.FC = () => {
 
       try {
         await enhancedApiClient.createBudget({
-          name: `Persistence Test`,
-          start_date: new Date().toISOString(),
-          currency: 'USD',
-          ...testData,
+          name: `Persistence Test ${testData.unique}`,
+          description: `Created at ${testData.timestamp}`,
         });
       } catch (error) {
         // Expected - should be queued
@@ -279,8 +275,7 @@ export const TestApiScreen: React.FC = () => {
       try {
         await enhancedApiClient.createBudget({
           name: `Recovery Test`,
-          start_date: new Date().toISOString(),
-          currency: 'USD',
+          description: 'Test network recovery processing',
         });
       } catch (error) {
         // Expected - should be queued
