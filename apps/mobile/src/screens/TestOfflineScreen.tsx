@@ -58,9 +58,10 @@ export const TestOfflineScreen: React.FC = () => {
       // Check if this is an offline queued error
       if (utils.isOfflineQueuedError(error)) {
         const queueInfo = utils.getQueuedRequestInfo(error);
+        console.log('[TestOffline] Request successfully queued:', queueInfo);
         Alert.alert(
-          'Request Queued',
-          `Your request has been queued and will be sent when you're back online.\n\nRequest ID: ${queueInfo?.requestId}`
+          '✅ Request Queued',
+          `Your request has been queued and will be sent when you're back online.\n\nRequest ID: ${queueInfo?.requestId?.slice(-8)}`
         );
       } else {
         setLastError(error.message);
@@ -100,9 +101,15 @@ export const TestOfflineScreen: React.FC = () => {
       Alert.alert('Success', 'High priority request completed');
     } catch (error: any) {
       if (utils.isOfflineQueuedError(error)) {
-        Alert.alert('High Priority Request Queued', 'This high priority request will be processed first when online');
+        const queueInfo = utils.getQueuedRequestInfo(error);
+        console.log('[TestOffline] High priority request queued:', queueInfo);
+        Alert.alert(
+          '⚡ High Priority Request Queued', 
+          'This high priority request will be processed first when online'
+        );
       } else {
         setLastError(error.message);
+        Alert.alert('Error', error.message);
       }
     } finally {
       setIsLoading(false);

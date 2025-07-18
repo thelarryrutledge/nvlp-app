@@ -79,9 +79,14 @@ class InterceptorManager {
     for (const interceptor of this.requestInterceptors) {
       try {
         processedConfig = await interceptor.handler(processedConfig);
-      } catch (error) {
+      } catch (error: any) {
+        // Check if this is an offline queue error (which is expected behavior)
+        if (error.isOfflineQueued) {
+          console.log(`[Interceptor] Request queued offline by ${interceptor.id}`);
+          throw error; // Re-throw to handle at higher level
+        }
         console.error(`Request interceptor ${interceptor.id} failed:`, error);
-        // Continue with other interceptors
+        // Continue with other interceptors for real errors
       }
     }
     

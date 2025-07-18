@@ -25,12 +25,14 @@ export const offlineInterceptor: RequestInterceptor = {
       // Add request to offline queue
       const requestId = await offlineQueue.addRequest(config);
       
-      // Throw a special error that can be caught and handled
-      const offlineError = new Error('Request queued for when online');
-      (offlineError as any).isOfflineQueued = true;
-      (offlineError as any).requestId = requestId;
-      (offlineError as any).queuedAt = Date.now();
+      // Create a special offline queued error
+      const offlineError: any = new Error('Request successfully queued for offline processing');
+      offlineError.name = 'OfflineQueuedError';
+      offlineError.isOfflineQueued = true;
+      offlineError.requestId = requestId;
+      offlineError.queuedAt = Date.now();
       
+      // This is expected behavior, not an actual error
       throw offlineError;
     }
 
