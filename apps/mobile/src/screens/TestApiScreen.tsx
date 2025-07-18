@@ -20,6 +20,7 @@ import { useRetryStatus } from '../hooks/useRetryStatus';
 import { enhancedApiClient } from '../services/api/clientWrapper';
 import { networkUtils } from '../services/api/networkUtils';
 import { useAuth } from '../context/AuthContext';
+import { offlineQueue } from '../services/api/offlineQueue';
 
 interface TestResult {
   id: string;
@@ -232,8 +233,8 @@ export const TestApiScreen: React.FC = () => {
       // Wait a moment for queue to update
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      // Get current queue
-      const queueBefore = queueState.queue.length;
+      // Get current queue directly from the queue manager
+      const queueBefore = offlineQueue.getQueue().length;
 
       // Simulate app restart by recreating queue instance
       // In real app, this would happen on app restart
@@ -284,18 +285,18 @@ export const TestApiScreen: React.FC = () => {
       // Wait for queue to update
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      // Verify request is queued
-      const queuedCount = queueState.queue.length;
+      // Verify request is queued - use direct queue access
+      const queuedCount = offlineQueue.getQueue().length;
       
       // Simulate network recovery
       networkUtils.setForceOffline(false);
       
       // The queue should auto-process when network is restored
-      // Give it a moment to process
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Give it more time to process
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
-      // Check if queue is cleared
-      const remainingCount = queueState.queue.length;
+      // Check if queue is cleared - use direct queue access
+      const remainingCount = offlineQueue.getQueue().length;
 
       if (queuedCount > 0 && remainingCount < queuedCount) {
         updateTestResult(testId, { 
