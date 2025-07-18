@@ -31,14 +31,11 @@ export const TestOfflineScreen: React.FC = () => {
 
     try {
       // Make a test request that will be queued if offline
-      await enhancedApiClient.request('POST', '/rest/v1/test-offline', {
-        message: 'Test offline request',
-        timestamp: Date.now(),
-      }, {
-        metadata: {
-          priority: 'medium',
-          context: 'offline-test',
-        },
+      // Using a real endpoint that would work when online
+      await enhancedApiClient.createBudget({
+        name: 'Test Offline Budget',
+        start_date: new Date().toISOString(),
+        currency: 'USD',
       });
 
       Alert.alert('Success', 'Request completed successfully');
@@ -66,13 +63,12 @@ export const TestOfflineScreen: React.FC = () => {
     setLastError(null);
 
     try {
-      await enhancedApiClient.request('POST', '/rest/v1/test-high-priority', {
-        message: 'High priority test',
-        timestamp: Date.now(),
-      }, {
+      // Using updateProfile as a high priority request example
+      await enhancedApiClient.updateProfile({
+        display_name: `Test User ${Date.now()}`,
         metadata: {
+          test: true,
           priority: 'high',
-          context: 'high-priority-test',
         },
       });
 

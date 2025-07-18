@@ -60,9 +60,10 @@ export const TestApiScreen: React.FC = () => {
 
       // Make a request that should be queued
       try {
-        await enhancedApiClient.request('POST', '/test/offline-queue', {
-          test: true,
-          timestamp: Date.now(),
+        await enhancedApiClient.createBudget({
+          name: `Offline Test ${Date.now()}`,
+          start_date: new Date().toISOString(),
+          currency: 'USD',
         });
         
         // Should not reach here
@@ -117,7 +118,11 @@ export const TestApiScreen: React.FC = () => {
 
       for (const req of requests) {
         try {
-          await enhancedApiClient.request('POST', '/test/priority', req.data, {
+          await enhancedApiClient.createBudget({
+            name: `Priority Test ${req.data.id}`,
+            start_date: new Date().toISOString(),
+            currency: 'USD',
+          }, {
             metadata: { priority: req.priority as any },
           });
         } catch (error) {
@@ -163,26 +168,25 @@ export const TestApiScreen: React.FC = () => {
     try {
       let attemptCount = 0;
       
-      // Create a request that fails twice then succeeds
-      const result = await enhancedApiClient.request('POST', '/test/retry', {
-        test: true,
-      }, {
-        retryConfig: {
-          maxRetries: 3,
-          retryDelay: 100, // Fast retry for testing
-          retryCondition: () => {
-            attemptCount++;
-            // Fail first 2 attempts
-            if (attemptCount < 3) {
-              throw new Error(`Simulated failure ${attemptCount}`);
-            }
-            return false; // Don't retry on 3rd attempt
-          },
-        },
-      }).catch(error => {
-        // Expected to succeed after retries
-        return { success: true, attempts: attemptCount };
-      });
+      // Create a mock retry scenario by temporarily breaking the network check
+      const originalIsConnected = networkUtils.isConnected;
+      let networkCallCount = 0;
+      
+      // Simulate network failures for first 2 attempts
+      networkUtils.isConnected = () => {
+        networkCallCount++;
+        return networkCallCount > 2; // Fail first 2 times
+      };
+
+      try {
+        const result = await enhancedApiClient.healthCheck();
+        attemptCount = networkCallCount;
+      } catch (error) {
+        attemptCount = networkCallCount;
+      } finally {
+        // Restore original network check
+        networkUtils.isConnected = originalIsConnected;
+      }
 
       if (attemptCount >= 2) {
         updateTestResult(testId, { 
@@ -220,7 +224,12 @@ export const TestApiScreen: React.FC = () => {
       };
 
       try {
-        await enhancedApiClient.request('POST', '/test/persistence', testData);
+        await enhancedApiClient.createBudget({
+          name: `Persistence Test`,
+          start_date: new Date().toISOString(),
+          currency: 'USD',
+          ...testData,
+        });
       } catch (error) {
         // Expected - should be queued
       }
@@ -268,8 +277,10 @@ export const TestApiScreen: React.FC = () => {
       networkUtils.isConnected = () => false;
 
       try {
-        await enhancedApiClient.request('POST', '/test/recovery', {
-          recovery: true,
+        await enhancedApiClient.createBudget({
+          name: `Recovery Test`,
+          start_date: new Date().toISOString(),
+          currency: 'USD',
         });
       } catch (error) {
         // Expected - should be queued
