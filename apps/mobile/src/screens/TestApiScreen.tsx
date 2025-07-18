@@ -60,9 +60,9 @@ export const TestApiScreen: React.FC = () => {
 
       // Make a request that should be queued
       try {
-        await enhancedApiClient.createBudget({
-          name: `Offline Test ${Date.now()}`,
-          description: 'Test budget for offline queue',
+        await enhancedApiClient.request('POST', '/test/offline-queue', {
+          test: true,
+          timestamp: Date.now(),
         });
         
         // Should not reach here
@@ -117,10 +117,7 @@ export const TestApiScreen: React.FC = () => {
 
       for (const req of requests) {
         try {
-          await enhancedApiClient.createBudget({
-            name: `Priority Test ${req.data.id}`,
-            description: `Priority: ${req.priority}`,
-          }, {
+          await enhancedApiClient.request('POST', '/test/priority', req.data, {
             metadata: { priority: req.priority as any },
           });
         } catch (error) {
@@ -222,10 +219,7 @@ export const TestApiScreen: React.FC = () => {
       };
 
       try {
-        await enhancedApiClient.createBudget({
-          name: `Persistence Test ${testData.unique}`,
-          description: `Created at ${testData.timestamp}`,
-        });
+        await enhancedApiClient.request('POST', '/test/persistence', testData);
       } catch (error) {
         // Expected - should be queued
       }
@@ -273,9 +267,8 @@ export const TestApiScreen: React.FC = () => {
       networkUtils.isConnected = () => false;
 
       try {
-        await enhancedApiClient.createBudget({
-          name: `Recovery Test`,
-          description: 'Test network recovery processing',
+        await enhancedApiClient.request('POST', '/test/recovery', {
+          recovery: true,
         });
       } catch (error) {
         // Expected - should be queued
