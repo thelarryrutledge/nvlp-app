@@ -316,6 +316,16 @@ export const TestApiScreen: React.FC = () => {
   };
 
   const runAllTests = async () => {
+    // Check if user is authenticated
+    if (!authContext.user) {
+      Alert.alert(
+        'Authentication Required',
+        'Please log in first to run API tests.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
     setIsRunning(true);
     setTestResults([]);
 
@@ -361,6 +371,17 @@ export const TestApiScreen: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView}>
         <Text style={styles.title}>API Testing Suite</Text>
+
+        {/* Authentication Notice */}
+        {!authContext.user && (
+          <View style={[styles.section, styles.warningSection]}>
+            <Text style={styles.warningTitle}>Authentication Required</Text>
+            <Text style={styles.warningText}>
+              Please log in using the Auth tab before running tests.
+              API operations require authentication to work properly.
+            </Text>
+          </View>
+        )}
 
         {/* Status Section */}
         <View style={styles.section}>
@@ -459,6 +480,22 @@ export const TestApiScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
+  warningSection: {
+    backgroundColor: '#FFF3CD',
+    borderColor: '#FFC107',
+    borderWidth: 1,
+  },
+  warningTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#856404',
+    marginBottom: 8,
+  },
+  warningText: {
+    fontSize: 14,
+    color: '#856404',
+    lineHeight: 20,
+  },
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',

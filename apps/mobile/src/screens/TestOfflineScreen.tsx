@@ -14,18 +14,32 @@ import {
   Alert,
   SafeAreaView,
   RefreshControl,
+  Switch,
 } from 'react-native';
 import { useOfflineQueue, useOfflineQueueStatus } from '../hooks/useOfflineQueue';
 import { enhancedApiClient } from '../services/api/clientWrapper';
 import { networkUtils } from '../services/api/networkUtils';
+import { useAuth } from '../context/AuthContext';
 
 export const TestOfflineScreen: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [lastError, setLastError] = useState<string | null>(null);
+  const [simulateOffline, setSimulateOffline] = useState(false);
   const { state, actions, utils } = useOfflineQueue();
   const queueStatus = useOfflineQueueStatus();
+  const auth = useAuth();
 
   const handleTestOfflineRequest = async () => {
+    // Check if user is authenticated
+    if (!auth.user) {
+      Alert.alert(
+        'Authentication Required',
+        'Please log in first to test offline functionality.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
     setIsLoading(true);
     setLastError(null);
 
@@ -58,6 +72,16 @@ export const TestOfflineScreen: React.FC = () => {
   };
 
   const handleTestHighPriorityRequest = async () => {
+    // Check if user is authenticated
+    if (!auth.user) {
+      Alert.alert(
+        'Authentication Required',
+        'Please log in first to test offline functionality.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
     setIsLoading(true);
     setLastError(null);
 
@@ -106,6 +130,12 @@ export const TestOfflineScreen: React.FC = () => {
     Alert.alert('Processing', 'Attempting to process queued requests');
   };
 
+  // Handle simulate offline toggle
+  const handleSimulateOfflineToggle = (value: boolean) => {
+    setSimulateOffline(value);
+    networkUtils.setForceOffline(value);
+  };
+
   const renderQueueItem = (request: any) => (
     <View key={request.id} style={styles.queueItem}>
       <View style={styles.queueItemHeader}>
@@ -147,9 +177,31 @@ export const TestOfflineScreen: React.FC = () => {
       >
         <Text style={styles.title}>Offline Queue Test</Text>
         
+        {/* Auth Status */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Authentication Status</Text>
+          <Text style={styles.authStatus}>
+            {auth.user ? `Logged in as: ${auth.user.email}` : 'Not authenticated'}
+          </Text>
+          {!auth.user && (
+            <Text style={styles.authWarning}>
+              Please log in using the Auth tab to test offline functionality
+            </Text>
+          )}
+        </View>
+        
         {/* Network Status */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Network Status</Text>
+          <View style={styles.statusRow}>
+            <Text style={styles.statusLabel}>Simulate Offline:</Text>
+            <Switch
+              value={simulateOffline}
+              onValueChange={handleSimulateOfflineToggle}
+              trackColor={{ false: '#767577', true: '#81b0ff' }}
+              thumbColor={simulateOffline ? '#007AFF' : '#f4f3f4'}
+            />
+          </View>
           <Text style={styles.networkStatus}>
             Connected: {String(networkState.isConnected)}
           </Text>
@@ -159,6 +211,11 @@ export const TestOfflineScreen: React.FC = () => {
           <Text style={styles.networkStatus}>
             Type: {networkState.type || 'unknown'}
           </Text>
+          {simulateOffline && (
+            <Text style={styles.offlineNote}>
+              ⚠️ Offline mode simulated - requests will be queued
+            </Text>
+          )}
         </View>
 
         {/* Queue Status */}
@@ -245,6 +302,33 @@ export const TestOfflineScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
+  authStatus: {
+    fontSize: 14,
+    color: '#333',
+    marginBottom: 4,
+  },
+  authWarning: {
+    fontSize: 12,
+    color: '#FF9500',
+    fontStyle: 'italic',
+    marginTop: 4,
+  },
+  statusRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  statusLabel: {
+    fontSize: 14,
+    color: '#666',
+  },
+  offlineNote: {
+    fontSize: 12,
+    color: '#FF9500',
+    marginTop: 8,
+    fontStyle: 'italic',
+  },
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',

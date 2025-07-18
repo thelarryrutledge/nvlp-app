@@ -21,6 +21,7 @@ class NetworkUtils {
   };
 
   private listeners: ((state: NetworkState) => void)[] = [];
+  private forceOffline: boolean = false;
 
   constructor() {
     this.initialize();
@@ -94,6 +95,13 @@ class NetworkUtils {
    * Get current network state
    */
   getCurrentState(): NetworkState {
+    if (this.forceOffline) {
+      return {
+        isConnected: false,
+        type: null,
+        isInternetReachable: false,
+      };
+    }
     return { ...this.currentState };
   }
 
@@ -102,6 +110,9 @@ class NetworkUtils {
    * Updated for NetInfo v11.4+ boolean types
    */
   isConnected(): boolean {
+    if (this.forceOffline) {
+      return false;
+    }
     return this.currentState.isConnected && this.currentState.isInternetReachable;
   }
 
@@ -156,6 +167,31 @@ class NetworkUtils {
         }
       });
     });
+  }
+
+  /**
+   * Force offline mode for testing
+   */
+  setForceOffline(offline: boolean) {
+    this.forceOffline = offline;
+    // Notify listeners if forcing offline
+    if (offline) {
+      this.listeners.forEach(listener => listener({
+        isConnected: false,
+        type: null,
+        isInternetReachable: false,
+      }));
+    } else {
+      // Restore actual state
+      this.listeners.forEach(listener => listener(this.currentState));
+    }
+  }
+
+  /**
+   * Check if force offline mode is enabled
+   */
+  isForceOffline(): boolean {
+    return this.forceOffline;
   }
 }
 
