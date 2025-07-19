@@ -76,9 +76,9 @@
 
 ## Mobile App Development Status
 **Roadmap**: 12-phase React Native implementation plan
-**Current Phase**: Phase 2.3 Navigation Architecture - Deep linking support remaining
-**Latest Completed**: Navigation state persistence, auth screens with enhanced UX
-**Progress**: Project setup ✅, Core dependencies ✅, State management ✅, API client integration ✅, Navigation architecture (4/5) ✅, Auth screens ✅
+**Current Phase**: Phase 2.3 Navigation Architecture COMPLETE
+**Latest Completed**: Deep linking support for email verification, registration flow UX improvements
+**Progress**: Project setup ✅, Core dependencies ✅, State management ✅, API client integration ✅, Navigation architecture ✅, Auth screens ✅
 **Tech Stack**: React Native 0.80, TypeScript, React Navigation 6, Reanimated 3, @nvlp/client
 **Next Phase**: Phase 3.2 Onboarding Flow
 
@@ -87,13 +87,16 @@
 - ✅ Created main app navigation with tab navigation
 - ✅ Implemented navigation guards for protected routes
 - ✅ Set up navigation state persistence with AsyncStorage
+- ✅ Implemented deep linking support for email verification (nvlp://)
+- ✅ Fixed registration flow to show inline loading and success state
+- ✅ Enhanced verify.html page to assume verification success and launch app
+- ✅ Added auto-navigation from verification handler to login screen
 - ✅ Built login screen with email/password and visibility toggle
 - ✅ Created registration screen with validation and email confirmation
 - ✅ Implemented forgot password flow with email reset
 - ✅ Added password reset confirmation handling
 - ✅ Created loading/splash screen for auth state transitions
 - ✅ Enhanced UX: auto-focus fields, keyboard navigation, password visibility toggles
-- ✅ Cleaned up debug logging from development
 
 ### Technical Implementation Details:
 - **Token Management**: Secure storage with automatic refresh, JWT parsing, expiration monitoring

@@ -15,10 +15,6 @@ export interface AuthState {
   user: any | null;
   accessToken: string | null;
   error: string | null;
-  registrationSuccess?: {
-    message: string;
-    email: string;
-  } | null;
 }
 
 export interface AuthContextType extends AuthState {
@@ -28,7 +24,6 @@ export interface AuthContextType extends AuthState {
   refreshToken: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   clearError: () => void;
-  clearRegistrationSuccess: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -44,7 +39,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     user: null,
     accessToken: null,
     error: null,
-    registrationSuccess: null,
   });
 
   /**
@@ -110,12 +104,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
    */
   const register = useCallback(async (credentials: RegisterCredentials) => {
     try {
-      setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
+      setAuthState(prev => ({ ...prev, error: null }));
       
       const result = await authService.register(credentials);
       
       // Registration might not return session immediately (email confirmation required)
+      console.log('Registration result in AuthContext:', result);
       if (result.session) {
+        console.log('Registration returned session - auto-login');
         const tokenData = tokenManager.createTokenData(
           result.session.access_token,
           result.session.refresh_token,
@@ -126,15 +122,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         await tokenManager.saveTokens(tokenData);
         updateAuthState(tokenData);
       } else {
-        const successState = {
-          message: result.message || 'Registration successful! Please check your email to verify your account.',
-          email: credentials.email,
-        };
-        setAuthState(prev => ({
-          ...prev,
-          isLoading: false,
-          registrationSuccess: successState,
-        }));
+        console.log('Registration requires email confirmation');
+        // Don't change loading state - let the UI handle it locally
       }
       
       // Return the result so the UI can handle success messages
@@ -142,7 +131,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } catch (error: any) {
       setAuthState(prev => ({
         ...prev,
-        isLoading: false,
         error: error.message || 'Registration failed',
       }));
       throw error;
@@ -227,12 +215,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setAuthState(prev => ({ ...prev, error: null }));
   }, []);
 
-  /**
-   * Clear registration success state
-   */
-  const clearRegistrationSuccess = useCallback(() => {
-    setAuthState(prev => ({ ...prev, registrationSuccess: null }));
-  }, []);
 
   /**
    * Set up token manager listener
@@ -284,7 +266,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     refreshToken,
     resetPassword,
     clearError,
-    clearRegistrationSuccess,
   };
 
   return (

@@ -18,15 +18,29 @@ import type { RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-const PERSISTENCE_KEY = 'NAVIGATION_STATE_V1';
+const PERSISTENCE_KEY = 'NAVIGATION_STATE_V2'; // Changed to clear old state
 
 // Deep linking configuration
 const linking = {
   prefixes: ['nvlp://'],
   config: {
     screens: {
-      AuthStack: 'auth',
-      MainStack: 'app',
+      AuthStack: {
+        path: 'auth',
+        screens: {
+          Login: 'login',
+          Register: 'register',
+          ForgotPassword: 'forgot-password',
+          Verification: 'verify',
+        },
+      },
+      MainStack: {
+        path: 'app',
+        screens: {
+          MainTabs: 'home',
+          Verification: 'verify',
+        },
+      },
     },
   },
 };
@@ -34,7 +48,7 @@ const linking = {
 export const RootNavigator: React.FC = () => {
   const { user, isLoading } = useAuth();
   const [navigationIsReady, setNavigationIsReady] = useState(false);
-  const [initialState, setInitialState] = useState();
+  const [initialState, setInitialState] = useState<any>();
 
   useEffect(() => {
     const restoreState = async () => {
@@ -43,12 +57,13 @@ export const RootNavigator: React.FC = () => {
 
         if (initialUrl == null) {
           // Only restore state if there's no deep link and we have a saved state
-          const savedStateString = await AsyncStorage.getItem(PERSISTENCE_KEY);
-          const state = savedStateString ? JSON.parse(savedStateString) : undefined;
+          // Temporarily disable state restoration to clear cached navigation
+          // const savedStateString = await AsyncStorage.getItem(PERSISTENCE_KEY);
+          // const state = savedStateString ? JSON.parse(savedStateString) : undefined;
 
-          if (state !== undefined) {
-            setInitialState(state);
-          }
+          // if (state !== undefined) {
+          //   setInitialState(state);
+          // }
         }
       } finally {
         setNavigationIsReady(true);

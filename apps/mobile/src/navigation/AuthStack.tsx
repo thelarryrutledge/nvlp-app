@@ -16,10 +16,9 @@ import type { AuthStackParamList } from './types';
 const Stack = createNativeStackNavigator<AuthStackParamList>();
 
 export const AuthStack: React.FC = () => {
-  const { registrationSuccess } = useAuth();
-  
-  // If we have a registration success, start on Register screen to show success message
-  const initialRoute = registrationSuccess ? "Register" : "Login";
+  // Always default to Login screen
+  // Registration success is handled within RegisterScreen itself
+  const initialRoute = "Login";
   
   return (
     <Stack.Navigator

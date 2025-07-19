@@ -90,6 +90,19 @@ export const VerificationHandler: React.FC = () => {
           message: 'Verification processed. Please try signing in to your account.',
         });
       }
+      
+      // Auto-navigate to login after showing success message
+      setTimeout(() => {
+        if (!user) {
+          console.log('Auto-navigating to login screen');
+          // Reset navigation stack to ensure clean state
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'Login' }],
+          });
+        }
+      }, 2000);
+      
     } catch (error) {
       console.error('Error handling verification:', error);
       setVerificationState({

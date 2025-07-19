@@ -4,7 +4,7 @@
  * Handles user registration with email, password, and display name
  */
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -37,7 +37,8 @@ export const RegisterScreen: React.FC<Props> = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const { register, registrationSuccess, clearRegistrationSuccess } = useAuth();
+  const [localRegistrationSuccess, setLocalRegistrationSuccess] = useState<{ message: string; email: string } | null>(null);
+  const { register, user } = useAuth();
   
   const emailInputRef = useRef<TextInput>(null);
   const displayNameInputRef = useRef<TextInput>(null);
@@ -83,6 +84,15 @@ export const RegisterScreen: React.FC<Props> = ({ navigation }) => {
         ...(trimmedDisplayName && { displayName: trimmedDisplayName })
       });
       
+      console.log('Registration result:', result);
+      
+      // If no session, show success message locally
+      if (!result.session) {
+        setLocalRegistrationSuccess({
+          message: result.message || 'Registration successful! Please check your email to verify your account.',
+          email: email.trim()
+        });
+      }
       // If session returned, navigation will be handled by AuthContext
     } catch (error: any) {
       Alert.alert(
@@ -95,28 +105,51 @@ export const RegisterScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   const navigateToLogin = () => {
-    clearRegistrationSuccess();
+    setLocalRegistrationSuccess(null);
     navigation.navigate('Login');
   };
 
+  // Clear local registration success when deep link verification happens
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      // If we're focusing back to this screen and user is authenticated, 
+      // it means verification happened via deep link
+      if (localRegistrationSuccess && user) {
+        setLocalRegistrationSuccess(null);
+      }
+    });
+
+    return unsubscribe;
+  }, [navigation, localRegistrationSuccess, user]);
+
   // Show success message if registration was successful
-  if (registrationSuccess) {
+  if (localRegistrationSuccess) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.successContainer}>
-          <View style={styles.successContent}>
-            <Text style={styles.successIcon}>✅</Text>
-            <Text style={styles.successTitle}>Registration Successful!</Text>
-            <Text style={styles.successMessage}>{registrationSuccess.message}</Text>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.keyboardAvoidingView}
+        >
+          <ScrollView contentContainerStyle={styles.scrollContent}>
+            <View style={styles.header}>
+              <Text style={styles.title}>NVLP</Text>
+              <Text style={styles.subtitle}>Virtual Envelope Budget</Text>
+            </View>
             
-            <TouchableOpacity 
-              style={styles.primaryButton}
-              onPress={navigateToLogin}
-            >
-              <Text style={styles.primaryButtonText}>Sign In</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+            <View style={styles.successContainer}>
+              <Text style={styles.successIcon}>✅</Text>
+              <Text style={styles.successTitle}>Registration Successful!</Text>
+              <Text style={styles.successMessage}>{localRegistrationSuccess.message}</Text>
+              
+              <TouchableOpacity 
+                style={[styles.registerButton, styles.successButton]}
+                onPress={navigateToLogin}
+              >
+                <Text style={styles.registerButtonText}>Sign In</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     );
   }
@@ -407,6 +440,11 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  successButton: {
+    width: '100%',
+    maxWidth: 300,
+    alignSelf: 'center',
   },
 });
 

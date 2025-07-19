@@ -241,6 +241,8 @@
         function handleVerificationResult() {
             const params = getUrlParams();
             console.log('URL Parameters:', params);
+            console.log('Error param specifically:', params.error);
+            console.log('Type of error param:', typeof params.error);
 
             // Check for errors first
             if (params.error) {
@@ -250,31 +252,20 @@
                 return;
             }
 
-            // Check for success indicators
-            if (params.access_token || params.type === 'signup' || params.type === 'recovery') {
-                console.log('Verification successful');
-                showState('success');
-                
-                // Auto-attempt to open app on mobile after a short delay
-                if (isMobile()) {
-                    setTimeout(() => {
-                        attemptAppOpen(params);
-                    }, 1000);
-                }
+            // If we reached this page without errors, verification was successful
+            // Supabase only redirects here after successful verification
+            console.log('No error found - showing success');
+            console.log('Verification successful - user reached verify page without errors');
+            showState('success');
+            
+            // Auto-attempt to open app on mobile after a short delay
+            if (isMobile()) {
+                console.log('On mobile - attempting to open app');
+                setTimeout(() => {
+                    attemptAppOpen(params);
+                }, 1000);
             } else {
-                console.warn('Unclear verification status:', params);
-                // Default to success if we have a token but no explicit error
-                if (params.token) {
-                    showState('success');
-                    if (isMobile()) {
-                        setTimeout(() => {
-                            attemptAppOpen(params);
-                        }, 1000);
-                    }
-                } else {
-                    errorMessage.textContent = 'Invalid verification link. Please check your email for a valid link.';
-                    showState('error');
-                }
+                console.log('Not on mobile - showing desktop instructions');
             }
         }
 
