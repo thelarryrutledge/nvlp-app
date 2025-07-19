@@ -4,10 +4,11 @@
  * Main navigation controller that switches between authenticated and unauthenticated flows
  */
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer } from '@react-navigation/native';
 import { Linking } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../context/AuthContext';
 import { AuthStack } from './AuthStack';
 import { MainStack } from './MainStack';
@@ -17,34 +18,60 @@ import type { RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
+const PERSISTENCE_KEY = 'NAVIGATION_STATE_V1';
+
 // Deep linking configuration
 const linking = {
   prefixes: ['nvlp://'],
   config: {
     screens: {
-      AuthStack: {
-        screens: {
-          Verification: 'verify',
-        },
-      },
-      MainStack: {
-        screens: {
-          Verification: 'verify',
-        },
-      },
+      AuthStack: 'auth',
+      MainStack: 'app',
     },
   },
 };
 
 export const RootNavigator: React.FC = () => {
   const { user, isLoading } = useAuth();
+  const [navigationIsReady, setNavigationIsReady] = useState(false);
+  const [initialState, setInitialState] = useState();
 
-  if (isLoading) {
+  useEffect(() => {
+    const restoreState = async () => {
+      try {
+        const initialUrl = await Linking.getInitialURL();
+
+        if (initialUrl == null) {
+          // Only restore state if there's no deep link and we have a saved state
+          const savedStateString = await AsyncStorage.getItem(PERSISTENCE_KEY);
+          const state = savedStateString ? JSON.parse(savedStateString) : undefined;
+
+          if (state !== undefined) {
+            setInitialState(state);
+          }
+        }
+      } finally {
+        setNavigationIsReady(true);
+      }
+    };
+
+    if (!navigationIsReady) {
+      restoreState();
+    }
+  }, [navigationIsReady]);
+
+  if (!navigationIsReady || isLoading) {
     return <LoadingScreen />;
   }
 
   return (
-    <NavigationContainer linking={linking}>
+    <NavigationContainer
+      linking={linking}
+      initialState={initialState}
+      onStateChange={(state) =>
+        AsyncStorage.setItem(PERSISTENCE_KEY, JSON.stringify(state))
+      }
+    >
       <Stack.Navigator
         screenOptions={{
           headerShown: false,
