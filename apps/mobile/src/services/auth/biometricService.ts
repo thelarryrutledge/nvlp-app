@@ -101,9 +101,9 @@ class BiometricService {
         }
       }
 
-      const { success } = await this.rnBiometrics.createSignature({
+      const { success } = await this.rnBiometrics.simplePrompt({
         promptMessage: reason,
-        payload: 'biometric_auth_' + Date.now(),
+        cancelButtonText: 'Cancel',
       });
       
       console.log('Biometric authentication result:', success);

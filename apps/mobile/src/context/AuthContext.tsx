@@ -20,7 +20,7 @@ export interface AuthState {
 }
 
 export interface AuthContextType extends AuthState {
-  login: (credentials: LoginCredentials, saveForBiometric?: boolean) => Promise<void>;
+  login: (credentials: LoginCredentials, saveForBiometric?: boolean, skipLoadingState?: boolean) => Promise<void>;
   register: (credentials: RegisterCredentials) => Promise<AuthResult>;
   logout: () => Promise<void>;
   refreshToken: () => Promise<void>;
@@ -80,9 +80,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
   /**
    * Login with credentials
    */
-  const login = useCallback(async (credentials: LoginCredentials, saveForBiometric = false) => {
+  const login = useCallback(async (credentials: LoginCredentials, saveForBiometric = false, skipLoadingState = false) => {
     try {
-      setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
+      if (!skipLoadingState) {
+        setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
+      }
       
       const result = await authService.login(credentials);
       
@@ -105,11 +107,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
         });
       }
     } catch (error: any) {
-      setAuthState(prev => ({
-        ...prev,
-        isLoading: false,
-        error: error.message || 'Login failed',
-      }));
+      if (!skipLoadingState) {
+        setAuthState(prev => ({
+          ...prev,
+          isLoading: false,
+          error: error.message || 'Login failed',
+        }));
+      }
       throw error;
     }
   }, [updateAuthState]);
@@ -242,8 +246,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
    */
   const authenticateWithBiometrics = useCallback(async () => {
     try {
+      console.log('AuthContext: Starting biometric authentication...');
+      
       // First check if we have stored credentials
       const hasStoredCredentials = await secureCredentialStorage.hasCredentials();
+      console.log('AuthContext: Has stored credentials:', hasStoredCredentials);
+      
       if (!hasStoredCredentials) {
         return {
           success: false,
@@ -252,10 +260,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
 
       // Perform biometric authentication
+      console.log('AuthContext: Calling biometric service authenticate...');
       const biometricResult = await biometricService.authenticate('Sign in to NVLP');
+      console.log('AuthContext: Biometric result:', biometricResult);
       
       if (biometricResult.success) {
         // Retrieve stored credentials
+        console.log('AuthContext: Retrieving stored credentials...');
         const credentials = await secureCredentialStorage.getCredentials();
         if (!credentials) {
           return {
@@ -266,9 +277,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         // Authenticate with stored credentials
         try {
-          await login(credentials, true); // Re-save credentials for next time
+          console.log('AuthContext: Logging in with stored credentials...');
+          await login(credentials, true, true); // Re-save credentials, skip loading state
           return { success: true };
         } catch (error: any) {
+          console.error('AuthContext: Login with stored credentials failed:', error);
           // If login fails, credentials might be invalid
           await secureCredentialStorage.removeCredentials();
           return {
@@ -280,6 +293,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       
       return biometricResult;
     } catch (error: any) {
+      console.error('AuthContext: Biometric auth error:', error);
       return {
         success: false,
         error: error.message || 'Biometric authentication failed',

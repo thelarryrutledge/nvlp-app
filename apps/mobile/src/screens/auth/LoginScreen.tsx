@@ -85,6 +85,8 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   const handleBiometricLogin = async () => {
+    console.log('Biometric login attempt - capabilities:', biometricCapabilities);
+    
     if (!biometricCapabilities?.isAvailable || !biometricCapabilities?.hasCredentials) {
       Alert.alert(
         'Biometric Authentication Unavailable',
@@ -95,7 +97,9 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
 
     setIsBiometricLoading(true);
     try {
+      console.log('Calling authenticateWithBiometrics...');
       const result = await authenticateWithBiometrics();
+      console.log('Biometric auth result:', result);
       
       if (!result.success) {
         if (result.error && !result.error.includes('cancelled')) {
@@ -104,6 +108,7 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
       }
       // If successful, AuthContext will handle navigation automatically
     } catch (error: any) {
+      console.error('Biometric login error:', error);
       Alert.alert(
         'Biometric Login Failed',
         error.message || 'Unable to authenticate with biometrics. Please try again.'
