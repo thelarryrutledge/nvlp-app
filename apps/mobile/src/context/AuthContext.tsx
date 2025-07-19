@@ -7,7 +7,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { tokenManager, type TokenData } from '../services/auth/tokenManager';
 import { authService } from '../services/api';
-import type { LoginCredentials, RegisterCredentials } from '../services/api';
+import type { LoginCredentials, RegisterCredentials, AuthResult } from '../services/api';
 
 export interface AuthState {
   isAuthenticated: boolean;
@@ -15,14 +15,20 @@ export interface AuthState {
   user: any | null;
   accessToken: string | null;
   error: string | null;
+  registrationSuccess?: {
+    message: string;
+    email: string;
+  } | null;
 }
 
 export interface AuthContextType extends AuthState {
   login: (credentials: LoginCredentials) => Promise<void>;
-  register: (credentials: RegisterCredentials) => Promise<void>;
+  register: (credentials: RegisterCredentials) => Promise<AuthResult>;
   logout: () => Promise<void>;
   refreshToken: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
   clearError: () => void;
+  clearRegistrationSuccess: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -38,6 +44,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     user: null,
     accessToken: null,
     error: null,
+    registrationSuccess: null,
   });
 
   /**
@@ -61,7 +68,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const tokenData = await tokenManager.loadTokens();
       updateAuthState(tokenData);
     } catch (error) {
-      console.error('Failed to initialize auth:', error);
       setAuthState(prev => ({
         ...prev,
         isLoading: false,
@@ -120,11 +126,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
         await tokenManager.saveTokens(tokenData);
         updateAuthState(tokenData);
       } else {
+        const successState = {
+          message: result.message || 'Registration successful! Please check your email to verify your account.',
+          email: credentials.email,
+        };
         setAuthState(prev => ({
           ...prev,
           isLoading: false,
+          registrationSuccess: successState,
         }));
       }
+      
+      // Return the result so the UI can handle success messages
+      return result;
     } catch (error: any) {
       setAuthState(prev => ({
         ...prev,
@@ -195,10 +209,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [authState.user, updateAuthState]);
 
   /**
+   * Reset password
+   */
+  const resetPassword = useCallback(async (email: string) => {
+    try {
+      await authService.resetPassword(email);
+      // Password reset doesn't change auth state, just sends email
+    } catch (error: any) {
+      throw error;
+    }
+  }, []);
+
+  /**
    * Clear error state
    */
   const clearError = useCallback(() => {
     setAuthState(prev => ({ ...prev, error: null }));
+  }, []);
+
+  /**
+   * Clear registration success state
+   */
+  const clearRegistrationSuccess = useCallback(() => {
+    setAuthState(prev => ({ ...prev, registrationSuccess: null }));
   }, []);
 
   /**
@@ -249,7 +282,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     register,
     logout,
     refreshToken,
+    resetPassword,
     clearError,
+    clearRegistrationSuccess,
   };
 
   return (

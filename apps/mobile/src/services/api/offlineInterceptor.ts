@@ -15,8 +15,8 @@ import { networkUtils } from './networkUtils';
 export const offlineInterceptor: RequestInterceptor = {
   id: 'offline-queue',
   handler: async (config: RequestConfig): Promise<RequestConfig> => {
-    const networkState = networkUtils.getCurrentState();
-    const isOnline = networkState.isConnected && networkState.isInternetReachable;
+    // Use the networkUtils.isConnected() method which handles dev/simulator issues
+    const isOnline = networkUtils.isConnected();
 
     // If we're offline and this is a queueable request
     if (!isOnline && shouldQueueRequest(config)) {

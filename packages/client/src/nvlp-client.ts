@@ -508,13 +508,26 @@ export class NVLPClient {
    * Register new user
    */
   async register(email: string, password: string, displayName?: string): Promise<{ user: any }> {
-    const response = await this.edgeFunctionTransport.auth('register', {
+    console.log('NVLPClient.register called with:', {
       email,
-      password,
-      display_name: displayName,
+      hasPassword: !!password,
+      passwordLength: password?.length,
+      displayName,
     });
-
-    return response.data;
+    
+    try {
+      const response = await this.edgeFunctionTransport.auth('register', {
+        email,
+        password,
+        display_name: displayName,
+      });
+      
+      console.log('NVLPClient.register response:', response);
+      return response.data;
+    } catch (error) {
+      console.error('NVLPClient.register error:', error);
+      throw error;
+    }
   }
 
   /**

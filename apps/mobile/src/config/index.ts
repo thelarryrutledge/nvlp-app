@@ -1,29 +1,27 @@
-import Config from 'react-native-config';
-
 /**
  * Application configuration from environment variables
  */
 export const config = {
   // API Configuration
   api: {
-    baseUrl: Config.API_URL || 'http://localhost:3000',
-    dbApiUrl: Config.DB_API_URL || 'https://db-api.nvlp.app',
-    edgeApiUrl: Config.EDGE_API_URL || 'https://edge-api.nvlp.app',
+    baseUrl: 'http://localhost:3000',
+    dbApiUrl: 'https://db-api.nvlp.app',
+    edgeApiUrl: 'https://edge-api.nvlp.app',
   },
   
   // Supabase Configuration
   supabase: {
-    url: Config.SUPABASE_URL || '',
-    anonKey: Config.SUPABASE_ANON_KEY || '',
+    url: 'https://qnpatlosomopoimtsmsr.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFucGF0bG9zb21vcG9pbXRzbXNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE2NTg5MzcsImV4cCI6MjA2NzIzNDkzN30.__GhvGGWqhC_i1ztp1-A1VEsL3JVWrtdpQG_uJS8tB8',
   },
   
   // App Configuration
   app: {
-    env: Config.APP_ENV || 'development',
-    isProduction: Config.APP_ENV === 'production',
-    isDevelopment: Config.APP_ENV === 'development',
-    isStaging: Config.APP_ENV === 'staging',
-    enableLogging: Config.ENABLE_LOGGING === 'true',
+    env: 'development',
+    isProduction: false,
+    isDevelopment: true,
+    isStaging: false,
+    enableLogging: true,
   },
 } as const;
 

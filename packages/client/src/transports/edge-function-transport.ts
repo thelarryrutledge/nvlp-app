@@ -57,10 +57,13 @@ export class EdgeFunctionTransport implements Transport {
     const timeoutId = setTimeout(() => abortController.abort(), timeout);
 
     try {
+      // Prepare request body
+      const requestBody = data ? JSON.stringify(data) : null;
+
       const response = await fetch(url, {
         method,
         headers,
-        body: data ? JSON.stringify(data) : null,
+        body: requestBody,
         signal: abortController.signal,
       });
 
@@ -123,6 +126,7 @@ export class EdgeFunctionTransport implements Transport {
     if (!endpoint) {
       throw new Error(`Unknown auth action: ${action}`);
     }
+
 
     // For profile endpoint, use GET method
     const method = action === 'profile' ? 'GET' : 'POST';

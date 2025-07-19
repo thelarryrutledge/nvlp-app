@@ -30,6 +30,15 @@ export interface ApiError {
 export function transformError(error: any): ApiError {
   // Handle NVLP client library errors first
   if (error.name === 'NVLPError' || error.constructor?.name === 'NVLPError') {
+    // Log the full error for debugging
+    console.error('NVLPError details:', {
+      name: error.name,
+      code: error.code,
+      message: error.message,
+      status: error.status,
+      originalError: error.originalError,
+    });
+    
     switch (error.code) {
       case 'AUTHENTICATION_ERROR':
         return {

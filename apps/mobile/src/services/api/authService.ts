@@ -21,6 +21,7 @@ export interface RegisterCredentials {
 export interface AuthResult {
   user: any;
   session?: any;
+  message?: string;
 }
 
 class AuthService {

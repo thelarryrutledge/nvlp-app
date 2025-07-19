@@ -179,6 +179,12 @@ export const responseLoggingInterceptor: ResponseInterceptor = {
 export const networkInterceptor: RequestInterceptor = {
   id: 'network-check',
   handler: async (config) => {
+    // Wait for NetworkUtils to initialize if it hasn't yet
+    if (!networkUtils.isInitialized()) {
+      console.log('[Network Interceptor] Waiting for NetworkUtils initialization...');
+      await networkUtils.waitForInitialization();
+    }
+    
     const isConnected = networkUtils.isConnected();
     const networkState = networkUtils.getCurrentState();
     
@@ -186,6 +192,7 @@ export const networkInterceptor: RequestInterceptor = {
     if (__DEV__) {
       console.log('[Network Interceptor] State:', {
         isConnected,
+        initialized: networkUtils.isInitialized(),
         state: networkState,
       });
     }

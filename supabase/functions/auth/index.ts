@@ -344,7 +344,7 @@ serve(async (req) => {
     else if (path === '/auth/register' && method === 'POST') {
       try {
         const body = await parseJsonBody(req)
-        const { email, password } = body
+        const { email, password, display_name } = body
 
         // Validate required fields
         if (!email || !password) {
@@ -363,13 +363,26 @@ serve(async (req) => {
           return createErrorResponse(passwordValidation.error!, 'INVALID_PASSWORD', 400)
         }
 
-        console.log(`[AUTH REGISTER] Attempting registration for: ${sanitizedEmail}`)
+        console.log(`[AUTH REGISTER] Attempting registration for: ${sanitizedEmail}`, {
+          hasDisplayName: !!display_name
+        })
 
         // Register user with Supabase Auth
-        const { data, error } = await supabase.auth.signUp({
+        const signUpData: any = {
           email: sanitizedEmail,
           password,
-        })
+        }
+
+        // Add user metadata if display_name is provided
+        if (display_name) {
+          signUpData.options = {
+            data: {
+              display_name: display_name
+            }
+          }
+        }
+
+        const { data, error } = await supabase.auth.signUp(signUpData)
 
         if (error) {
           console.error(`[AUTH REGISTER ERROR] ${error.code}: ${error.message}`)

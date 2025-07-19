@@ -90,14 +90,14 @@ class ApiClientWrapper {
   async login(email: string, password: string) {
     return this.executeWithInterceptors(
       () => apiClient.login(email, password),
-      { method: 'POST', url: '/auth/login', data: { email } }
+      { method: 'POST', url: '/auth/login', data: { email, password } }
     );
   }
 
   async register(email: string, password: string, displayName?: string) {
     return this.executeWithInterceptors(
       () => apiClient.register(email, password, displayName),
-      { method: 'POST', url: '/auth/register', data: { email, displayName } }
+      { method: 'POST', url: '/auth/register', data: { email, password, displayName } }
     );
   }
 

@@ -123,7 +123,7 @@
     "build:production:mobile": "./scripts/build-prod.sh --target mobile",
     "build:production:api": "./scripts/build-prod.sh --target api",
     "build:vercel": "pnpm build:packages && echo '✅ Vercel build complete'",
-    "build:vercel:prod": "NODE_ENV=production pnpm build:packages && echo '✅ Vercel production build complete'",
+    "build:vercel:prod": "NODE_ENV=production pnpm build:packages && mkdir -p dist && if [ -d \"public\" ]; then cp -r public/* dist/; fi && echo '✅ Vercel production build complete'",
     "cache:status": "./scripts/cache-management.sh status",
     "cache:clean": "./scripts/cache-management.sh clean",
     "cache:clean:turbo": "./scripts/cache-management.sh clean-turbo",

@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NVLP - Email Verification</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .container {
+            text-align: center;
+            padding: 2rem;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            max-width: 500px;
+            margin: 1rem;
+        }
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            margin: 0 auto 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+        }
+        h1 {
+            color: #333;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+        .status {
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .loading {
+            background-color: #e1ecf4;
+            color: #0c5460;
+            border: 1px solid #b3d4fc;
+        }
+        .app-button {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            margin: 1rem 0.5rem;
+            transition: transform 0.2s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .app-button:hover {
+            transform: translateY(-2px);
+        }
+        .secondary-button {
+            background: #6c757d;
+        }
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .hidden {
+            display: none;
+        }
+        .instructions {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">✓</div>
+        
+        <!-- Loading State -->
+        <div id="loading-state">
+            <div class="spinner"></div>
+            <h1>Verifying Your Email...</h1>
+            <div class="status loading">
+                <p>Please wait while we verify your email address.</p>
+            </div>
+        </div>
+
+        <!-- Success State -->
+        <div id="success-state" class="hidden">
+            <h1>Email Verified Successfully!</h1>
+            <div class="status success">
+                <p>Your email has been verified. You can now sign in to your NVLP account.</p>
+            </div>
+            
+            <!-- Mobile Detection -->
+            <div id="mobile-actions" class="hidden">
+                <button id="open-app-btn" class="app-button">Open NVLP App</button>
+                <div class="instructions">
+                    <p><strong>Can't open the app?</strong></p>
+                    <p>1. Make sure the NVLP app is installed on your device</p>
+                    <p>2. Try opening the app manually and sign in</p>
+                    <p>3. If you don't have the app, download it from your app store</p>
+                </div>
+            </div>
+            
+            <!-- Desktop Actions -->
+            <div id="desktop-actions" class="hidden">
+                <p>Open the NVLP mobile app on your phone and sign in with your verified email address.</p>
+                <div class="instructions">
+                    <p><strong>Don't have the app yet?</strong></p>
+                    <p>Download NVLP from the App Store or Google Play Store on your mobile device.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error State -->
+        <div id="error-state" class="hidden">
+            <h1>Verification Failed</h1>
+            <div class="status error">
+                <p id="error-message">There was an issue verifying your email. Please try again or contact support.</p>
+            </div>
+            <button id="retry-btn" class="app-button secondary-button">Try Again</button>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const APP_SCHEME = 'nvlp';
+        const APP_HOST = 'verify';
+        
+        // DOM Elements
+        const loadingState = document.getElementById('loading-state');
+        const successState = document.getElementById('success-state');
+        const errorState = document.getElementById('error-state');
+        const errorMessage = document.getElementById('error-message');
+        const mobileActions = document.getElementById('mobile-actions');
+        const desktopActions = document.getElementById('desktop-actions');
+        const openAppBtn = document.getElementById('open-app-btn');
+        const retryBtn = document.getElementById('retry-btn');
+
+        // Utility Functions
+        function isMobile() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+
+        function getUrlParams() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return {
+                token: urlParams.get('token'),
+                type: urlParams.get('type'),
+                error: urlParams.get('error'),
+                error_description: urlParams.get('error_description'),
+                access_token: urlParams.get('access_token'),
+                refresh_token: urlParams.get('refresh_token')
+            };
+        }
+
+        function showState(state) {
+            loadingState.classList.add('hidden');
+            successState.classList.add('hidden');
+            errorState.classList.add('hidden');
+            
+            if (state === 'success') {
+                successState.classList.remove('hidden');
+                if (isMobile()) {
+                    mobileActions.classList.remove('hidden');
+                } else {
+                    desktopActions.classList.remove('hidden');
+                }
+            } else if (state === 'error') {
+                errorState.classList.remove('hidden');
+            } else {
+                loadingState.classList.remove('hidden');
+            }
+        }
+
+        function attemptAppOpen(params = {}) {
+            if (!isMobile()) {
+                console.log('Not on mobile, skipping app open attempt');
+                return false;
+            }
+
+            // Construct deep link URL
+            const queryParams = new URLSearchParams();
+            if (params.token) queryParams.set('token', params.token);
+            if (params.type) queryParams.set('type', params.type);
+            if (params.access_token) queryParams.set('access_token', params.access_token);
+            if (params.refresh_token) queryParams.set('refresh_token', params.refresh_token);
+
+            const deepLinkUrl = `${APP_SCHEME}://${APP_HOST}?${queryParams.toString()}`;
+            
+            console.log('Attempting to open app with URL:', deepLinkUrl);
+
+            // Try to open the app
+            window.location.href = deepLinkUrl;
+
+            // Fallback: If the app doesn't open after a delay, show instructions
+            setTimeout(() => {
+                console.log('App may not have opened, user will see manual instructions');
+            }, 2000);
+
+            return true;
+        }
+
+        function handleVerificationResult() {
+            const params = getUrlParams();
+            console.log('URL Parameters:', params);
+
+            // Check for errors first
+            if (params.error) {
+                console.error('Verification error:', params.error, params.error_description);
+                errorMessage.textContent = params.error_description || 'Verification failed. Please try again.';
+                showState('error');
+                return;
+            }
+
+            // Check for success indicators
+            if (params.access_token || params.type === 'signup' || params.type === 'recovery') {
+                console.log('Verification successful');
+                showState('success');
+                
+                // Auto-attempt to open app on mobile after a short delay
+                if (isMobile()) {
+                    setTimeout(() => {
+                        attemptAppOpen(params);
+                    }, 1000);
+                }
+            } else {
+                console.warn('Unclear verification status:', params);
+                // Default to success if we have a token but no explicit error
+                if (params.token) {
+                    showState('success');
+                    if (isMobile()) {
+                        setTimeout(() => {
+                            attemptAppOpen(params);
+                        }, 1000);
+                    }
+                } else {
+                    errorMessage.textContent = 'Invalid verification link. Please check your email for a valid link.';
+                    showState('error');
+                }
+            }
+        }
+
+        // Event Listeners
+        openAppBtn.addEventListener('click', () => {
+            const params = getUrlParams();
+            attemptAppOpen(params);
+        });
+
+        retryBtn.addEventListener('click', () => {
+            window.location.reload();
+        });
+
+        // Initialize
+        console.log('Email verification page loaded');
+        console.log('User agent:', navigator.userAgent);
+        console.log('Is mobile:', isMobile());
+
+        // Add a small delay to show the loading state
+        setTimeout(handleVerificationResult, 1500);
+    </script>
+</body>
+</html>

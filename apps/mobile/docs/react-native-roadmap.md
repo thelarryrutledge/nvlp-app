@@ -47,20 +47,20 @@
 - [x] Implement automatic retry logic for failed requests
 
 ### 2.3 Navigation Architecture
-- [ ] Set up authentication flow (stack navigator)
-- [ ] Create main app navigation (tab or drawer based)
+- [x] Set up authentication flow (stack navigator)
+- [x] Create main app navigation (tab or drawer based)
 - [ ] Implement deep linking support
 - [ ] Set up navigation state persistence
-- [ ] Create navigation guards for protected routes
+- [x] Create navigation guards for protected routes
 
 ## Phase 3: Authentication & Onboarding
 
 ### 3.1 Authentication Screens
-- [ ] Create login screen with email/password
-- [ ] Build registration screen with validation
-- [ ] Implement forgot password flow
-- [ ] Add password reset screen
-- [ ] Create loading/splash screen
+- [x] Create login screen with email/password
+- [x] Build registration screen with validation
+- [x] Implement forgot password flow
+- [x] Add password reset screen
+- [x] Create loading/splash screen
 - [ ] Implement biometric authentication (TouchID/FaceID)
 
 ### 3.2 Onboarding Flow

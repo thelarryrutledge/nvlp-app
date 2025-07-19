@@ -22,12 +22,14 @@ class NetworkUtils {
 
   private listeners: ((state: NetworkState) => void)[] = [];
   private forceOffline: boolean = false;
+  private initialized: boolean = false;
+  private initializationPromise: Promise<void> | null = null;
 
   constructor() {
-    this.initialize();
+    this.initializationPromise = this.initialize();
   }
 
-  private initialize() {
+  private async initialize() {
     // Configure NetInfo for better reliability in React Native
     NetInfo.configure({
       reachabilityUrl: 'https://clients3.google.com/generate_204',
@@ -39,7 +41,8 @@ class NetworkUtils {
     });
 
     // Get initial network state with retry logic
-    this.initializeWithRetry();
+    await this.initializeWithRetry();
+    this.initialized = true;
 
     // Listen for network changes
     NetInfo.addEventListener(state => {
@@ -106,12 +109,41 @@ class NetworkUtils {
   }
 
   /**
+   * Wait for initialization to complete
+   */
+  async waitForInitialization(): Promise<void> {
+    if (this.initializationPromise) {
+      await this.initializationPromise;
+    }
+  }
+
+  /**
+   * Check if NetworkUtils has been initialized
+   */
+  isInitialized(): boolean {
+    return this.initialized;
+  }
+
+  /**
    * Check if device is connected to internet
    * Updated for NetInfo v11.4+ boolean types
    */
   isConnected(): boolean {
     if (this.forceOffline) {
       return false;
+    }
+    
+    // If not initialized yet, assume we're online to avoid blocking requests
+    // This prevents initialization race conditions
+    if (!this.initialized) {
+      console.log('[NetworkUtils] Not yet initialized, assuming online');
+      return true;
+    }
+    
+    // In development/simulator, isInternetReachable is often false even with working internet
+    // So we'll trust isConnected if we have a network type
+    if (__DEV__ && this.currentState.isConnected && this.currentState.type) {
+      return true;
     }
     return this.currentState.isConnected && this.currentState.isInternetReachable;
   }
