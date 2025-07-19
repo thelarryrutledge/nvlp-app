@@ -278,10 +278,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
         // Authenticate with stored credentials
         try {
           console.log('AuthContext: Logging in with stored credentials...');
+          console.log('AuthContext: Credentials being used:', { email: credentials.email, passwordLength: credentials.password?.length || 0 });
           await login(credentials, true, true); // Re-save credentials, skip loading state
           return { success: true };
         } catch (error: any) {
           console.error('AuthContext: Login with stored credentials failed:', error);
+          console.error('AuthContext: Error details:', {
+            name: error.name,
+            message: error.message,
+            code: error.code,
+            status: error.status,
+            originalError: error.originalError
+          });
           // If login fails, credentials might be invalid
           await secureCredentialStorage.removeCredentials();
           return {

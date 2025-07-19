@@ -14,22 +14,21 @@ export interface SecureCredentials {
 
 class SecureCredentialStorage {
   private readonly SERVICE_NAME = 'com.nvlp.mobile.biometric';
-  private readonly CREDENTIALS_KEY = 'user_credentials';
 
   /**
    * Store user credentials securely
    */
   async storeCredentials(credentials: SecureCredentials): Promise<boolean> {
     try {
+      console.log('Attempting to store credentials with Keychain...');
       const result = await Keychain.setInternetCredentials(
         this.SERVICE_NAME,
-        this.CREDENTIALS_KEY,
         credentials.email,
         credentials.password
       );
       
       console.log('Credentials stored successfully:', result);
-      return result;
+      return !!result;
     } catch (error) {
       console.error('Error storing credentials:', error);
       return false;
@@ -41,15 +40,18 @@ class SecureCredentialStorage {
    */
   async getCredentials(): Promise<SecureCredentials | null> {
     try {
+      console.log('Attempting to retrieve credentials from Keychain...');
       const credentials = await Keychain.getInternetCredentials(this.SERVICE_NAME);
       
-      if (credentials) {
+      if (credentials && credentials !== false && typeof credentials === 'object' && 'username' in credentials) {
+        console.log('Credentials retrieved successfully');
         return {
           email: credentials.username,
           password: credentials.password,
         };
       }
       
+      console.log('No credentials found');
       return null;
     } catch (error) {
       console.error('Error retrieving credentials:', error);
@@ -62,8 +64,11 @@ class SecureCredentialStorage {
    */
   async hasCredentials(): Promise<boolean> {
     try {
+      console.log('Checking if credentials exist...');
       const credentials = await Keychain.getInternetCredentials(this.SERVICE_NAME);
-      return !!credentials;
+      const exists = credentials && credentials !== false && typeof credentials === 'object' && 'username' in credentials;
+      console.log('Credentials exist:', exists);
+      return !!exists;
     } catch (error) {
       console.error('Error checking credentials:', error);
       return false;
@@ -75,9 +80,9 @@ class SecureCredentialStorage {
    */
   async removeCredentials(): Promise<boolean> {
     try {
-      const result = await Keychain.resetInternetCredentials(this.SERVICE_NAME);
-      console.log('Credentials removed:', result);
-      return result;
+      await Keychain.resetInternetCredentials(this.SERVICE_NAME);
+      console.log('Credentials removed: true');
+      return true;
     } catch (error) {
       console.error('Error removing credentials:', error);
       return false;
