@@ -7,6 +7,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { tokenManager, type TokenData } from '../services/auth/tokenManager';
 import { biometricService, type BiometricCapabilities, type BiometricAuthResult } from '../services/auth/biometricService';
+import { secureCredentialStorage } from '../services/auth/secureCredentialStorage';
 import { authService } from '../services/api';
 import type { LoginCredentials, RegisterCredentials, AuthResult } from '../services/api';
 
@@ -19,7 +20,7 @@ export interface AuthState {
 }
 
 export interface AuthContextType extends AuthState {
-  login: (credentials: LoginCredentials) => Promise<void>;
+  login: (credentials: LoginCredentials, saveForBiometric?: boolean) => Promise<void>;
   register: (credentials: RegisterCredentials) => Promise<AuthResult>;
   logout: () => Promise<void>;
   refreshToken: () => Promise<void>;
@@ -28,7 +29,7 @@ export interface AuthContextType extends AuthState {
   // Biometric authentication methods
   getBiometricCapabilities: () => Promise<BiometricCapabilities>;
   authenticateWithBiometrics: () => Promise<BiometricAuthResult>;
-  enableBiometricAuth: () => Promise<boolean>;
+  enableBiometricAuth: (email: string, password: string) => Promise<boolean>;
   disableBiometricAuth: () => Promise<boolean>;
 }
 
@@ -79,7 +80,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   /**
    * Login with credentials
    */
-  const login = useCallback(async (credentials: LoginCredentials) => {
+  const login = useCallback(async (credentials: LoginCredentials, saveForBiometric = false) => {
     try {
       setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
       
@@ -95,6 +96,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
       
       await tokenManager.saveTokens(tokenData);
       updateAuthState(tokenData);
+      
+      // Store credentials for biometric auth if requested
+      if (saveForBiometric) {
+        await secureCredentialStorage.storeCredentials({
+          email: credentials.email,
+          password: credentials.password,
+        });
+      }
     } catch (error: any) {
       setAuthState(prev => ({
         ...prev,
@@ -229,56 +238,59 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   /**
-   * Authenticate with biometrics and auto-login if user has saved credentials
+   * Authenticate with biometrics and auto-login using stored credentials
    */
   const authenticateWithBiometrics = useCallback(async () => {
     try {
-      const result = await biometricService.authenticate('Sign in to NVLP');
+      // First check if we have stored credentials
+      const hasStoredCredentials = await secureCredentialStorage.hasCredentials();
+      if (!hasStoredCredentials) {
+        return {
+          success: false,
+          error: 'No saved credentials found. Please sign in first and enable biometric authentication.',
+        };
+      }
+
+      // Perform biometric authentication
+      const biometricResult = await biometricService.authenticate('Sign in to NVLP');
       
-      if (result.success) {
-        // If biometric auth succeeds, try to load saved tokens
-        const tokenData = await tokenManager.loadTokens();
-        if (tokenData) {
-          // Check if tokens are still valid
-          if (tokenManager.hasValidTokens()) {
-            updateAuthState(tokenData);
-            return { success: true };
-          } else {
-            // Tokens expired, try to refresh
-            try {
-              await refreshToken();
-              return { success: true };
-            } catch {
-              // Refresh failed, user needs to log in again
-              await tokenManager.clearTokens();
-              return {
-                success: false,
-                error: 'Your session has expired. Please sign in again.',
-              };
-            }
-          }
-        } else {
-          // No saved tokens found
+      if (biometricResult.success) {
+        // Retrieve stored credentials
+        const credentials = await secureCredentialStorage.getCredentials();
+        if (!credentials) {
           return {
             success: false,
-            error: 'No saved credentials found. Please sign in first.',
+            error: 'Failed to retrieve saved credentials.',
+          };
+        }
+
+        // Authenticate with stored credentials
+        try {
+          await login(credentials, true); // Re-save credentials for next time
+          return { success: true };
+        } catch (error: any) {
+          // If login fails, credentials might be invalid
+          await secureCredentialStorage.removeCredentials();
+          return {
+            success: false,
+            error: 'Saved credentials are no longer valid. Please sign in again.',
           };
         }
       }
       
-      return result;
+      return biometricResult;
     } catch (error: any) {
       return {
         success: false,
         error: error.message || 'Biometric authentication failed',
       };
     }
-  }, [updateAuthState, refreshToken]);
+  }, [login]);
 
   /**
-   * Enable biometric authentication
+   * Enable biometric authentication with stored credentials
    */
-  const enableBiometricAuth = useCallback(async () => {
+  const enableBiometricAuth = useCallback(async (email: string, password: string) => {
     try {
       const capabilities = await biometricService.getCapabilities();
       
@@ -289,6 +301,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Ensure user is logged in before enabling biometric auth
       if (!authState.isAuthenticated || !tokenManager.hasValidTokens()) {
         throw new Error('Please sign in first before enabling biometric authentication');
+      }
+
+      // Store credentials securely
+      const credentialsStored = await secureCredentialStorage.storeCredentials({
+        email,
+        password,
+      });
+      
+      if (!credentialsStored) {
+        return false;
       }
 
       // Create biometric keys if they don't exist
@@ -308,6 +330,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
    */
   const disableBiometricAuth = useCallback(async () => {
     try {
+      // Remove stored credentials
+      await secureCredentialStorage.removeCredentials();
+      
+      // Delete biometric keys
       return await biometricService.deleteKeys();
     } catch (error) {
       console.error('Error disabling biometric auth:', error);

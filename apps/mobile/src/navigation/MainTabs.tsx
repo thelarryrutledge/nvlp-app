@@ -6,12 +6,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, Switch, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, Switch, ScrollView, TextInput, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useAuth } from '../context/AuthContext';
 import type { MainTabParamList } from './types';
 import type { BiometricCapabilities } from '../services/auth/biometricService';
+import { secureCredentialStorage } from '../services/auth/secureCredentialStorage';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
@@ -56,13 +57,19 @@ const ProfileScreen = () => {
   const [biometricCapabilities, setBiometricCapabilities] = useState<BiometricCapabilities | null>(null);
   const [isBiometricEnabled, setIsBiometricEnabled] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showCredentialModal, setShowCredentialModal] = useState(false);
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     const checkBiometrics = async () => {
       try {
         const capabilities = await getBiometricCapabilities();
         setBiometricCapabilities(capabilities);
-        setIsBiometricEnabled(capabilities.hasCredentials);
+        
+        // Check if user has stored credentials
+        const hasStoredCredentials = await secureCredentialStorage.hasCredentials();
+        setIsBiometricEnabled(capabilities.hasCredentials && hasStoredCredentials);
       } catch (error) {
         console.error('Error checking biometric capabilities:', error);
       }
@@ -80,23 +87,13 @@ const ProfileScreen = () => {
       return;
     }
 
-    setIsLoading(true);
-    try {
-      if (enabled) {
-        const success = await enableBiometricAuth();
-        if (success) {
-          setIsBiometricEnabled(true);
-          Alert.alert(
-            'Biometric Authentication Enabled',
-            `${getBiometryTypeName()} authentication has been enabled for faster sign-in.`
-          );
-        } else {
-          Alert.alert(
-            'Setup Failed',
-            'Failed to enable biometric authentication. Please try again.'
-          );
-        }
-      } else {
+    if (enabled) {
+      // Show credential modal to get password
+      setShowCredentialModal(true);
+    } else {
+      // Disable biometric auth
+      setIsLoading(true);
+      try {
         const success = await disableBiometricAuth();
         if (success) {
           setIsBiometricEnabled(false);
@@ -110,6 +107,39 @@ const ProfileScreen = () => {
             'Failed to disable biometric authentication. Please try again.'
           );
         }
+      } catch (error: any) {
+        Alert.alert(
+          'Error',
+          error.message || 'An error occurred while updating biometric settings.'
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  const handleCredentialSubmit = async () => {
+    if (!password) {
+      Alert.alert('Error', 'Please enter your password');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const success = await enableBiometricAuth(user?.email || '', password);
+      if (success) {
+        setIsBiometricEnabled(true);
+        setShowCredentialModal(false);
+        setPassword('');
+        Alert.alert(
+          'Biometric Authentication Enabled',
+          `${getBiometryTypeName()} authentication has been enabled for faster sign-in.`
+        );
+      } else {
+        Alert.alert(
+          'Setup Failed',
+          'Failed to enable biometric authentication. Please check your password and try again.'
+        );
       }
     } catch (error: any) {
       Alert.alert(
@@ -200,6 +230,73 @@ const ProfileScreen = () => {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {/* Password Modal for Biometric Setup */}
+      <Modal
+        visible={showCredentialModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => {
+          setShowCredentialModal(false);
+          setPassword('');
+        }}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Confirm Your Password</Text>
+            <Text style={styles.modalDescription}>
+              To enable {getBiometryTypeName()}, please enter your password for security.
+            </Text>
+            
+            <View style={styles.modalPasswordContainer}>
+              <TextInput
+                style={styles.modalPasswordInput}
+                value={password}
+                onChangeText={setPassword}
+                placeholder="Enter your password"
+                placeholderTextColor="#999"
+                secureTextEntry={!showPassword}
+                autoCapitalize="none"
+                autoCorrect={false}
+                autoFocus={true}
+              />
+              <TouchableOpacity
+                style={styles.modalPasswordToggle}
+                onPress={() => setShowPassword(!showPassword)}
+              >
+                <Icon 
+                  name={showPassword ? 'eye-off' : 'eye'} 
+                  size={22} 
+                  color="#666" 
+                />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.modalActions}>
+              <TouchableOpacity
+                style={styles.modalCancelButton}
+                onPress={() => {
+                  setShowCredentialModal(false);
+                  setPassword('');
+                }}
+                disabled={isLoading}
+              >
+                <Text style={styles.modalCancelText}>Cancel</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={[styles.modalConfirmButton, isLoading && styles.modalButtonDisabled]}
+                onPress={handleCredentialSubmit}
+                disabled={isLoading}
+              >
+                <Text style={styles.modalConfirmText}>
+                  {isLoading ? 'Enabling...' : 'Enable'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -383,6 +480,79 @@ const styles = StyleSheet.create({
   },
   buttonIcon: {
     marginRight: 8,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 24,
+    width: '100%',
+    maxWidth: 400,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1a1a1a',
+    marginBottom: 8,
+  },
+  modalDescription: {
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 24,
+  },
+  modalPasswordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e1e5e9',
+    borderRadius: 8,
+    backgroundColor: '#fff',
+    marginBottom: 24,
+  },
+  modalPasswordInput: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: '#1a1a1a',
+  },
+  modalPasswordToggle: {
+    padding: 12,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 12,
+  },
+  modalCancelButton: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  modalCancelText: {
+    fontSize: 16,
+    color: '#666',
+    fontWeight: '600',
+  },
+  modalConfirmButton: {
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  modalButtonDisabled: {
+    opacity: 0.6,
+  },
+  modalConfirmText: {
+    fontSize: 16,
+    color: '#fff',
+    fontWeight: '600',
   },
 });
 
