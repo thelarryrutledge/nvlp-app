@@ -6,6 +6,7 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { tokenManager, type TokenData } from '../services/auth/tokenManager';
+import { biometricService, type BiometricCapabilities, type BiometricAuthResult } from '../services/auth/biometricService';
 import { authService } from '../services/api';
 import type { LoginCredentials, RegisterCredentials, AuthResult } from '../services/api';
 
@@ -24,6 +25,11 @@ export interface AuthContextType extends AuthState {
   refreshToken: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   clearError: () => void;
+  // Biometric authentication methods
+  getBiometricCapabilities: () => Promise<BiometricCapabilities>;
+  authenticateWithBiometrics: () => Promise<BiometricAuthResult>;
+  enableBiometricAuth: () => Promise<boolean>;
+  disableBiometricAuth: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -215,6 +221,72 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setAuthState(prev => ({ ...prev, error: null }));
   }, []);
 
+  /**
+   * Get biometric capabilities
+   */
+  const getBiometricCapabilities = useCallback(async () => {
+    return await biometricService.getCapabilities();
+  }, []);
+
+  /**
+   * Authenticate with biometrics and auto-login if user has saved credentials
+   */
+  const authenticateWithBiometrics = useCallback(async () => {
+    try {
+      const result = await biometricService.authenticate('Sign in to NVLP');
+      
+      if (result.success) {
+        // If biometric auth succeeds, try to load saved tokens
+        const tokenData = await tokenManager.loadTokens();
+        if (tokenData) {
+          updateAuthState(tokenData);
+        }
+      }
+      
+      return result;
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Biometric authentication failed',
+      };
+    }
+  }, [updateAuthState]);
+
+  /**
+   * Enable biometric authentication
+   */
+  const enableBiometricAuth = useCallback(async () => {
+    try {
+      const capabilities = await biometricService.getCapabilities();
+      
+      if (!capabilities.isAvailable) {
+        return false;
+      }
+
+      // Create biometric keys if they don't exist
+      if (!capabilities.hasCredentials) {
+        return await biometricService.createKeys();
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Error enabling biometric auth:', error);
+      return false;
+    }
+  }, []);
+
+  /**
+   * Disable biometric authentication
+   */
+  const disableBiometricAuth = useCallback(async () => {
+    try {
+      return await biometricService.deleteKeys();
+    } catch (error) {
+      console.error('Error disabling biometric auth:', error);
+      return false;
+    }
+  }, []);
+
 
   /**
    * Set up token manager listener
@@ -266,6 +338,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     refreshToken,
     resetPassword,
     clearError,
+    getBiometricCapabilities,
+    authenticateWithBiometrics,
+    enableBiometricAuth,
+    disableBiometricAuth,
   };
 
   return (

@@ -4,7 +4,7 @@
  * Handles user authentication with email and password
  */
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -22,6 +22,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../context/AuthContext';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { AuthStackParamList } from '../../navigation/types';
+import type { BiometricCapabilities } from '../../services/auth/biometricService';
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
 
@@ -34,10 +35,26 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const { login } = useAuth();
+  const [biometricCapabilities, setBiometricCapabilities] = useState<BiometricCapabilities | null>(null);
+  const [isBiometricLoading, setIsBiometricLoading] = useState(false);
+  const { login, getBiometricCapabilities, authenticateWithBiometrics } = useAuth();
   
   const emailInputRef = useRef<TextInput>(null);
   const passwordInputRef = useRef<TextInput>(null);
+
+  // Check biometric capabilities on mount
+  useEffect(() => {
+    const checkBiometrics = async () => {
+      try {
+        const capabilities = await getBiometricCapabilities();
+        setBiometricCapabilities(capabilities);
+      } catch (error) {
+        console.error('Error checking biometric capabilities:', error);
+      }
+    };
+    
+    checkBiometrics();
+  }, [getBiometricCapabilities]);
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
@@ -65,6 +82,65 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
 
   const navigateToForgotPassword = () => {
     navigation.navigate('ForgotPassword');
+  };
+
+  const handleBiometricLogin = async () => {
+    if (!biometricCapabilities?.isAvailable || !biometricCapabilities?.hasCredentials) {
+      Alert.alert(
+        'Biometric Authentication Unavailable',
+        'Please set up biometric authentication in your device settings and enable it in the app after logging in.'
+      );
+      return;
+    }
+
+    setIsBiometricLoading(true);
+    try {
+      const result = await authenticateWithBiometrics();
+      
+      if (!result.success) {
+        if (result.error && !result.error.includes('cancelled')) {
+          Alert.alert('Biometric Authentication Failed', result.error);
+        }
+      }
+      // If successful, AuthContext will handle navigation automatically
+    } catch (error: any) {
+      Alert.alert(
+        'Biometric Login Failed',
+        error.message || 'Unable to authenticate with biometrics. Please try again.'
+      );
+    } finally {
+      setIsBiometricLoading(false);
+    }
+  };
+
+  const getBiometricIcon = () => {
+    if (!biometricCapabilities?.biometryType) return 'finger-print';
+    
+    switch (biometricCapabilities.biometryType) {
+      case 'TouchID':
+        return 'finger-print';
+      case 'FaceID':
+        return 'scan';
+      case 'Biometrics':
+        return 'finger-print';
+      default:
+        return 'finger-print';
+    }
+  };
+
+  const getBiometricButtonText = () => {
+    if (!biometricCapabilities?.biometryType) return 'Use Biometric';
+    
+    switch (biometricCapabilities.biometryType) {
+      case 'TouchID':
+        return 'Use Touch ID';
+      case 'FaceID':
+        return 'Use Face ID';
+      case 'Biometrics':
+        return 'Use Fingerprint';
+      default:
+        return 'Use Biometric';
+    }
   };
 
   return (
@@ -147,6 +223,36 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
                 <Text style={styles.loginButtonText}>Sign In</Text>
               )}
             </TouchableOpacity>
+
+            {biometricCapabilities?.isAvailable && biometricCapabilities?.hasCredentials && (
+              <>
+                <View style={styles.divider}>
+                  <View style={styles.dividerLine} />
+                  <Text style={styles.dividerText}>or</Text>
+                  <View style={styles.dividerLine} />
+                </View>
+
+                <TouchableOpacity
+                  style={[styles.biometricButton, isBiometricLoading && styles.biometricButtonDisabled]}
+                  onPress={handleBiometricLogin}
+                  disabled={isLoading || isBiometricLoading}
+                >
+                  {isBiometricLoading ? (
+                    <ActivityIndicator color="#007AFF" size="small" />
+                  ) : (
+                    <>
+                      <Icon 
+                        name={getBiometricIcon()} 
+                        size={24} 
+                        color="#007AFF" 
+                        style={styles.biometricIcon}
+                      />
+                      <Text style={styles.biometricButtonText}>{getBiometricButtonText()}</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              </>
+            )}
           </View>
 
           <View style={styles.footer}>
@@ -271,6 +377,43 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#007AFF',
     fontWeight: '600',
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 24,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#e1e5e9',
+  },
+  dividerText: {
+    fontSize: 14,
+    color: '#666',
+    marginHorizontal: 16,
+  },
+  biometricButton: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#007AFF',
+    paddingVertical: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 52,
+  },
+  biometricButtonDisabled: {
+    opacity: 0.6,
+  },
+  biometricIcon: {
+    marginRight: 8,
+  },
+  biometricButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#007AFF',
   },
 });
 
