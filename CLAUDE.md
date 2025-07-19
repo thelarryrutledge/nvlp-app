@@ -111,6 +111,16 @@
 - **React Integration**: Context providers, hooks, and HOCs for authentication state
 - **Offline Support**: Queue system with persistence, priority handling, automatic retry, and React hooks for monitoring
 - **Retry Manager**: Configurable retry logic with exponential backoff, abort support, and retry status monitoring
+- **Biometric Authentication**: Secure credential storage with react-native-keychain, proper iOS/Android permissions, vector icons integration
+
+### Biometric Authentication Implementation (Phase 3.1 Complete):
+- **iOS Setup**: NSFaceIDUsageDescription in Info.plist required for Face ID
+- **Android Setup**: USE_BIOMETRIC + USE_FINGERPRINT permissions in AndroidManifest.xml
+- **Keychain Integration**: Fixed react-native-keychain API usage with proper type checking
+- **Vector Icons**: VectorIconsPackage integration + font assets copying for Android
+- **Error Handling**: Enhanced logging for credential storage/retrieval debugging
+- **Security**: Credentials stored securely in device keychain, removed on auth failure
+- **UX Flow**: Profile toggle → password verification → credential storage → biometric login option
 
 ## Development Workflow
 1. Install: `pnpm install`
