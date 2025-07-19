@@ -239,7 +239,30 @@ export function AuthProvider({ children }: AuthProviderProps) {
         // If biometric auth succeeds, try to load saved tokens
         const tokenData = await tokenManager.loadTokens();
         if (tokenData) {
-          updateAuthState(tokenData);
+          // Check if tokens are still valid
+          if (tokenManager.hasValidTokens()) {
+            updateAuthState(tokenData);
+            return { success: true };
+          } else {
+            // Tokens expired, try to refresh
+            try {
+              await refreshToken();
+              return { success: true };
+            } catch {
+              // Refresh failed, user needs to log in again
+              await tokenManager.clearTokens();
+              return {
+                success: false,
+                error: 'Your session has expired. Please sign in again.',
+              };
+            }
+          }
+        } else {
+          // No saved tokens found
+          return {
+            success: false,
+            error: 'No saved credentials found. Please sign in first.',
+          };
         }
       }
       
@@ -250,7 +273,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         error: error.message || 'Biometric authentication failed',
       };
     }
-  }, [updateAuthState]);
+  }, [updateAuthState, refreshToken]);
 
   /**
    * Enable biometric authentication
@@ -263,6 +286,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return false;
       }
 
+      // Ensure user is logged in before enabling biometric auth
+      if (!authState.isAuthenticated || !tokenManager.hasValidTokens()) {
+        throw new Error('Please sign in first before enabling biometric authentication');
+      }
+
       // Create biometric keys if they don't exist
       if (!capabilities.hasCredentials) {
         return await biometricService.createKeys();
@@ -273,7 +301,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       console.error('Error enabling biometric auth:', error);
       return false;
     }
-  }, []);
+  }, [authState.isAuthenticated]);
 
   /**
    * Disable biometric authentication

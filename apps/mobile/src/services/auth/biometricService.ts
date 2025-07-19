@@ -22,7 +22,7 @@ class BiometricService {
 
   constructor() {
     this.rnBiometrics = new ReactNativeBiometrics({
-      allowDeviceCredentials: true, // Allow passcode/pattern as fallback
+      allowDeviceCredentials: false, // Require actual biometric auth, not passcode fallback
     });
   }
 
@@ -101,10 +101,12 @@ class BiometricService {
         }
       }
 
-      const { success } = await this.rnBiometrics.simplePrompt({
+      const { success } = await this.rnBiometrics.createSignature({
         promptMessage: reason,
-        cancelButtonText: 'Cancel',
+        payload: 'biometric_auth_' + Date.now(),
       });
+      
+      console.log('Biometric authentication result:', success);
 
       return {
         success,
