@@ -21,8 +21,8 @@ class DashboardService {
         `/dashboard?budget_id=${budgetId}&days=${days}`
       );
       
-      if (!response.success || !response.data) {
-        throw new Error('Failed to fetch dashboard data');
+      if (response.error || !response.data) {
+        throw new Error(response.error?.message || 'Failed to fetch dashboard data');
       }
       
       return response.data as DashboardData;
@@ -44,8 +44,8 @@ class DashboardService {
         `/dashboard/budget-overview?budget_id=${budgetId}`
       );
       
-      if (!response.success || !response.data) {
-        throw new Error('Failed to fetch budget overview');
+      if (response.error || !response.data) {
+        throw new Error(response.error?.message || 'Failed to fetch budget overview');
       }
       
       return response.data as BudgetOverview;
@@ -67,8 +67,8 @@ class DashboardService {
         `/dashboard/envelopes-summary?budget_id=${budgetId}`
       );
       
-      if (!response.success || !response.data) {
-        throw new Error('Failed to fetch envelopes summary');
+      if (response.error || !response.data) {
+        throw new Error(response.error?.message || 'Failed to fetch envelopes summary');
       }
       
       return response.data as EnvelopeSummary[];
