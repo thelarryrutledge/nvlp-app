@@ -81,7 +81,7 @@
   - [x] Comprehensive settings sections
 - [x] Implement professional financial green theme
 - [x] Add sophisticated background colors (non-white/black)
-- [ ] Implement permission requests (notifications, biometrics)
+- [x] Implement permission requests (notifications, biometrics)
 - ~~Create tutorial or guided tour~~ (Removed for MVP)
 
 ### 3.3 Token & Session Management

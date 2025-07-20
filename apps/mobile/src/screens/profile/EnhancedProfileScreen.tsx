@@ -29,6 +29,7 @@ import { useThemedStyles, useTheme, spacing, typography } from '../../theme';
 import { Button, TextInput, Card, ProfileImagePicker } from '../../components/ui';
 import { useAuth } from '../../context/AuthContext';
 import { secureCredentialStorage } from '../../services/auth/secureCredentialStorage';
+import { permissionService } from '../../services/permissions/permissionService';
 import type { Theme } from '../../theme';
 import type { BiometricCapabilities } from '../../services/auth/biometricService';
 
@@ -102,9 +103,10 @@ export const EnhancedProfileScreen: React.FC = () => {
   const [profileImageUri, setProfileImageUri] = useState<string | null>(null);
 
   // Preferences state
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [budgetAlerts, setBudgetAlerts] = useState(true);
+  const [checkingNotificationPermission, setCheckingNotificationPermission] = useState(false);
 
   useEffect(() => {
     const checkBiometrics = async () => {
@@ -119,7 +121,17 @@ export const EnhancedProfileScreen: React.FC = () => {
       }
     };
     
+    const checkNotificationPermissions = async () => {
+      try {
+        const result = await permissionService.checkPermission('notifications');
+        setNotificationsEnabled(result.status === 'granted');
+      } catch (error) {
+        console.error('Error checking notification permissions:', error);
+      }
+    };
+    
     checkBiometrics();
+    checkNotificationPermissions();
   }, [getBiometricCapabilities]);
 
   const handleBiometricToggle = async (enabled: boolean) => {
@@ -228,6 +240,55 @@ export const EnhancedProfileScreen: React.FC = () => {
             Alert.alert('Data Cleared', 'All financial data has been removed.');
           }
         }
+      ]
+    );
+  };
+
+  const handleNotificationToggle = async (enabled: boolean) => {
+    if (enabled) {
+      setCheckingNotificationPermission(true);
+      try {
+        const result = await permissionService.requestPermission('notifications');
+        setNotificationsEnabled(result.status === 'granted');
+      } catch (error) {
+        console.error('Error requesting notification permission:', error);
+        setNotificationsEnabled(false);
+      } finally {
+        setCheckingNotificationPermission(false);
+      }
+    } else {
+      // User is disabling notifications
+      setNotificationsEnabled(false);
+    }
+  };
+
+  const testPermissions = async () => {
+    Alert.alert(
+      'Test Permissions',
+      'This will test all permission requests. Choose which permission to test:',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Camera', 
+          onPress: async () => {
+            const result = await permissionService.requestPermission('camera');
+            Alert.alert('Camera Permission', `Status: ${result.status}`);
+          }
+        },
+        { 
+          text: 'Photos', 
+          onPress: async () => {
+            const result = await permissionService.requestPermission('photoLibrary');
+            Alert.alert('Photos Permission', `Status: ${result.status}`);
+          }
+        },
+        { 
+          text: 'Notifications', 
+          onPress: async () => {
+            const result = await permissionService.requestPermission('notifications');
+            Alert.alert('Notifications Permission', `Status: ${result.status}`);
+          }
+        },
       ]
     );
   };
@@ -371,7 +432,8 @@ export const EnhancedProfileScreen: React.FC = () => {
               rightElement={
                 <Switch
                   value={notificationsEnabled}
-                  onValueChange={setNotificationsEnabled}
+                  onValueChange={handleNotificationToggle}
+                  disabled={checkingNotificationPermission}
                   trackColor={{ false: theme.interactiveDisabled, true: theme.primary }}
                   thumbColor={notificationsEnabled ? theme.textOnPrimary : theme.textDisabled}
                 />
@@ -443,6 +505,20 @@ export const EnhancedProfileScreen: React.FC = () => {
               title="Budget Setup Demo"
               description="Test the budget setup flow"
               onPress={() => (navigation as any).navigate('InitialBudgetSetup')}
+              showArrow
+            />
+            <SettingItem
+              icon="shield-checkmark"
+              title="App Permissions"
+              description="Manage camera, photos, and notification access"
+              onPress={() => (navigation as any).navigate('PermissionRequest')}
+              showArrow
+            />
+            <SettingItem
+              icon="flask"
+              title="Test Permissions"
+              description="Test individual permission requests"
+              onPress={testPermissions}
               showArrow
             />
           </Card>

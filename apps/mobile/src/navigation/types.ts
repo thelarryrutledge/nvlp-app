@@ -30,6 +30,7 @@ export type MainStackParamList = {
   };
   DesignSystemExample: undefined;
   InitialBudgetSetup: undefined;
+  PermissionRequest: undefined;
   // Add other main app screens here
 };
 

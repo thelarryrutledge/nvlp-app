@@ -16,6 +16,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { launchImageLibrary, launchCamera, MediaType, ImagePickerResponse } from 'react-native-image-picker';
 
 import { useThemedStyles, useTheme, spacing } from '../../theme';
+import { permissionService } from '../../services/permissions/permissionService';
 import type { Theme } from '../../theme';
 
 interface ProfileImagePickerProps {
@@ -48,6 +49,7 @@ export const ProfileImagePicker: React.FC<ProfileImagePickerProps> = ({
   };
 
   const openCamera = () => {
+    // Let react-native-image-picker handle the permission request natively
     const options = {
       mediaType: 'photo' as MediaType,
       includeBase64: false,
@@ -56,10 +58,30 @@ export const ProfileImagePicker: React.FC<ProfileImagePickerProps> = ({
       quality: 0.8 as const,
     };
 
-    launchCamera(options, handleImageResponse);
+    launchCamera(options, (response) => {
+      if (response.errorCode === 'camera_unavailable') {
+        Alert.alert(
+          'Camera Unavailable',
+          'Camera is not available on this device.',
+          [{ text: 'OK' }]
+        );
+      } else if (response.errorCode === 'permission') {
+        Alert.alert(
+          'Camera Permission Required',
+          'Please grant camera permission in Settings to take photos.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Open Settings', onPress: () => permissionService.openAppSettings() },
+          ]
+        );
+      } else {
+        handleImageResponse(response);
+      }
+    });
   };
 
   const openImageLibrary = () => {
+    // Let react-native-image-picker handle the permission request natively
     const options = {
       mediaType: 'photo' as MediaType,
       includeBase64: false,
@@ -68,7 +90,20 @@ export const ProfileImagePicker: React.FC<ProfileImagePickerProps> = ({
       quality: 0.8 as const,
     };
 
-    launchImageLibrary(options, handleImageResponse);
+    launchImageLibrary(options, (response) => {
+      if (response.errorCode === 'permission') {
+        Alert.alert(
+          'Photo Library Permission Required',
+          'Please grant photo library permission in Settings to select photos.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Open Settings', onPress: () => permissionService.openAppSettings() },
+          ]
+        );
+      } else {
+        handleImageResponse(response);
+      }
+    });
   };
 
   const handleImageResponse = (response: ImagePickerResponse) => {
