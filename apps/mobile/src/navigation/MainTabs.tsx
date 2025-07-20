@@ -9,6 +9,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '../theme';
 import { EnhancedProfileScreen } from '../screens/profile/EnhancedProfileScreen';
+import { BudgetListScreen } from '../screens/budgets/BudgetListScreen';
 import type { MainTabParamList } from './types';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -25,15 +26,7 @@ const DashboardScreen = () => {
   );
 };
 
-const BudgetsScreen = () => {
-  const { theme } = useTheme();
-  return (
-    <View style={[styles.placeholder, { backgroundColor: theme.background }]}>
-      <Text style={[styles.placeholderText, { color: theme.textPrimary }]}>Budgets</Text>
-      <Text style={[styles.placeholderSubtext, { color: theme.textSecondary }]}>Coming soon...</Text>
-    </View>
-  );
-};
+// BudgetsScreen is now implemented as BudgetListScreen
 
 const EnvelopesScreen = () => {
   const { theme } = useTheme();
@@ -89,7 +82,7 @@ export const MainTabs: React.FC = () => {
       />
       <Tab.Screen
         name="Budgets"
-        component={BudgetsScreen}
+        component={BudgetListScreen}
         options={{
           title: 'Budgets',
           tabBarLabel: 'Budgets',

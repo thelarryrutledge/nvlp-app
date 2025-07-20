@@ -14,6 +14,7 @@ export interface UpdateBudgetInput {
   name?: string;
   description?: string;
   is_active?: boolean;
+  is_default?: boolean;
 }
 
 // Income source operations

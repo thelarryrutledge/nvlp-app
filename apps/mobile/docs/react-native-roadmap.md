@@ -95,7 +95,7 @@
 ## Phase 4: Core Budget Management
 
 ### 4.1 Budget Management
-- [ ] Create budget list screen
+- [x] Create budget list screen
 - [ ] Build budget creation form
 - [ ] Implement budget editing functionality
 - [ ] Add budget switching mechanism
