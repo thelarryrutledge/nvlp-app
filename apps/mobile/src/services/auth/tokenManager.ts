@@ -2,11 +2,13 @@
  * Authentication Token Manager for React Native
  * 
  * Manages secure storage, refresh, and validation of authentication tokens
- * using React Native Keychain and AsyncStorage
+ * using React Native Keychain for secure storage with biometric protection
+ * and AsyncStorage for non-secure storage and migration support
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert } from 'react-native';
+import * as Keychain from 'react-native-keychain';
 
 export interface TokenData {
   accessToken: string;
@@ -47,8 +49,16 @@ class TokenManager {
       const tokenString = JSON.stringify(tokenData);
 
       if (this.config.useSecureStorage) {
-        // For now, use AsyncStorage - in production, consider react-native-keychain
-        await AsyncStorage.setItem(`secure_${this.config.storageKey}`, tokenString);
+        // Use react-native-keychain for secure storage
+        await Keychain.setInternetCredentials(
+          this.config.storageKey,
+          'tokens', // username (required by keychain, we just use 'tokens')
+          tokenString,
+          {
+            accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_ANY_OR_DEVICE_PASSCODE,
+            accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+          }
+        );
       } else {
         await AsyncStorage.setItem(this.config.storageKey, tokenString);
       }
@@ -66,11 +76,35 @@ class TokenManager {
    */
   async loadTokens(): Promise<TokenData | null> {
     try {
-      const storageKey = this.config.useSecureStorage 
-        ? `secure_${this.config.storageKey}` 
-        : this.config.storageKey;
+      let tokenString: string | null = null;
 
-      const tokenString = await AsyncStorage.getItem(storageKey);
+      if (this.config.useSecureStorage) {
+        // Load from keychain
+        try {
+          const credentials = await Keychain.getInternetCredentials(this.config.storageKey);
+          if (credentials && credentials.password) {
+            tokenString = credentials.password;
+          }
+        } catch (error) {
+          console.warn('Failed to load from keychain, falling back to AsyncStorage:', error);
+          // Fallback to AsyncStorage for migration
+          tokenString = await AsyncStorage.getItem(`secure_${this.config.storageKey}`);
+          
+          // If we found tokens in AsyncStorage, migrate them to keychain
+          if (tokenString) {
+            try {
+              const tokenData = JSON.parse(tokenString);
+              await this.saveTokens(tokenData);
+              await AsyncStorage.removeItem(`secure_${this.config.storageKey}`);
+              console.log('Migrated tokens from AsyncStorage to Keychain');
+            } catch (migrationError) {
+              console.warn('Failed to migrate tokens to keychain:', migrationError);
+            }
+          }
+        }
+      } else {
+        tokenString = await AsyncStorage.getItem(this.config.storageKey);
+      }
       
       if (!tokenString) {
         return null;
@@ -120,11 +154,22 @@ class TokenManager {
     try {
       this.currentTokens = null;
       
-      // Clear from both storage locations
-      await Promise.all([
+      // Clear from all storage locations
+      const clearPromises = [
         AsyncStorage.removeItem(this.config.storageKey),
         AsyncStorage.removeItem(`secure_${this.config.storageKey}`),
-      ]);
+      ];
+
+      // Clear from keychain if using secure storage
+      if (this.config.useSecureStorage) {
+        clearPromises.push(
+          Keychain.resetInternetCredentials(this.config.storageKey).catch(error => {
+            console.warn('Failed to clear keychain credentials:', error);
+          })
+        );
+      }
+
+      await Promise.all(clearPromises);
 
       // Notify listeners of token clearing
       this.notifyTokenUpdate(null);

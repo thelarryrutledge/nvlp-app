@@ -85,9 +85,9 @@
 - ~~Create tutorial or guided tour~~ (Removed for MVP)
 
 ### 3.3 Token & Session Management
-- [ ] Implement secure token storage (Keychain/Keystore)
-- [ ] Create auto-refresh token logic
-- [ ] Handle session expiration gracefully
+- [x] Implement secure token storage (Keychain/Keystore)
+- [x] Create auto-refresh token logic
+- [x] Handle session expiration gracefully
 - [ ] Implement logout functionality
 - [ ] Add "Remember Me" functionality
 
