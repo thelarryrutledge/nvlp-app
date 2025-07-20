@@ -88,7 +88,7 @@
 - [x] Implement secure token storage (Keychain/Keystore)
 - [x] Create auto-refresh token logic
 - [x] Handle session expiration gracefully
-- [ ] Implement logout functionality
+- [x] Implement logout functionality
 - [ ] Add "Remember Me" functionality
 
 ## Phase 4: Core Budget Management

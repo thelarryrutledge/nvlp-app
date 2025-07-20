@@ -22,7 +22,7 @@ export interface AuthState {
 export interface AuthContextType extends AuthState {
   login: (credentials: LoginCredentials, saveForBiometric?: boolean, skipLoadingState?: boolean) => Promise<void>;
   register: (credentials: RegisterCredentials) => Promise<AuthResult>;
-  logout: () => Promise<void>;
+  logout: (clearBiometricCredentials?: boolean) => Promise<void>;
   refreshToken: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   clearError: () => void;
@@ -159,7 +159,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   /**
    * Logout and clear tokens
    */
-  const logout = useCallback(async () => {
+  const logout = useCallback(async (clearBiometricCredentials = false) => {
     try {
       setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
       
@@ -173,7 +173,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
       }
       
-      await tokenManager.clearTokens();
+      // Clear authentication tokens using TokenManager logout
+      await tokenManager.logout();
+      
+      // Optionally clear biometric credentials
+      if (clearBiometricCredentials) {
+        try {
+          await secureCredentialStorage.removeCredentials();
+          await biometricService.deleteKeys();
+          console.log('Biometric credentials cleared during logout');
+        } catch (error) {
+          console.warn('Failed to clear biometric credentials during logout:', error);
+          // Don't fail logout if biometric cleanup fails
+        }
+      }
+      
       updateAuthState(null);
     } catch (error: any) {
       console.error('Logout failed:', error);

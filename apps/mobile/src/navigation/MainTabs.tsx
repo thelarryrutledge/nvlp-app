@@ -23,7 +23,7 @@ const DashboardScreen = () => {
     <View style={[styles.placeholder, { backgroundColor: theme.background }]}>
       <Text style={[styles.placeholderText, { color: theme.textPrimary }]}>Dashboard</Text>
       <Text style={[styles.placeholderSubtext, { color: theme.textSecondary }]}>Welcome! You're logged in.</Text>
-      <TouchableOpacity style={styles.logoutButton} onPress={logout}>
+      <TouchableOpacity style={styles.logoutButton} onPress={() => logout()}>
         <Text style={styles.logoutButtonText}>Logout</Text>
       </TouchableOpacity>
     </View>

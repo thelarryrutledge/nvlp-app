@@ -179,6 +179,24 @@ class TokenManager {
   }
 
   /**
+   * Logout and clear all authentication data
+   */
+  async logout(): Promise<void> {
+    try {
+      // Clear all refresh promises to prevent concurrent operations
+      this.refreshPromise = null;
+      
+      // Clear tokens from storage
+      await this.clearTokens();
+      
+      console.log('TokenManager logout completed');
+    } catch (error) {
+      console.error('TokenManager logout failed:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Get current tokens
    */
   getCurrentTokens(): TokenData | null {
