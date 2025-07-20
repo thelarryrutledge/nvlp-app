@@ -521,6 +521,13 @@ export const EnhancedProfileScreen: React.FC = () => {
               onPress={testPermissions}
               showArrow
             />
+            <SettingItem
+              icon="timer"
+              title="Session Tests"
+              description="Test token expiration and session management"
+              onPress={() => (navigation as any).navigate('SessionTest')}
+              showArrow
+            />
           </Card>
         </View>
 

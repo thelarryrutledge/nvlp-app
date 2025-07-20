@@ -84,12 +84,13 @@
 - [x] Implement permission requests (notifications, biometrics)
 - ~~Create tutorial or guided tour~~ (Removed for MVP)
 
-### 3.3 Token & Session Management
+### 3.3 Token & Session Management ✅ COMPLETE
 - [x] Implement secure token storage (Keychain/Keystore)
 - [x] Create auto-refresh token logic
 - [x] Handle session expiration gracefully
 - [x] Implement logout functionality
 - [x] Add "Remember Me" functionality
+- [x] Test session expiration flows end-to-end
 
 ## Phase 4: Core Budget Management
 

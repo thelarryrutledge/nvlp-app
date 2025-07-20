@@ -11,6 +11,7 @@ import { VerificationHandler } from '../screens/VerificationHandler';
 import { DesignSystemExample } from '../screens/DesignSystemExample';
 import { InitialBudgetSetupScreen } from '../screens/onboarding/InitialBudgetSetupScreen';
 import { PermissionRequestScreen } from '../screens/onboarding/PermissionRequestScreen';
+import { SessionTestScreen } from '../screens/developer/SessionTestScreen';
 import { useTheme } from '../theme';
 import type { MainStackParamList } from './types';
 
@@ -72,6 +73,15 @@ export const MainStack: React.FC = () => {
           title: 'Permissions',
           headerBackTitle: 'Back',
           presentation: 'modal',
+        }}
+      />
+      <Stack.Screen
+        name="SessionTest"
+        component={SessionTestScreen}
+        options={{
+          headerShown: true,
+          title: 'Session Tests',
+          headerBackTitle: 'Back',
         }}
       />
     </Stack.Navigator>
