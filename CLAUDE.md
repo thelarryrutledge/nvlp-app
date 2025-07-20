@@ -77,8 +77,8 @@
 ## Mobile App Development Status
 **Roadmap**: 12-phase React Native implementation plan
 **Current Phase**: Phase 4.1 Budget Management (IN PROGRESS)  
-**Latest Completed**: Budget list screen implementation (Phase 4.1 first subtask COMPLETE ✅)
-**Phase 4.1 Status**: Budget list screen complete ✅, budget creation form pending
+**Latest Completed**: Authentication token management fix (budget list authentication error resolved)
+**Phase 4.1 Status**: Budget list screen complete ✅, authentication fixed ✅, budget creation form pending
 **Progress**: Project setup ✅, Core dependencies ✅, State management ✅, API client integration ✅, Navigation architecture ✅, Auth screens ✅, Design system ✅, Onboarding flow ✅, Token management ✅
 **Tech Stack**: React Native 0.80, TypeScript, React Navigation 6, Reanimated 3, @nvlp/client, React Native Biometrics, React Native Image Picker
 **Next Phase**: Complete Phase 4.1 Budget Management → Phase 4.2 Dashboard Screen
@@ -129,6 +129,17 @@
 - **Offline Support**: Queue system with persistence, priority handling, automatic retry, and React hooks for monitoring
 - **Retry Manager**: Configurable retry logic with exponential backoff, abort support, and retry status monitoring
 - **Biometric Authentication**: Secure credential storage with react-native-keychain, proper iOS/Android permissions, vector icons integration
+
+### Authentication Token Management Fix (July 20, 2025):
+- **Issue**: Budget list authentication errors caused by stale tokens persisting in iOS Keychain after logout
+- **Root Cause**: `Keychain.resetInternetCredentials()` silently failing to clear credentials properly
+- **Solution**: Implemented aggressive keychain clearing with verification and fallback methods in `tokenManager.ts`
+- **Fix Details**: 
+  - Standard reset attempt with post-clear verification
+  - Alternative clearing method (empty credentials + reset) if standard fails
+  - Proper token clearing from all storage locations (AsyncStorage + Keychain)
+  - Fixed logout flow to completely clear authentication state
+- **Result**: Budget authentication errors resolved, proper logout behavior restored
 
 ### Biometric Authentication Implementation (Phase 3.1 Complete):
 - **iOS Setup**: NSFaceIDUsageDescription in Info.plist required for Face ID

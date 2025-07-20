@@ -163,9 +163,7 @@ class TokenManager {
       // Clear from keychain if using secure storage
       if (this.config.useSecureStorage) {
         clearPromises.push(
-          Keychain.resetInternetCredentials(this.config.storageKey).catch(error => {
-            console.warn('Failed to clear keychain credentials:', error);
-          })
+          this.clearKeychainCredentials()
         );
       }
 
@@ -390,6 +388,33 @@ class TokenManager {
     } catch (error) {
       console.warn('Failed to parse JWT expiration:', error);
       return null;
+    }
+  }
+
+  /**
+   * Aggressively clear keychain credentials
+   */
+  private async clearKeychainCredentials(): Promise<void> {
+    try {
+      // Try standard reset first
+      await Keychain.resetInternetCredentials(this.config.storageKey);
+      
+      // Verify it was actually cleared by trying to read
+      const testCredentials = await Keychain.getInternetCredentials(this.config.storageKey);
+      if (testCredentials && testCredentials.password) {
+        // Try clearing with empty credentials then reset again
+        await Keychain.setInternetCredentials(this.config.storageKey, '', '');
+        await Keychain.resetInternetCredentials(this.config.storageKey);
+        
+        // Final verification
+        const finalTest = await Keychain.getInternetCredentials(this.config.storageKey);
+        if (finalTest && finalTest.password) {
+          console.warn('Keychain credentials persist after aggressive clearing');
+        }
+      }
+    } catch (error) {
+      console.error('Error during keychain clearing:', error);
+      throw error;
     }
   }
 
