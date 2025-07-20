@@ -89,7 +89,7 @@
 - [x] Create auto-refresh token logic
 - [x] Handle session expiration gracefully
 - [x] Implement logout functionality
-- [ ] Add "Remember Me" functionality
+- [x] Add "Remember Me" functionality
 
 ## Phase 4: Core Budget Management
 

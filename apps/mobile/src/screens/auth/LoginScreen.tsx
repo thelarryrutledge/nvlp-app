@@ -20,6 +20,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../context/AuthContext';
 import { useThemedStyles, useTheme, spacing, typography } from '../../theme';
 import { Button, TextInput as ThemedTextInput, Card } from '../../components/ui';
+import { rememberMeService } from '../../services/auth/rememberMeService';
 import type { Theme } from '../../theme';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { AuthStackParamList } from '../../navigation/types';
@@ -36,6 +37,7 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [biometricCapabilities, setBiometricCapabilities] = useState<BiometricCapabilities | null>(null);
   const [isBiometricLoading, setIsBiometricLoading] = useState(false);
   const { login, getBiometricCapabilities, authenticateWithBiometrics } = useAuth();
@@ -45,18 +47,26 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const emailInputRef = useRef<any>(null);
   const passwordInputRef = useRef<any>(null);
 
-  // Check biometric capabilities on mount
+  // Check biometric capabilities and load remember me preference on mount
   useEffect(() => {
-    const checkBiometrics = async () => {
+    const initializeScreen = async () => {
       try {
+        // Check biometric capabilities
         const capabilities = await getBiometricCapabilities();
         setBiometricCapabilities(capabilities);
+        
+        // Load remember me preference
+        const preference = await rememberMeService.getPreference();
+        if (preference && preference.rememberMe) {
+          setEmail(preference.email);
+          setRememberMe(true);
+        }
       } catch (error) {
-        console.error('Error checking biometric capabilities:', error);
+        console.error('Error initializing login screen:', error);
       }
     };
     
-    checkBiometrics();
+    initializeScreen();
   }, [getBiometricCapabilities]);
 
   const handleLogin = async () => {
@@ -67,7 +77,8 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
 
     setIsLoading(true);
     try {
-      await login({ email: email.trim(), password });
+      // Pass rememberMe flag to login - this will save credentials for biometric auth if enabled
+      await login({ email: email.trim(), password }, rememberMe);
       // Navigation will be handled by the AuthContext/navigation system
     } catch (error: any) {
       Alert.alert(
@@ -195,6 +206,20 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
             />
 
             <TouchableOpacity
+              style={styles.rememberMeContainer}
+              onPress={() => setRememberMe(!rememberMe)}
+              disabled={isLoading}
+              activeOpacity={0.7}
+            >
+              <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
+                {rememberMe && (
+                  <Icon name="checkmark" size={16} color={theme.textOnPrimary} />
+                )}
+              </View>
+              <Text style={styles.rememberMeText}>Remember me for biometric login</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
               style={styles.forgotPasswordButton}
               onPress={navigateToForgotPassword}
               disabled={isLoading}
@@ -278,10 +303,35 @@ function createStyles(theme: Theme) {
     formCard: {
       marginBottom: spacing['3xl'],
     },
+    rememberMeContainer: {
+      flexDirection: 'row' as const,
+      alignItems: 'center' as const,
+      marginBottom: spacing.md,
+      marginTop: spacing.sm,
+    },
+    checkbox: {
+      width: 20,
+      height: 20,
+      borderWidth: 2,
+      borderColor: theme.border,
+      borderRadius: 4,
+      marginRight: spacing.sm,
+      alignItems: 'center' as const,
+      justifyContent: 'center' as const,
+      backgroundColor: theme.surface,
+    },
+    checkboxChecked: {
+      backgroundColor: theme.primary,
+      borderColor: theme.primary,
+    },
+    rememberMeText: {
+      ...typography.bodySmall,
+      color: theme.textSecondary,
+      flex: 1,
+    },
     forgotPasswordButton: {
       alignSelf: 'flex-end' as const,
       marginBottom: spacing.lg,
-      marginTop: -spacing.sm, // Adjust spacing since TextInput has bottom margin
     },
     forgotPasswordText: {
       ...typography.bodySmall,

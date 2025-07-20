@@ -8,6 +8,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { tokenManager, type TokenData } from '../services/auth/tokenManager';
 import { biometricService, type BiometricCapabilities, type BiometricAuthResult } from '../services/auth/biometricService';
 import { secureCredentialStorage } from '../services/auth/secureCredentialStorage';
+import { rememberMeService } from '../services/auth/rememberMeService';
 import { authService } from '../services/api';
 import type { LoginCredentials, RegisterCredentials, AuthResult } from '../services/api';
 
@@ -105,6 +106,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
           email: credentials.email,
           password: credentials.password,
         });
+        
+        // Also save remember me preference
+        await rememberMeService.savePreference(credentials.email, true);
+      } else {
+        // Update remember me preference based on saveForBiometric flag
+        await rememberMeService.savePreference(credentials.email, false);
       }
     } catch (error: any) {
       if (!skipLoadingState) {
@@ -181,7 +188,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         try {
           await secureCredentialStorage.removeCredentials();
           await biometricService.deleteKeys();
-          console.log('Biometric credentials cleared during logout');
+          await rememberMeService.clearPreference();
+          console.log('Biometric credentials and remember me preference cleared during logout');
         } catch (error) {
           console.warn('Failed to clear biometric credentials during logout:', error);
           // Don't fail logout if biometric cleanup fails
