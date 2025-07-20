@@ -4,7 +4,7 @@
  * Service layer for dashboard data operations with error handling
  */
 
-import { enhancedApiClient } from './clientWrapper';
+import { apiClient } from './client';
 import { transformError, logError } from './errors';
 import type { DashboardData, BudgetOverview, EnvelopeSummary } from '@nvlp/types';
 
@@ -14,13 +14,11 @@ class DashboardService {
    */
   async getDashboardData(budgetId: string, days: number = 30): Promise<DashboardData> {
     try {
-      // For now, we'll use the edge function transport to call the dashboard endpoint
-      // Since this isn't in the main client yet, we'll need to make a direct call
-      const response = await enhancedApiClient.makeRequest(
+      // Use the edge function transport directly to call the dashboard endpoint
+      const edgeTransport = apiClient.getEdgeFunctionTransport();
+      const response = await edgeTransport.request(
         'GET',
-        `/dashboard?budget_id=${budgetId}&days=${days}`,
-        undefined,
-        'edge-function'
+        `/dashboard?budget_id=${budgetId}&days=${days}`
       );
       
       if (!response.success || !response.data) {
@@ -40,11 +38,10 @@ class DashboardService {
    */
   async getBudgetOverview(budgetId: string): Promise<BudgetOverview> {
     try {
-      const response = await enhancedApiClient.makeRequest(
+      const edgeTransport = apiClient.getEdgeFunctionTransport();
+      const response = await edgeTransport.request(
         'GET',
-        `/dashboard/budget-overview?budget_id=${budgetId}`,
-        undefined,
-        'edge-function'
+        `/dashboard/budget-overview?budget_id=${budgetId}`
       );
       
       if (!response.success || !response.data) {
@@ -64,11 +61,10 @@ class DashboardService {
    */
   async getEnvelopesSummary(budgetId: string): Promise<EnvelopeSummary[]> {
     try {
-      const response = await enhancedApiClient.makeRequest(
+      const edgeTransport = apiClient.getEdgeFunctionTransport();
+      const response = await edgeTransport.request(
         'GET',
-        `/dashboard/envelopes-summary?budget_id=${budgetId}`,
-        undefined,
-        'edge-function'
+        `/dashboard/envelopes-summary?budget_id=${budgetId}`
       );
       
       if (!response.success || !response.data) {
