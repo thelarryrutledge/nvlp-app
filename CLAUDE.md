@@ -77,8 +77,8 @@
 ## Mobile App Development Status
 **Roadmap**: 12-phase React Native implementation plan
 **Current Phase**: Phase 4.1 Budget Management (IN PROGRESS)  
-**Latest Completed**: Budget editing functionality (Phase 4.1 third subtask COMPLETE ✅)
-**Phase 4.1 Status**: Budget list screen complete ✅, authentication fixed ✅, budget creation form complete ✅, budget editing functionality complete ✅
+**Latest Completed**: Budget switching mechanism (Phase 4.1 fourth subtask COMPLETE ✅)
+**Phase 4.1 Status**: Budget list screen complete ✅, authentication fixed ✅, budget creation form complete ✅, budget editing functionality complete ✅, budget switching mechanism complete ✅
 **Progress**: Project setup ✅, Core dependencies ✅, State management ✅, API client integration ✅, Navigation architecture ✅, Auth screens ✅, Design system ✅, Onboarding flow ✅, Token management ✅
 **Tech Stack**: React Native 0.80, TypeScript, React Navigation 6, Reanimated 3, @nvlp/client, React Native Biometrics, React Native Image Picker
 **Next Phase**: Complete Phase 4.1 Budget Management → Phase 4.2 Dashboard Screen
@@ -168,6 +168,27 @@
   - Success feedback with automatic navigation back
   - Real-time character counters and field validation
 - **API Integration**: Uses UpdateBudgetInput type with selective field updates
+
+### Budget Switching Mechanism Implementation (July 20, 2025):
+- **Feature**: Global budget selection with context-based state management and header integration
+- **BudgetContext**: Complete state management for budget selection, loading, and error handling
+- **BudgetSwitcher Component**: Dropdown modal with active/inactive budget sections and visual indicators
+- **Navigation Integration**: Header-mounted switcher across Dashboard, Envelopes, and Transactions screens
+- **State Management**: 
+  - Auto-selects default budget or first active budget on app load
+  - Provides global budget state via React context
+  - Integrated with existing budget list screen for unified data management
+- **UI Features**:
+  - Header variant for compact navigation display
+  - Modal picker with search-friendly layout
+  - Visual badges for default budgets
+  - Disabled state for inactive budgets
+  - Empty state handling for no budgets
+- **Integration**: 
+  - BudgetProvider wraps entire app for global access
+  - Updated BudgetListScreen to use shared context instead of local state
+  - Header integration across multiple tab screens
+  - Consistent sorting (default first, active, then inactive)
 
 ### Biometric Authentication Implementation (Phase 3.1 Complete):
 - **iOS Setup**: NSFaceIDUsageDescription in Info.plist required for Face ID

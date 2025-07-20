@@ -5,6 +5,7 @@ import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 
 import { ThemeProvider, useTheme } from './src/theme';
 import { AuthProvider } from './src/context/AuthContext';
+import { BudgetProvider } from './src/context/BudgetContext';
 import { RootNavigator } from './src/navigation/RootNavigator';
 
 function AppContent() {
@@ -14,8 +15,10 @@ function AppContent() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <BottomSheetModalProvider>
         <AuthProvider>
-          <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
-          <RootNavigator />
+          <BudgetProvider>
+            <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+            <RootNavigator />
+          </BudgetProvider>
         </AuthProvider>
       </BottomSheetModalProvider>
     </GestureHandlerRootView>

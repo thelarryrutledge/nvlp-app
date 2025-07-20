@@ -5,7 +5,6 @@
 export { AuthProvider, useAuth, useAuthState, withAuth } from './AuthContext';
 export type { AuthState, AuthContextType } from './AuthContext';
 
-// Context providers will be added here as they're created
-// Examples:
-// export { ThemeProvider, useTheme } from './ThemeContext';
-// export { BudgetProvider, useBudget } from './BudgetContext';
+// Budget context
+export { BudgetProvider, useBudget, useBudgetState, withBudget } from './BudgetContext';
+export type { BudgetState, BudgetContextType } from './BudgetContext';

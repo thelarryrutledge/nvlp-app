@@ -98,7 +98,7 @@
 - [x] Create budget list screen
 - [x] Build budget creation form
 - [x] Implement budget editing functionality
-- [ ] Add budget switching mechanism
+- [x] Add budget switching mechanism
 - [ ] Create budget settings screen
 - [ ] Implement budget deletion with confirmation
 

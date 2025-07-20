@@ -10,6 +10,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '../theme';
 import { EnhancedProfileScreen } from '../screens/profile/EnhancedProfileScreen';
 import { BudgetListScreen } from '../screens/budgets/BudgetListScreen';
+import { BudgetSwitcher } from '../components/budget';
 import type { MainTabParamList } from './types';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -22,6 +23,7 @@ const DashboardScreen = () => {
     <View style={[styles.placeholder, { backgroundColor: theme.background }]}>
       <Text style={[styles.placeholderText, { color: theme.textPrimary }]}>Dashboard</Text>
       <Text style={[styles.placeholderSubtext, { color: theme.textSecondary }]}>Welcome! You're logged in.</Text>
+      <Text style={[styles.placeholderSubtext, { color: theme.textSecondary }]}>Use the budget switcher above to select an active budget.</Text>
     </View>
   );
 };
@@ -34,6 +36,7 @@ const EnvelopesScreen = () => {
     <View style={[styles.placeholder, { backgroundColor: theme.background }]}>
       <Text style={[styles.placeholderText, { color: theme.textPrimary }]}>Envelopes</Text>
       <Text style={[styles.placeholderSubtext, { color: theme.textSecondary }]}>Coming soon...</Text>
+      <Text style={[styles.placeholderSubtext, { color: theme.textSecondary }]}>Use the budget switcher above to select an active budget.</Text>
     </View>
   );
 };
@@ -44,6 +47,7 @@ const TransactionsScreen = () => {
     <View style={[styles.placeholder, { backgroundColor: theme.background }]}>
       <Text style={[styles.placeholderText, { color: theme.textPrimary }]}>Transactions</Text>
       <Text style={[styles.placeholderSubtext, { color: theme.textSecondary }]}>Coming soon...</Text>
+      <Text style={[styles.placeholderSubtext, { color: theme.textSecondary }]}>Use the budget switcher above to select an active budget.</Text>
     </View>
   );
 };
@@ -78,6 +82,11 @@ export const MainTabs: React.FC = () => {
         options={{
           title: 'Dashboard',
           tabBarLabel: 'Dashboard',
+          headerRight: () => (
+            <View style={{ marginRight: 16 }}>
+              <BudgetSwitcher variant="header" showLabel={false} />
+            </View>
+          ),
         }}
       />
       <Tab.Screen
@@ -94,6 +103,11 @@ export const MainTabs: React.FC = () => {
         options={{
           title: 'Envelopes',
           tabBarLabel: 'Envelopes',
+          headerRight: () => (
+            <View style={{ marginRight: 16 }}>
+              <BudgetSwitcher variant="header" showLabel={false} />
+            </View>
+          ),
         }}
       />
       <Tab.Screen
@@ -102,6 +116,11 @@ export const MainTabs: React.FC = () => {
         options={{
           title: 'Transactions',
           tabBarLabel: 'Transactions',
+          headerRight: () => (
+            <View style={{ marginRight: 16 }}>
+              <BudgetSwitcher variant="header" showLabel={false} />
+            </View>
+          ),
         }}
       />
       <Tab.Screen

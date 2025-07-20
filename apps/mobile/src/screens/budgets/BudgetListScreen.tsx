@@ -4,7 +4,7 @@
  * Displays all budgets for the current user with options to create, edit, and manage budgets
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import {
   View,
   Text,
@@ -20,6 +20,7 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useThemedStyles, useTheme, spacing, typography } from '../../theme';
 import { Button, Card } from '../../components/ui';
 import { budgetService } from '../../services/api/budgetService';
+import { useBudget } from '../../context';
 import type { Budget } from '@nvlp/types';
 import type { Theme } from '../../theme';
 
@@ -118,58 +119,17 @@ const BudgetCard: React.FC<BudgetCardProps> = ({ budget, onEdit, onDelete, onSet
 };
 
 export const BudgetListScreen: React.FC = () => {
-  const [budgets, setBudgets] = useState<Budget[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const navigation = useNavigation();
   const { theme } = useTheme();
   const styles = useThemedStyles(createStyles);
+  const { budgets, isLoading, refreshBudgets } = useBudget();
 
-  const loadBudgets = useCallback(async (showRefreshIndicator = false) => {
-    try {
-      if (showRefreshIndicator) {
-        setIsRefreshing(true);
-      } else {
-        setIsLoading(true);
-      }
-
-      const fetchedBudgets = await budgetService.getBudgets();
-      
-      // Sort budgets: default first, then active, then inactive
-      const sortedBudgets = fetchedBudgets.sort((a, b) => {
-        // Default budget always first
-        if (a.is_default && !b.is_default) return -1;
-        if (!a.is_default && b.is_default) return 1;
-        
-        // Then by active status
-        if (a.is_active && !b.is_active) return -1;
-        if (!a.is_active && b.is_active) return 1;
-        
-        // Finally by name alphabetically
-        return a.name.localeCompare(b.name);
-      });
-      
-      setBudgets(sortedBudgets);
-    } catch (error: any) {
-      Alert.alert(
-        'Error Loading Budgets',
-        error.message || 'Failed to load budgets. Please try again.'
-      );
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadBudgets();
-  }, [loadBudgets]);
 
   // Reload budgets when screen comes into focus (e.g., returning from create screen)
   useFocusEffect(
     useCallback(() => {
-      loadBudgets();
-    }, [loadBudgets])
+      refreshBudgets();
+    }, [refreshBudgets])
   );
 
   const handleCreateBudget = () => {
@@ -193,7 +153,7 @@ export const BudgetListScreen: React.FC = () => {
           onPress: async () => {
             try {
               await budgetService.deleteBudget(budget.id);
-              await loadBudgets();
+              await refreshBudgets();
               Alert.alert('Success', `Budget "${budget.name}" has been deleted.`);
             } catch (error: any) {
               Alert.alert(
@@ -210,7 +170,7 @@ export const BudgetListScreen: React.FC = () => {
   const handleSetDefaultBudget = async (budget: Budget) => {
     try {
       await budgetService.updateBudget(budget.id, { is_default: true });
-      await loadBudgets();
+      await refreshBudgets();
       Alert.alert('Success', `"${budget.name}" is now your default budget.`);
     } catch (error: any) {
       Alert.alert(
@@ -221,7 +181,7 @@ export const BudgetListScreen: React.FC = () => {
   };
 
   const handleRefresh = () => {
-    loadBudgets(true);
+    refreshBudgets();
   };
 
   if (isLoading) {
@@ -250,7 +210,7 @@ export const BudgetListScreen: React.FC = () => {
         contentContainerStyle={styles.scrollContent}
         refreshControl={
           <RefreshControl
-            refreshing={isRefreshing}
+            refreshing={false}
             onRefresh={handleRefresh}
             tintColor={theme.primary}
             colors={[theme.primary]}
