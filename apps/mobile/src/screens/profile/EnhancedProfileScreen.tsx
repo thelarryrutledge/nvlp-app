@@ -445,13 +445,6 @@ export const EnhancedProfileScreen: React.FC = () => {
               onPress={() => (navigation as any).navigate('InitialBudgetSetup')}
               showArrow
             />
-            <SettingItem
-              icon="color-filter"
-              title="Color Test"
-              description="Compare theme background colors"
-              onPress={() => (navigation as any).navigate('ColorTest')}
-              showArrow
-            />
           </Card>
         </View>
 

@@ -30,7 +30,6 @@ export type MainStackParamList = {
   };
   DesignSystemExample: undefined;
   InitialBudgetSetup: undefined;
-  ColorTest: undefined;
   // Add other main app screens here
 };
 
