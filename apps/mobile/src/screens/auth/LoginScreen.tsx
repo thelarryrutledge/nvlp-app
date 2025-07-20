@@ -8,18 +8,19 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
-  StyleSheet,
   Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  ActivityIndicator,
+  StyleSheet,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../context/AuthContext';
+import { useThemedStyles, useTheme, spacing, typography } from '../../theme';
+import { Button, TextInput as ThemedTextInput, Card } from '../../components/ui';
+import type { Theme } from '../../theme';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { AuthStackParamList } from '../../navigation/types';
 import type { BiometricCapabilities } from '../../services/auth/biometricService';
@@ -38,9 +39,11 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const [biometricCapabilities, setBiometricCapabilities] = useState<BiometricCapabilities | null>(null);
   const [isBiometricLoading, setIsBiometricLoading] = useState(false);
   const { login, getBiometricCapabilities, authenticateWithBiometrics } = useAuth();
+  const { theme } = useTheme();
+  const styles = useThemedStyles(createStyles);
   
-  const emailInputRef = useRef<TextInput>(null);
-  const passwordInputRef = useRef<TextInput>(null);
+  const emailInputRef = useRef<any>(null);
+  const passwordInputRef = useRef<any>(null);
 
   // Check biometric capabilities on mount
   useEffect(() => {
@@ -160,54 +163,36 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
             <Text style={styles.subtitle}>Sign in to your NVLP account</Text>
           </View>
 
-          <View style={styles.form}>
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Email</Text>
-              <TextInput
-                ref={emailInputRef}
-                style={styles.input}
-                value={email}
-                onChangeText={setEmail}
-                placeholder="Enter your email"
-                placeholderTextColor="#999"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                autoFocus={true}
-                returnKeyType="next"
-                onSubmitEditing={() => passwordInputRef.current?.focus()}
-                editable={!isLoading}
-              />
-            </View>
+          <Card variant="elevated" padding="large" style={styles.formCard}>
+            <ThemedTextInput
+              ref={emailInputRef}
+              label="Email"
+              value={email}
+              onChangeText={setEmail}
+              placeholder="Enter your email"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              leftIcon="mail"
+              returnKeyType="next"
+              onSubmitEditing={() => passwordInputRef.current?.focus()}
+              editable={!isLoading}
+            />
 
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Password</Text>
-              <View style={styles.passwordContainer}>
-                <TextInput
-                  ref={passwordInputRef}
-                  style={styles.passwordInput}
-                  value={password}
-                  onChangeText={setPassword}
-                  placeholder="Enter your password"
-                  placeholderTextColor="#999"
-                  secureTextEntry={!showPassword}
-                  returnKeyType="done"
-                  onSubmitEditing={handleLogin}
-                  editable={!isLoading}
-                />
-                <TouchableOpacity
-                  style={styles.passwordToggle}
-                  onPress={() => setShowPassword(!showPassword)}
-                  disabled={isLoading}
-                >
-                  <Icon 
-                    name={showPassword ? 'eye-off' : 'eye'} 
-                    size={22} 
-                    color="#666" 
-                  />
-                </TouchableOpacity>
-              </View>
-            </View>
+            <ThemedTextInput
+              ref={passwordInputRef}
+              label="Password"
+              value={password}
+              onChangeText={setPassword}
+              placeholder="Enter your password"
+              secureTextEntry={!showPassword}
+              leftIcon="lock-closed"
+              rightIcon={showPassword ? 'eye-off' : 'eye'}
+              onRightIconPress={() => setShowPassword(!showPassword)}
+              returnKeyType="done"
+              onSubmitEditing={handleLogin}
+              editable={!isLoading}
+            />
 
             <TouchableOpacity
               style={styles.forgotPasswordButton}
@@ -217,17 +202,13 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
               <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[styles.loginButton, isLoading && styles.loginButtonDisabled]}
+            <Button
+              title="Sign In"
               onPress={handleLogin}
+              loading={isLoading}
               disabled={isLoading}
-            >
-              {isLoading ? (
-                <ActivityIndicator color="#fff" size="small" />
-              ) : (
-                <Text style={styles.loginButtonText}>Sign In</Text>
-              )}
-            </TouchableOpacity>
+              fullWidth
+            />
 
             {biometricCapabilities?.isAvailable && biometricCapabilities?.hasCredentials && (
               <>
@@ -237,28 +218,18 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
                   <View style={styles.dividerLine} />
                 </View>
 
-                <TouchableOpacity
-                  style={[styles.biometricButton, isBiometricLoading && styles.biometricButtonDisabled]}
+                <Button
+                  title={getBiometricButtonText()}
                   onPress={handleBiometricLogin}
+                  variant="outline"
+                  icon={getBiometricIcon()}
+                  loading={isBiometricLoading}
                   disabled={isLoading || isBiometricLoading}
-                >
-                  {isBiometricLoading ? (
-                    <ActivityIndicator color="#007AFF" size="small" />
-                  ) : (
-                    <>
-                      <Icon 
-                        name={getBiometricIcon()} 
-                        size={24} 
-                        color="#007AFF" 
-                        style={styles.biometricIcon}
-                      />
-                      <Text style={styles.biometricButtonText}>{getBiometricButtonText()}</Text>
-                    </>
-                  )}
-                </TouchableOpacity>
+                  fullWidth
+                />
               </>
             )}
-          </View>
+          </Card>
 
           <View style={styles.footer}>
             <Text style={styles.footerText}>Don't have an account?</Text>
@@ -275,151 +246,79 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8f9fa',
-  },
-  keyboardAvoidingView: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 40,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-  },
-  form: {
-    marginBottom: 40,
-  },
-  inputContainer: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1a1a1a',
-    marginBottom: 8,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#e1e5e9',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
-    backgroundColor: '#fff',
-    color: '#1a1a1a',
-  },
-  passwordContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#e1e5e9',
-    borderRadius: 8,
-    backgroundColor: '#fff',
-  },
-  passwordInput: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
-    color: '#1a1a1a',
-  },
-  passwordToggle: {
-    padding: 12,
-  },
-  forgotPasswordButton: {
-    alignSelf: 'flex-end',
-    marginBottom: 24,
-  },
-  forgotPasswordText: {
-    fontSize: 14,
-    color: '#007AFF',
-    fontWeight: '500',
-  },
-  loginButton: {
-    backgroundColor: '#007AFF',
-    borderRadius: 8,
-    paddingVertical: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 52,
-  },
-  loginButtonDisabled: {
-    opacity: 0.6,
-  },
-  loginButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  footerText: {
-    fontSize: 14,
-    color: '#666',
-    marginRight: 4,
-  },
-  registerLink: {
-    fontSize: 14,
-    color: '#007AFF',
-    fontWeight: '600',
-  },
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 24,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#e1e5e9',
-  },
-  dividerText: {
-    fontSize: 14,
-    color: '#666',
-    marginHorizontal: 16,
-  },
-  biometricButton: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#007AFF',
-    paddingVertical: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 52,
-  },
-  biometricButtonDisabled: {
-    opacity: 0.6,
-  },
-  biometricIcon: {
-    marginRight: 8,
-  },
-  biometricButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#007AFF',
-  },
-});
+function createStyles(theme: Theme) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.background,
+    },
+    keyboardAvoidingView: {
+      flex: 1,
+    },
+    scrollContent: {
+      flexGrow: 1,
+      justifyContent: 'center' as const,
+      paddingHorizontal: spacing.lg,
+    },
+    header: {
+      alignItems: 'center' as const,
+      marginBottom: spacing['3xl'],
+    },
+    title: {
+      ...typography.h1,
+      color: theme.textPrimary,
+      marginBottom: spacing.sm,
+      textAlign: 'center' as const,
+    },
+    subtitle: {
+      ...typography.body,
+      color: theme.textSecondary,
+      textAlign: 'center' as const,
+    },
+    formCard: {
+      marginBottom: spacing['3xl'],
+    },
+    forgotPasswordButton: {
+      alignSelf: 'flex-end' as const,
+      marginBottom: spacing.lg,
+      marginTop: -spacing.sm, // Adjust spacing since TextInput has bottom margin
+    },
+    forgotPasswordText: {
+      ...typography.bodySmall,
+      color: theme.primary,
+      fontWeight: '600' as const,
+    },
+    footer: {
+      flexDirection: 'row' as const,
+      justifyContent: 'center' as const,
+      alignItems: 'center' as const,
+    },
+    footerText: {
+      ...typography.bodySmall,
+      color: theme.textSecondary,
+      marginRight: spacing.xs,
+    },
+    registerLink: {
+      ...typography.bodySmall,
+      color: theme.primary,
+      fontWeight: '600' as const,
+    },
+    divider: {
+      flexDirection: 'row' as const,
+      alignItems: 'center' as const,
+      marginVertical: spacing.lg,
+    },
+    dividerLine: {
+      flex: 1,
+      height: 1,
+      backgroundColor: theme.border,
+    },
+    dividerText: {
+      ...typography.caption,
+      color: theme.textTertiary,
+      marginHorizontal: spacing.md,
+    },
+  });
+}
 
 export default LoginScreen;

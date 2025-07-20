@@ -63,12 +63,26 @@
 - [x] Create loading/splash screen
 - [x] Implement biometric authentication (TouchID/FaceID)
 
-### 3.2 Onboarding Flow
-- [ ] Design welcome screens explaining app features
-- [ ] Create initial budget setup screen
-- [ ] Build profile configuration screen
+### 3.1.1 Design System Enhancement ✅ COMPLETE
+- [x] Transition from blue to professional financial green theme
+- [x] Implement sophisticated background colors with emerald hints
+- [x] Create premium light mode (`#E8F5EF`) and dark mode (`#141A18`) backgrounds
+- [x] Update all navigation headers to use green theme
+- [x] Fix hardcoded colors across all screens
+- [x] Add Color Test screen for theme validation
+- [x] Clean up unused legacy components
+
+### 3.2 Onboarding Flow ✅ COMPLETE (MVP Simplified)
+- [x] Create initial budget setup screen (2-step wizard)
+- [x] Build enhanced profile configuration screen with:
+  - [x] Profile image picker with camera/library support
+  - [x] Biometric authentication toggle
+  - [x] Theme preferences (light/dark/system)
+  - [x] Comprehensive settings sections
+- [x] Implement professional financial green theme
+- [x] Add sophisticated background colors (non-white/black)
 - [ ] Implement permission requests (notifications, biometrics)
-- [ ] Create tutorial or guided tour
+- ~~Create tutorial or guided tour~~ (Removed for MVP)
 
 ### 3.3 Token & Session Management
 - [ ] Implement secure token storage (Keychain/Keystore)

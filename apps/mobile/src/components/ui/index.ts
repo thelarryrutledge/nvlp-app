@@ -1,5 +1,11 @@
-// UI components will be exported from here
-// Example: export { Card } from './Card';
+/**
+ * UI Component Library
+ * 
+ * Reusable, themed components following the design system
+ */
 
-// Placeholder export to make this a valid module
-export {};
+export { Button } from './Button';
+export { TextInput } from './TextInput';
+export { Card } from './Card';
+export { BottomSheet, SimpleBottomSheet } from './BottomSheet';
+export { ProfileImagePicker } from './ProfileImagePicker';

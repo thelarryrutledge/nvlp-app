@@ -76,32 +76,40 @@
 
 ## Mobile App Development Status
 **Roadmap**: 12-phase React Native implementation plan
-**Current Phase**: Phase 3.1 Authentication Screens COMPLETE ✅
-**Latest Completed**: Biometric authentication (TouchID/FaceID) implementation with enhanced ProfileScreen
-**Progress**: Project setup ✅, Core dependencies ✅, State management ✅, API client integration ✅, Navigation architecture ✅, Auth screens ✅
-**Tech Stack**: React Native 0.80, TypeScript, React Navigation 6, Reanimated 3, @nvlp/client, React Native Biometrics
-**Next Phase**: Phase 3.2 Onboarding Flow
+**Current Phase**: Phase 3.2 Onboarding Flow COMPLETE ✅
+**Latest Completed**: Professional financial green theme implementation and enhanced ProfileScreen with profile image picker
+**Progress**: Project setup ✅, Core dependencies ✅, State management ✅, API client integration ✅, Navigation architecture ✅, Auth screens ✅, Design system ✅, Onboarding (MVP) ✅
+**Tech Stack**: React Native 0.80, TypeScript, React Navigation 6, Reanimated 3, @nvlp/client, React Native Biometrics, React Native Image Picker
+**Next Phase**: Phase 4.1 Budget Management
 
-### Recent Completed Tasks (Phase 2.3 & 3.1):
+### Recent Completed Tasks (Phase 3.1 & 3.2):
+**Authentication & Core Screens:**
 - ✅ Set up authentication flow with stack navigator
 - ✅ Created main app navigation with tab navigation
 - ✅ Implemented navigation guards for protected routes
 - ✅ Set up navigation state persistence with AsyncStorage
 - ✅ Implemented deep linking support for email verification (nvlp://)
-- ✅ Fixed registration flow to show inline loading and success state
-- ✅ Enhanced verify.html page to assume verification success and launch app
-- ✅ Added auto-navigation from verification handler to login screen
 - ✅ Built login screen with email/password and visibility toggle
 - ✅ Created registration screen with validation and email confirmation
 - ✅ Implemented forgot password flow with email reset
-- ✅ Added password reset confirmation handling
 - ✅ Created loading/splash screen for auth state transitions
-- ✅ Enhanced UX: auto-focus fields, keyboard navigation, password visibility toggles
 - ✅ Implemented biometric authentication (TouchID/FaceID/Fingerprint) with react-native-biometrics
-- ✅ Added biometric login option to LoginScreen with device capability detection
-- ✅ Enhanced ProfileScreen with biometric settings toggle and security section
-- ✅ Created biometricService for authentication, key management, and capability detection
-- ✅ Integrated biometric methods into AuthContext for seamless authentication flow
+
+**Design System & Theme (Professional Financial Green):**
+- ✅ Transitioned from blue to sophisticated financial emerald green theme
+- ✅ Implemented premium background colors: light mode `#E8F5EF`, dark mode `#141A18`
+- ✅ Updated all navigation headers to use green theme instead of blue
+- ✅ Fixed hardcoded background colors across all screens to use theme
+- ✅ Created Color Test screen for theme validation and comparison
+- ✅ Cleaned up unused legacy ProfileScreen component
+
+**Enhanced Profile & Onboarding:**
+- ✅ Created InitialBudgetSetupScreen with 2-step wizard (name, income, envelope allocation)
+- ✅ Enhanced ProfileScreen with comprehensive settings sections
+- ✅ Integrated ProfileImagePicker with camera/photo library support
+- ✅ Added iOS permissions for camera and photo library access
+- ✅ Implemented biometric authentication toggle in profile settings
+- ✅ Added theme preferences (light/dark/system) with persistence
 
 ### Technical Implementation Details:
 - **Token Management**: Secure storage with automatic refresh, JWT parsing, expiration monitoring

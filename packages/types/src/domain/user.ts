@@ -11,6 +11,8 @@ export interface User {
 export interface UserProfile {
   id: string;
   display_name: string;
+  profile_image_url: string | null;
+  profile_image_thumbnail_url: string | null;
   timezone: string;
   currency_code: string;
   date_format: string;

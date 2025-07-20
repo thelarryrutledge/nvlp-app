@@ -28,6 +28,9 @@ export type MainStackParamList = {
     error?: string;
     error_description?: string;
   };
+  DesignSystemExample: undefined;
+  InitialBudgetSetup: undefined;
+  ColorTest: undefined;
   // Add other main app screens here
 };
 

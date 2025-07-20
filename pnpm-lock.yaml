@@ -66,6 +66,9 @@ importers:
       '@babel/runtime':
         specifier: ^7.27.6
         version: 7.27.6
+      '@gorhom/bottom-sheet':
+        specifier: ^5.1.6
+        version: 5.1.6(@types/react@19.1.8)(react-native-gesture-handler@2.27.1(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.8.3))(@types/react@19.1.8)(react@19.1.0))(react@19.1.0))(react-native-reanimated@3.18.0(@babel/core@7.28.0)(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.8.3))(@types/react@19.1.8)(react@19.1.0))(react@19.1.0))(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.8.3))(@types/react@19.1.8)(react@19.1.0))(react@19.1.0)
       '@nvlp/client':
         specifier: workspace:*
         version: link:../../packages/client
@@ -111,9 +114,15 @@ importers:
       react-native-gesture-handler:
         specifier: ^2.27.1
         version: 2.27.1(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.8.3))(@types/react@19.1.8)(react@19.1.0))(react@19.1.0)
+      react-native-image-picker:
+        specifier: ^8.2.1
+        version: 8.2.1(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.8.3))(@types/react@19.1.8)(react@19.1.0))(react@19.1.0)
       react-native-keychain:
         specifier: ^10.0.0
         version: 10.0.0
+      react-native-linear-gradient:
+        specifier: ^2.8.3
+        version: 2.8.3(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.8.3))(@types/react@19.1.8)(react@19.1.0))(react@19.1.0)
       react-native-reanimated:
         specifier: ^3.18.0
         version: 3.18.0(@babel/core@7.28.0)(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.8.3))(@types/react@19.1.8)(react@19.1.0))(react@19.1.0)
@@ -1279,6 +1288,27 @@ packages:
   '@eslint/js@8.57.1':
     resolution: {integrity: sha512-d9zaMRSTIKDLhctzH12MtXvJKSSUhaHcjV+2Z+GK+EEY7XKpP5yR4x+N3TAcHTcu963nIr+TMcCb4DBCYX1z6Q==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+
+  '@gorhom/bottom-sheet@5.1.6':
+    resolution: {integrity: sha512-0b5tQj4fTaZAjST1PnkCp0p7d8iRqMezibTcqc8Kkn3N23Vn6upORNTD1fH0bLfwRt6e0WnZ7DjAmq315lrcKQ==}
+    peerDependencies:
+      '@types/react': '*'
+      '@types/react-native': '*'
+      react: '*'
+      react-native: '*'
+      react-native-gesture-handler: '>=2.16.1'
+      react-native-reanimated: '>=3.16.0'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+      '@types/react-native':
+        optional: true
+
+  '@gorhom/portal@1.0.14':
+    resolution: {integrity: sha512-MXyL4xvCjmgaORr/rtryDNFy3kU4qUbKlwtQqqsygd0xX3mhKjOLn6mQK8wfu0RkoE0pBE0nAasRoHua+/QZ7A==}
+    peerDependencies:
+      react: '*'
+      react-native: '*'
 
   '@hapi/hoek@9.3.0':
     resolution: {integrity: sha512-/c6rf4UJlmHlC9b5BaNvzAcFv7HZ2QHaV0D4/HNlBdvFnvQq8RI4kYdhyPCl7Xj+oWvTWQ8ujhqS53LIgAe6KQ==}
@@ -4746,6 +4776,12 @@ packages:
       react: '*'
       react-native: '*'
 
+  react-native-image-picker@8.2.1:
+    resolution: {integrity: sha512-FBeGYJGFDjMdGCcyubDJgBAPCQ4L1D3hwLXyUU91jY9ahOZMTbluceVvRmrEKqnDPFJ0gF1NVhJ0nr1nROFLdg==}
+    peerDependencies:
+      react: '*'
+      react-native: '*'
+
   react-native-is-edge-to-edge@1.1.7:
     resolution: {integrity: sha512-EH6i7E8epJGIcu7KpfXYXiV2JFIYITtq+rVS8uEb+92naMRBdxhTuS8Wn2Q7j9sqyO0B+Xbaaf9VdipIAmGW4w==}
     peerDependencies:
@@ -4761,6 +4797,12 @@ packages:
   react-native-keychain@10.0.0:
     resolution: {integrity: sha512-YzPKSAnSzGEJ12IK6CctNLU79T1W15WDrElRQ+1/FsOazGX9ucFPTQwgYe8Dy8jiSEDJKM4wkVa3g4lD2Z+Pnw==}
     engines: {node: '>=16'}
+
+  react-native-linear-gradient@2.8.3:
+    resolution: {integrity: sha512-KflAXZcEg54PXkLyflaSZQ3PJp4uC4whM7nT/Uot9m0e/qxFV3p6uor1983D1YOBJbJN7rrWdqIjq0T42jOJyA==}
+    peerDependencies:
+      react: '*'
+      react-native: '*'
 
   react-native-reanimated@3.18.0:
     resolution: {integrity: sha512-eVcNcqeOkMW+BUWAHdtvN3FKgC8J8wiEJkX6bNGGQaLS7m7e4amTfjIcqf/Ta+lerZLurmDaQ0lICI1CKPrb1Q==}
@@ -6997,6 +7039,23 @@ snapshots:
       - supports-color
 
   '@eslint/js@8.57.1': {}
+
+  '@gorhom/bottom-sheet@5.1.6(@types/react@19.1.8)(react-native-gesture-handler@2.27.1(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.8.3))(@types/react@19.1.8)(react@19.1.0))(react@19.1.0))(react-native-reanimated@3.18.0(@babel/core@7.28.0)(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.8.3))(@types/react@19.1.8)(react@19.1.0))(react@19.1.0))(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.8.3))(@types/react@19.1.8)(react@19.1.0))(react@19.1.0)':
+    dependencies:
+      '@gorhom/portal': 1.0.14(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.8.3))(@types/react@19.1.8)(react@19.1.0))(react@19.1.0)
+      invariant: 2.2.4
+      react: 19.1.0
+      react-native: 0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.8.3))(@types/react@19.1.8)(react@19.1.0)
+      react-native-gesture-handler: 2.27.1(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.8.3))(@types/react@19.1.8)(react@19.1.0))(react@19.1.0)
+      react-native-reanimated: 3.18.0(@babel/core@7.28.0)(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.8.3))(@types/react@19.1.8)(react@19.1.0))(react@19.1.0)
+    optionalDependencies:
+      '@types/react': 19.1.8
+
+  '@gorhom/portal@1.0.14(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.8.3))(@types/react@19.1.8)(react@19.1.0))(react@19.1.0)':
+    dependencies:
+      nanoid: 3.3.11
+      react: 19.1.0
+      react-native: 0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.8.3))(@types/react@19.1.8)(react@19.1.0)
 
   '@hapi/hoek@9.3.0': {}
 
@@ -11315,6 +11374,11 @@ snapshots:
       react: 19.1.0
       react-native: 0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.8.3))(@types/react@19.1.8)(react@19.1.0)
 
+  react-native-image-picker@8.2.1(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.8.3))(@types/react@19.1.8)(react@19.1.0))(react@19.1.0):
+    dependencies:
+      react: 19.1.0
+      react-native: 0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.8.3))(@types/react@19.1.8)(react@19.1.0)
+
   react-native-is-edge-to-edge@1.1.7(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.8.3))(@types/react@19.1.8)(react@19.1.0))(react@19.1.0):
     dependencies:
       react: 19.1.0
@@ -11326,6 +11390,11 @@ snapshots:
       react-native: 0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.8.3))(@types/react@19.1.8)(react@19.1.0)
 
   react-native-keychain@10.0.0: {}
+
+  react-native-linear-gradient@2.8.3(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.8.3))(@types/react@19.1.8)(react@19.1.0))(react@19.1.0):
+    dependencies:
+      react: 19.1.0
+      react-native: 0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.8.3))(@types/react@19.1.8)(react@19.1.0)
 
   react-native-reanimated@3.18.0(@babel/core@7.28.0)(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.8.3))(@types/react@19.1.8)(react@19.1.0))(react@19.1.0):
     dependencies:

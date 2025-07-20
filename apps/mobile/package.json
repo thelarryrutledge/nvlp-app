@@ -39,6 +39,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.27.6",
+    "@gorhom/bottom-sheet": "^5.1.6",
     "@nvlp/client": "workspace:*",
     "@nvlp/config": "workspace:*",
     "@nvlp/types": "workspace:*",
@@ -54,7 +55,9 @@
     "react-native": "0.80.1",
     "react-native-biometrics": "^3.0.1",
     "react-native-gesture-handler": "^2.27.1",
+    "react-native-image-picker": "^8.2.1",
     "react-native-keychain": "^10.0.0",
+    "react-native-linear-gradient": "^2.8.3",
     "react-native-reanimated": "^3.18.0",
     "react-native-safe-area-context": "^5.5.2",
     "react-native-screens": "^4.13.1",

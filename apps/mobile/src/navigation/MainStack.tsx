@@ -8,15 +8,29 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MainTabs } from './MainTabs';
 import { VerificationHandler } from '../screens/VerificationHandler';
+import { DesignSystemExample } from '../screens/DesignSystemExample';
+import { InitialBudgetSetupScreen } from '../screens/onboarding/InitialBudgetSetupScreen';
+import { ColorTest } from '../screens/ColorTest';
+import { useTheme } from '../theme';
 import type { MainStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<MainStackParamList>();
 
 export const MainStack: React.FC = () => {
+  const { theme } = useTheme();
+  
   return (
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
+        headerStyle: {
+          backgroundColor: theme.primary,
+        },
+        headerTitleStyle: {
+          color: theme.textOnPrimary,
+          fontWeight: '600',
+        },
+        headerTintColor: theme.textOnPrimary,
       }}
     >
       <Stack.Screen
@@ -31,6 +45,32 @@ export const MainStack: React.FC = () => {
         component={VerificationHandler}
         options={{
           title: 'Email Verification',
+        }}
+      />
+      <Stack.Screen
+        name="DesignSystemExample"
+        component={DesignSystemExample}
+        options={{
+          headerShown: true,
+          title: 'Design System',
+          headerBackTitle: 'Back',
+        }}
+      />
+      <Stack.Screen
+        name="InitialBudgetSetup"
+        component={InitialBudgetSetupScreen}
+        options={{
+          headerShown: false,
+          presentation: 'modal',
+        }}
+      />
+      <Stack.Screen
+        name="ColorTest"
+        component={ColorTest}
+        options={{
+          headerShown: true,
+          title: 'Color Test',
+          headerBackTitle: 'Back',
         }}
       />
     </Stack.Navigator>

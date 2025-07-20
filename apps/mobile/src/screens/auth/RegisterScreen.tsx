@@ -8,18 +8,18 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  ActivityIndicator,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../context/AuthContext';
+import { useThemedStyles, useTheme, spacing, typography } from '../../theme';
+import { Button, TextInput as ThemedTextInput, Card } from '../../components/ui';
+import type { Theme } from '../../theme';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { AuthStackParamList } from '../../navigation/types';
 
@@ -39,11 +39,13 @@ export const RegisterScreen: React.FC<Props> = ({ navigation }) => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [localRegistrationSuccess, setLocalRegistrationSuccess] = useState<{ message: string; email: string } | null>(null);
   const { register, user } = useAuth();
+  const { theme } = useTheme();
+  const styles = useThemedStyles(createStyles);
   
-  const emailInputRef = useRef<TextInput>(null);
-  const displayNameInputRef = useRef<TextInput>(null);
-  const passwordInputRef = useRef<TextInput>(null);
-  const confirmPasswordInputRef = useRef<TextInput>(null);
+  const emailInputRef = useRef<any>(null);
+  const displayNameInputRef = useRef<any>(null);
+  const passwordInputRef = useRef<any>(null);
+  const confirmPasswordInputRef = useRef<any>(null);
 
   const validateInputs = () => {
     if (!email.trim() || !password.trim() || !confirmPassword.trim()) {
