@@ -81,6 +81,12 @@ export const BudgetProvider: React.FC<BudgetProviderProps> = ({ children }) => {
   }, [loadBudgets]);
 
   const selectBudget = useCallback((budget: Budget) => {
+    // Only allow selection of active budgets
+    if (!budget.is_active) {
+      console.warn('Cannot select inactive budget:', budget.name);
+      return;
+    }
+    
     setState(prev => ({
       ...prev,
       selectedBudget: budget,

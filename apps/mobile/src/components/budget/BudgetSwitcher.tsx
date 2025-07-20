@@ -39,6 +39,16 @@ export const BudgetSwitcher: React.FC<BudgetSwitcherProps> = ({
   const inactiveBudgets = budgets.filter(budget => !budget.is_active);
 
   const handleBudgetSelect = (budget: Budget) => {
+    // Only allow selection of active budgets
+    if (!budget.is_active) {
+      Alert.alert(
+        'Cannot Select Budget',
+        'This budget is inactive. Please activate it first to use it.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+    
     selectBudget(budget);
     setIsModalVisible(false);
   };
@@ -125,19 +135,32 @@ export const BudgetSwitcher: React.FC<BudgetSwitcherProps> = ({
               ]}>
                 {selectedBudget.name}
               </Text>
-              {selectedBudget.is_default && (
+              <View style={styles.budgetBadges}>
+                {selectedBudget.is_default && (
+                  <View style={[
+                    styles.defaultBadge,
+                    variant === 'header' && styles.headerDefaultBadge
+                  ]}>
+                    <Text style={[
+                      styles.defaultBadgeText,
+                      variant === 'header' && styles.headerDefaultBadgeText
+                    ]}>
+                      Default
+                    </Text>
+                  </View>
+                )}
                 <View style={[
-                  styles.defaultBadge,
-                  variant === 'header' && styles.headerDefaultBadge
+                  styles.currentBadge,
+                  variant === 'header' && styles.headerCurrentBadge
                 ]}>
                   <Text style={[
-                    styles.defaultBadgeText,
-                    variant === 'header' && styles.headerDefaultBadgeText
+                    styles.currentBadgeText,
+                    variant === 'header' && styles.headerCurrentBadgeText
                   ]}>
-                    Default
+                    Current
                   </Text>
                 </View>
-              )}
+              </View>
             </View>
           </View>
           <Icon 
@@ -216,16 +239,23 @@ export const BudgetSwitcher: React.FC<BudgetSwitcherProps> = ({
                 {inactiveBudgets.length > 0 && (
                   <View style={styles.budgetSection}>
                     <Text style={styles.sectionTitle}>Inactive Budgets</Text>
+                    <Text style={styles.inactiveNote}>
+                      Inactive budgets cannot be selected. Activate them first to use.
+                    </Text>
                     {inactiveBudgets.map((budget) => (
-                      <TouchableOpacity
+                      <View
                         key={budget.id}
                         style={[styles.budgetItem, styles.inactiveBudgetItem]}
-                        onPress={() => handleBudgetSelect(budget)}
                       >
                         <View style={styles.budgetItemContent}>
                           <Text style={styles.inactiveBudgetText}>
                             {budget.name}
                           </Text>
+                          {budget.is_default && (
+                            <View style={styles.inactiveDefaultBadge}>
+                              <Text style={styles.inactiveDefaultBadgeText}>Default</Text>
+                            </View>
+                          )}
                         </View>
                         {budget.description && (
                           <Text style={styles.inactiveBudgetDescription}>
@@ -235,7 +265,7 @@ export const BudgetSwitcher: React.FC<BudgetSwitcherProps> = ({
                         {selectedBudget?.id === budget.id && (
                           <Icon name="checkmark" size={20} color={theme.textTertiary} />
                         )}
-                      </TouchableOpacity>
+                      </View>
                     ))}
                   </View>
                 )}
@@ -292,12 +322,18 @@ function createStyles(theme: Theme) {
     budgetDetails: {
       flexDirection: 'row' as const,
       alignItems: 'center' as const,
+      justifyContent: 'space-between' as const,
+    },
+    budgetBadges: {
+      flexDirection: 'row' as const,
+      alignItems: 'center' as const,
+      gap: spacing.xs,
     },
     budgetName: {
       ...typography.body,
       color: theme.textPrimary,
       fontWeight: '600' as const,
-      marginRight: spacing.sm,
+      flex: 1,
     },
     headerText: {
       color: theme.textOnPrimary,
@@ -318,6 +354,24 @@ function createStyles(theme: Theme) {
       fontSize: 10,
     },
     headerDefaultBadgeText: {
+      color: theme.textOnPrimary,
+    },
+    currentBadge: {
+      backgroundColor: theme.success + '20',
+      paddingHorizontal: spacing.xs,
+      paddingVertical: 2,
+      borderRadius: 6,
+    },
+    headerCurrentBadge: {
+      backgroundColor: theme.textOnPrimary + '20',
+    },
+    currentBadgeText: {
+      ...typography.caption,
+      color: theme.success,
+      fontWeight: '600' as const,
+      fontSize: 10,
+    },
+    headerCurrentBadgeText: {
       color: theme.textOnPrimary,
     },
     loadingText: {
@@ -451,6 +505,26 @@ function createStyles(theme: Theme) {
       ...typography.body,
       color: theme.textSecondary,
       textAlign: 'center' as const,
+    },
+    inactiveNote: {
+      ...typography.caption,
+      color: theme.textTertiary,
+      fontStyle: 'italic' as const,
+      marginBottom: spacing.sm,
+      paddingHorizontal: spacing.xs,
+    },
+    inactiveDefaultBadge: {
+      backgroundColor: theme.textTertiary + '20',
+      paddingHorizontal: spacing.sm,
+      paddingVertical: spacing.xs,
+      borderRadius: 8,
+      alignSelf: 'flex-start' as const,
+      marginTop: spacing.xs,
+    },
+    inactiveDefaultBadgeText: {
+      ...typography.caption,
+      color: theme.textTertiary,
+      fontWeight: '600' as const,
     },
   });
 }
