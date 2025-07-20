@@ -32,6 +32,8 @@ export type MainStackParamList = {
   InitialBudgetSetup: undefined;
   PermissionRequest: undefined;
   SessionTest: undefined;
+  BudgetCreate: undefined;
+  BudgetEdit: { budgetId: string };
   // Add other main app screens here
 };
 

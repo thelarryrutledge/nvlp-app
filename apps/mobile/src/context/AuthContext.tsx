@@ -10,6 +10,7 @@ import { biometricService, type BiometricCapabilities, type BiometricAuthResult 
 import { secureCredentialStorage } from '../services/auth/secureCredentialStorage';
 import { rememberMeService } from '../services/auth/rememberMeService';
 import { authService } from '../services/api';
+import { apiClient } from '../services/api/client';
 import type { LoginCredentials, RegisterCredentials, AuthResult } from '../services/api';
 
 export interface AuthState {
@@ -53,6 +54,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
    * Update auth state from token data
    */
   const updateAuthState = useCallback((tokenData: TokenData | null) => {
+    // Update React state
     setAuthState(prev => ({
       ...prev,
       isAuthenticated: !!tokenData,
@@ -60,6 +62,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
       accessToken: tokenData?.accessToken || null,
       isLoading: false,
     }));
+    
+    // Sync with API client
+    if (tokenData) {
+      apiClient.setAuth(
+        tokenData.accessToken,
+        tokenData.refreshToken || '',
+        tokenData.user
+      );
+    } else {
+      apiClient.clearAuth();
+    }
   }, []);
 
   /**

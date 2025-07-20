@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useThemedStyles, useTheme, spacing, typography } from '../../theme';
 import { Button, Card } from '../../components/ui';
 import { budgetService } from '../../services/api/budgetService';
@@ -39,11 +39,23 @@ const BudgetCard: React.FC<BudgetCardProps> = ({ budget, onEdit, onDelete, onSet
   };
 
   return (
-    <Card variant="elevated" padding="large" style={styles.budgetCard}>
+    <Card 
+      variant="elevated" 
+      padding="large" 
+      style={[
+        styles.budgetCard, 
+        !budget.is_active && styles.inactiveBudgetCard
+      ]}
+    >
       <View style={styles.budgetHeader}>
         <View style={styles.budgetInfo}>
           <View style={styles.budgetTitleRow}>
-            <Text style={styles.budgetName}>{budget.name}</Text>
+            <Text style={[
+              styles.budgetName,
+              !budget.is_active && styles.inactiveBudgetText
+            ]}>
+              {budget.name}
+            </Text>
             {budget.is_default && (
               <View style={styles.defaultBadge}>
                 <Text style={styles.defaultBadgeText}>Default</Text>
@@ -51,10 +63,18 @@ const BudgetCard: React.FC<BudgetCardProps> = ({ budget, onEdit, onDelete, onSet
             )}
           </View>
           {budget.description && (
-            <Text style={styles.budgetDescription}>{budget.description}</Text>
+            <Text style={[
+              styles.budgetDescription,
+              !budget.is_active && styles.inactiveBudgetText
+            ]}>
+              {budget.description}
+            </Text>
           )}
           <View style={styles.budgetMeta}>
-            <Text style={styles.budgetMetaText}>
+            <Text style={[
+              styles.budgetMetaText,
+              !budget.is_active && styles.inactiveBudgetText
+            ]}>
               Created: {formatDate(budget.created_at)}
             </Text>
             <View style={[styles.statusBadge, budget.is_active ? styles.activeBadge : styles.inactiveBadge]}>
@@ -75,7 +95,7 @@ const BudgetCard: React.FC<BudgetCardProps> = ({ budget, onEdit, onDelete, onSet
           <Text style={styles.actionButtonText}>Edit</Text>
         </TouchableOpacity>
 
-        {!budget.is_default && (
+        {!budget.is_default && budget.is_active && (
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => onSetDefault(budget)}
@@ -114,7 +134,22 @@ export const BudgetListScreen: React.FC = () => {
       }
 
       const fetchedBudgets = await budgetService.getBudgets();
-      setBudgets(fetchedBudgets);
+      
+      // Sort budgets: default first, then active, then inactive
+      const sortedBudgets = fetchedBudgets.sort((a, b) => {
+        // Default budget always first
+        if (a.is_default && !b.is_default) return -1;
+        if (!a.is_default && b.is_default) return 1;
+        
+        // Then by active status
+        if (a.is_active && !b.is_active) return -1;
+        if (!a.is_active && b.is_active) return 1;
+        
+        // Finally by name alphabetically
+        return a.name.localeCompare(b.name);
+      });
+      
+      setBudgets(sortedBudgets);
     } catch (error: any) {
       Alert.alert(
         'Error Loading Budgets',
@@ -130,10 +165,16 @@ export const BudgetListScreen: React.FC = () => {
     loadBudgets();
   }, [loadBudgets]);
 
+  // Reload budgets when screen comes into focus (e.g., returning from create screen)
+  useFocusEffect(
+    useCallback(() => {
+      loadBudgets();
+    }, [loadBudgets])
+  );
+
   const handleCreateBudget = () => {
-    // Navigate to budget creation screen (to be implemented)
-    console.log('Navigate to budget creation');
-    Alert.alert('Coming Soon', 'Budget creation screen will be implemented next.');
+    // Navigate to budget creation screen
+    (navigation as any).navigate('BudgetCreate');
   };
 
   const handleEditBudget = (budget: Budget) => {
@@ -290,6 +331,13 @@ function createStyles(theme: Theme) {
     budgetCard: {
       marginBottom: spacing.md,
     },
+    inactiveBudgetCard: {
+      opacity: 0.7,
+      backgroundColor: theme.border, // Light gray distinct from screen background
+    },
+    inactiveBudgetText: {
+      color: theme.textTertiary,
+    },
     budgetHeader: {
       marginBottom: spacing.md,
     },
@@ -366,7 +414,7 @@ function createStyles(theme: Theme) {
       paddingVertical: spacing.sm,
       paddingHorizontal: spacing.md,
       borderRadius: 8,
-      backgroundColor: theme.surfaceVariant,
+      backgroundColor: theme.surface,
     },
     actionButtonText: {
       ...typography.bodySmall,

@@ -77,8 +77,8 @@
 ## Mobile App Development Status
 **Roadmap**: 12-phase React Native implementation plan
 **Current Phase**: Phase 4.1 Budget Management (IN PROGRESS)  
-**Latest Completed**: Authentication token management fix (budget list authentication error resolved)
-**Phase 4.1 Status**: Budget list screen complete ✅, authentication fixed ✅, budget creation form pending
+**Latest Completed**: Budget creation form with validation and business rules (Phase 4.1 second subtask complete)
+**Phase 4.1 Status**: Budget list screen complete ✅, authentication fixed ✅, budget creation form complete ✅, budget editing form pending
 **Progress**: Project setup ✅, Core dependencies ✅, State management ✅, API client integration ✅, Navigation architecture ✅, Auth screens ✅, Design system ✅, Onboarding flow ✅, Token management ✅
 **Tech Stack**: React Native 0.80, TypeScript, React Navigation 6, Reanimated 3, @nvlp/client, React Native Biometrics, React Native Image Picker
 **Next Phase**: Complete Phase 4.1 Budget Management → Phase 4.2 Dashboard Screen
@@ -140,6 +140,19 @@
   - Proper token clearing from all storage locations (AsyncStorage + Keychain)
   - Fixed logout flow to completely clear authentication state
 - **Result**: Budget authentication errors resolved, proper logout behavior restored
+
+### Budget Creation Form Implementation (July 20, 2025):
+- **Feature**: Complete budget creation form with validation, business rules, and smart defaults
+- **UI Components**: Modal presentation with form sections, toggle switches, character counters
+- **Validation**: Real-time validation for name (required, 3-50 chars) and description (optional, max 200 chars)
+- **Business Rules**: Only active budgets can be set as default, automatic default switching
+- **Smart Behavior**: 
+  - Auto-refresh budget list on form close
+  - Default toggle disables when Active is turned off
+  - Two-step creation (create + update) to handle default switching properly
+  - Database triggers handle automatic default budget management
+- **Database Fixes**: Fixed envelope creation trigger and default budget constraint handling
+- **Type System**: Updated CreateBudgetInput to include is_active and is_default fields
 
 ### Biometric Authentication Implementation (Phase 3.1 Complete):
 - **iOS Setup**: NSFaceIDUsageDescription in Info.plist required for Face ID

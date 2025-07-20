@@ -8,6 +8,8 @@ import { IncomeFrequency, CategoryType, EnvelopeType, PayeeType } from '../enums
 export interface CreateBudgetInput {
   name: string;
   description?: string;
+  is_active?: boolean;
+  is_default?: boolean;
 }
 
 export interface UpdateBudgetInput {

@@ -96,7 +96,7 @@
 
 ### 4.1 Budget Management
 - [x] Create budget list screen
-- [ ] Build budget creation form
+- [x] Build budget creation form
 - [ ] Implement budget editing functionality
 - [ ] Add budget switching mechanism
 - [ ] Create budget settings screen

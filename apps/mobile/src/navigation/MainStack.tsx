@@ -12,6 +12,7 @@ import { DesignSystemExample } from '../screens/DesignSystemExample';
 import { InitialBudgetSetupScreen } from '../screens/onboarding/InitialBudgetSetupScreen';
 import { PermissionRequestScreen } from '../screens/onboarding/PermissionRequestScreen';
 import { SessionTestScreen } from '../screens/developer/SessionTestScreen';
+import { BudgetCreateScreen } from '../screens/budgets/BudgetCreateScreen';
 import { useTheme } from '../theme';
 import type { MainStackParamList } from './types';
 
@@ -82,6 +83,16 @@ export const MainStack: React.FC = () => {
           headerShown: true,
           title: 'Session Tests',
           headerBackTitle: 'Back',
+        }}
+      />
+      <Stack.Screen
+        name="BudgetCreate"
+        component={BudgetCreateScreen}
+        options={{
+          headerShown: true,
+          title: 'Create Budget',
+          headerBackTitle: 'Back',
+          presentation: 'modal',
         }}
       />
     </Stack.Navigator>
