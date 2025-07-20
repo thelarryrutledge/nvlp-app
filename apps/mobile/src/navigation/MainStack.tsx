@@ -13,6 +13,7 @@ import { InitialBudgetSetupScreen } from '../screens/onboarding/InitialBudgetSet
 import { PermissionRequestScreen } from '../screens/onboarding/PermissionRequestScreen';
 import { SessionTestScreen } from '../screens/developer/SessionTestScreen';
 import { BudgetCreateScreen } from '../screens/budgets/BudgetCreateScreen';
+import { BudgetEditScreen } from '../screens/budgets/BudgetEditScreen';
 import { useTheme } from '../theme';
 import type { MainStackParamList } from './types';
 
@@ -91,6 +92,16 @@ export const MainStack: React.FC = () => {
         options={{
           headerShown: true,
           title: 'Create Budget',
+          headerBackTitle: 'Back',
+          presentation: 'modal',
+        }}
+      />
+      <Stack.Screen
+        name="BudgetEdit"
+        component={BudgetEditScreen}
+        options={{
+          headerShown: true,
+          title: 'Edit Budget',
           headerBackTitle: 'Back',
           presentation: 'modal',
         }}

@@ -178,9 +178,7 @@ export const BudgetListScreen: React.FC = () => {
   };
 
   const handleEditBudget = (budget: Budget) => {
-    // Navigate to budget editing screen (to be implemented)
-    console.log('Edit budget:', budget.id);
-    Alert.alert('Coming Soon', `Budget editing for "${budget.name}" will be implemented next.`);
+    (navigation as any).navigate('BudgetEdit', { budgetId: budget.id });
   };
 
   const handleDeleteBudget = (budget: Budget) => {

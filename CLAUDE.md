@@ -77,8 +77,8 @@
 ## Mobile App Development Status
 **Roadmap**: 12-phase React Native implementation plan
 **Current Phase**: Phase 4.1 Budget Management (IN PROGRESS)  
-**Latest Completed**: Budget creation form with validation and business rules (Phase 4.1 second subtask complete)
-**Phase 4.1 Status**: Budget list screen complete ✅, authentication fixed ✅, budget creation form complete ✅, budget editing form pending
+**Latest Completed**: Budget editing functionality (Phase 4.1 third subtask COMPLETE ✅)
+**Phase 4.1 Status**: Budget list screen complete ✅, authentication fixed ✅, budget creation form complete ✅, budget editing functionality complete ✅
 **Progress**: Project setup ✅, Core dependencies ✅, State management ✅, API client integration ✅, Navigation architecture ✅, Auth screens ✅, Design system ✅, Onboarding flow ✅, Token management ✅
 **Tech Stack**: React Native 0.80, TypeScript, React Navigation 6, Reanimated 3, @nvlp/client, React Native Biometrics, React Native Image Picker
 **Next Phase**: Complete Phase 4.1 Budget Management → Phase 4.2 Dashboard Screen
@@ -153,6 +153,21 @@
   - Database triggers handle automatic default budget management
 - **Database Fixes**: Fixed envelope creation trigger and default budget constraint handling
 - **Type System**: Updated CreateBudgetInput to include is_active and is_default fields
+
+### Budget Editing Functionality Implementation (July 20, 2025):
+- **Feature**: Complete budget editing screen with change detection and pre-populated data
+- **Navigation**: Edit button in budget list navigates to modal edit screen with budget ID parameter
+- **Data Loading**: Automatic budget data fetching on screen mount with error handling and retry
+- **Form UI**: Identical design to creation form with all fields pre-populated from existing budget
+- **Change Detection**: Only saves when actual changes are detected, prevents unnecessary API calls
+- **Validation**: Same business rules as creation (active-only defaults, field validation)
+- **Error Handling**: Comprehensive error states for data loading failures and update errors
+- **UX Features**:
+  - Loading states for data fetch and form submission
+  - Cancel confirmation if changes exist
+  - Success feedback with automatic navigation back
+  - Real-time character counters and field validation
+- **API Integration**: Uses UpdateBudgetInput type with selective field updates
 
 ### Biometric Authentication Implementation (Phase 3.1 Complete):
 - **iOS Setup**: NSFaceIDUsageDescription in Info.plist required for Face ID
