@@ -100,7 +100,7 @@
 - [x] Implement budget editing functionality
 - [x] Add budget switching mechanism
 - [x] Create budget settings screen
-- [ ] Implement budget deletion with confirmation
+- [x] Implement budget deletion with confirmation
 
 ### 4.2 Dashboard Screen
 - [ ] Design main dashboard layout
