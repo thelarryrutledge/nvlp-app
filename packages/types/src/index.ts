@@ -8,6 +8,7 @@ export * from './domain/user';
 export * from './domain/budget';
 export * from './domain/financial';
 export * from './domain/transaction';
+export * from './domain/dashboard';
 
 // API types
 export * from './api/requests';

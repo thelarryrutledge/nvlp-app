@@ -103,11 +103,11 @@
 - [x] Implement budget deletion with confirmation
 
 ### 4.2 Dashboard Screen
-- [ ] Design main dashboard layout
-- [ ] Create available balance display component
-- [ ] Build envelope summary cards
-- [ ] Implement recent transactions list
-- [ ] Add spending insights widgets
+- [x] Design main dashboard layout
+- [x] Create available balance display component
+- [x] Build envelope summary cards
+- [x] Implement recent transactions list
+- [x] Add spending insights widgets
 - [ ] Create quick action buttons
 
 ### 4.3 Income Management

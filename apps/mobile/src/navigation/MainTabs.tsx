@@ -10,23 +10,13 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '../theme';
 import { EnhancedProfileScreen } from '../screens/profile/EnhancedProfileScreen';
 import { BudgetListScreen } from '../screens/budgets/BudgetListScreen';
+import { DashboardScreen } from '../screens/dashboard/DashboardScreen';
 import { BudgetSwitcher } from '../components/budget';
 import type { MainTabParamList } from './types';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 // Placeholder screens - these will be replaced with actual screens later
-const DashboardScreen = () => {
-  const { theme } = useTheme();
-  
-  return (
-    <View style={[styles.placeholder, { backgroundColor: theme.background }]}>
-      <Text style={[styles.placeholderText, { color: theme.textPrimary }]}>Dashboard</Text>
-      <Text style={[styles.placeholderSubtext, { color: theme.textSecondary }]}>Welcome! You're logged in.</Text>
-      <Text style={[styles.placeholderSubtext, { color: theme.textSecondary }]}>Use the budget switcher above to select an active budget.</Text>
-    </View>
-  );
-};
 
 // BudgetsScreen is now implemented as BudgetListScreen
 
