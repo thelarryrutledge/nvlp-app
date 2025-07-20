@@ -18,6 +18,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useThemedStyles, useTheme, spacing, typography } from '../../theme';
 import { Card } from '../ui';
 import { useBudget } from '../../context';
+import { budgetService } from '../../services/api/budgetService';
 import type { Budget } from '@nvlp/types';
 import type { Theme } from '../../theme';
 
@@ -32,19 +33,39 @@ export const BudgetSwitcher: React.FC<BudgetSwitcherProps> = ({
 }) => {
   const { theme } = useTheme();
   const styles = useThemedStyles(createStyles);
-  const { budgets, selectedBudget, selectBudget, isLoading, error } = useBudget();
+  const { budgets, selectedBudget, selectBudget, refreshBudgets, isLoading, error } = useBudget();
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const activeBudgets = budgets.filter(budget => budget.is_active);
   const inactiveBudgets = budgets.filter(budget => !budget.is_active);
 
   const handleBudgetSelect = (budget: Budget) => {
-    // Only allow selection of active budgets
     if (!budget.is_active) {
       Alert.alert(
-        'Cannot Select Budget',
-        'This budget is inactive. Please activate it first to use it.',
-        [{ text: 'OK' }]
+        'Activate Budget?',
+        `"${budget.name}" is currently inactive. Would you like to activate and select it?`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Activate & Select',
+            onPress: async () => {
+              try {
+                // Activate the budget
+                await budgetService.updateBudget(budget.id, { is_active: true });
+                // Refresh budgets to get updated data
+                await refreshBudgets();
+                // Select the newly activated budget
+                selectBudget({ ...budget, is_active: true });
+                setIsModalVisible(false);
+              } catch (error: any) {
+                Alert.alert(
+                  'Activation Failed',
+                  error.message || 'Failed to activate budget. Please try again.'
+                );
+              }
+            },
+          },
+        ]
       );
       return;
     }
@@ -229,7 +250,9 @@ export const BudgetSwitcher: React.FC<BudgetSwitcherProps> = ({
                           </Text>
                         )}
                         {selectedBudget?.id === budget.id && (
-                          <Icon name="checkmark" size={20} color={theme.primary} />
+                          <View style={styles.checkmarkContainer}>
+                            <Icon name="checkmark" size={18} color={theme.textOnPrimary} />
+                          </View>
                         )}
                       </TouchableOpacity>
                     ))}
@@ -240,12 +263,13 @@ export const BudgetSwitcher: React.FC<BudgetSwitcherProps> = ({
                   <View style={styles.budgetSection}>
                     <Text style={styles.sectionTitle}>Inactive Budgets</Text>
                     <Text style={styles.inactiveNote}>
-                      Inactive budgets cannot be selected. Activate them first to use.
+                      Tap an inactive budget to activate and select it.
                     </Text>
                     {inactiveBudgets.map((budget) => (
-                      <View
+                      <TouchableOpacity
                         key={budget.id}
                         style={[styles.budgetItem, styles.inactiveBudgetItem]}
+                        onPress={() => handleBudgetSelect(budget)}
                       >
                         <View style={styles.budgetItemContent}>
                           <Text style={styles.inactiveBudgetText}>
@@ -263,9 +287,11 @@ export const BudgetSwitcher: React.FC<BudgetSwitcherProps> = ({
                           </Text>
                         )}
                         {selectedBudget?.id === budget.id && (
-                          <Icon name="checkmark" size={20} color={theme.textTertiary} />
+                          <View style={styles.checkmarkContainer}>
+                            <Icon name="checkmark" size={18} color={theme.textOnPrimary} />
+                          </View>
                         )}
-                      </View>
+                      </TouchableOpacity>
                     ))}
                   </View>
                 )}
@@ -525,6 +551,14 @@ function createStyles(theme: Theme) {
       ...typography.caption,
       color: theme.textTertiary,
       fontWeight: '600' as const,
+    },
+    checkmarkContainer: {
+      backgroundColor: theme.primary,
+      borderRadius: 10,
+      width: 20,
+      height: 20,
+      justifyContent: 'center' as const,
+      alignItems: 'center' as const,
     },
   });
 }
