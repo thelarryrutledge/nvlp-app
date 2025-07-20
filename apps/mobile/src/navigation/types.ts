@@ -34,6 +34,7 @@ export type MainStackParamList = {
   SessionTest: undefined;
   BudgetCreate: undefined;
   BudgetEdit: { budgetId: string };
+  BudgetSettings: { budgetId: string };
   // Add other main app screens here
 };
 

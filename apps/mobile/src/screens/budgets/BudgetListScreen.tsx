@@ -29,9 +29,10 @@ interface BudgetCardProps {
   onEdit: (budget: Budget) => void;
   onDelete: (budget: Budget) => void;
   onSetDefault: (budget: Budget) => void;
+  onSettings: (budget: Budget) => void;
 }
 
-const BudgetCard: React.FC<BudgetCardProps> = ({ budget, onEdit, onDelete, onSetDefault }) => {
+const BudgetCard: React.FC<BudgetCardProps> = ({ budget, onEdit, onDelete, onSetDefault, onSettings }) => {
   const { theme } = useTheme();
   const styles = useThemedStyles(createStyles);
 
@@ -90,6 +91,14 @@ const BudgetCard: React.FC<BudgetCardProps> = ({ budget, onEdit, onDelete, onSet
       <View style={styles.budgetActions}>
         <TouchableOpacity
           style={styles.actionButton}
+          onPress={() => onSettings(budget)}
+        >
+          <Icon name="settings-outline" size={16} color={theme.primary} />
+          <Text style={styles.actionButtonText}>Settings</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.actionButton}
           onPress={() => onEdit(budget)}
         >
           <Icon name="pencil" size={16} color={theme.primary} />
@@ -105,14 +114,6 @@ const BudgetCard: React.FC<BudgetCardProps> = ({ budget, onEdit, onDelete, onSet
             <Text style={styles.actionButtonText}>Set Default</Text>
           </TouchableOpacity>
         )}
-
-        <TouchableOpacity
-          style={styles.actionButton}
-          onPress={() => onDelete(budget)}
-        >
-          <Icon name="trash-outline" size={16} color={theme.error} />
-          <Text style={styles.actionButtonText}>Delete</Text>
-        </TouchableOpacity>
       </View>
     </Card>
   );
@@ -139,6 +140,10 @@ export const BudgetListScreen: React.FC = () => {
 
   const handleEditBudget = (budget: Budget) => {
     (navigation as any).navigate('BudgetEdit', { budgetId: budget.id });
+  };
+
+  const handleBudgetSettings = (budget: Budget) => {
+    (navigation as any).navigate('BudgetSettings', { budgetId: budget.id });
   };
 
   const handleDeleteBudget = (budget: Budget) => {
@@ -242,6 +247,7 @@ export const BudgetListScreen: React.FC = () => {
                 onEdit={handleEditBudget}
                 onDelete={handleDeleteBudget}
                 onSetDefault={handleSetDefaultBudget}
+                onSettings={handleBudgetSettings}
               />
             ))}
           </View>

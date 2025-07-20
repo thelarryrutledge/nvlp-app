@@ -99,7 +99,7 @@
 - [x] Build budget creation form
 - [x] Implement budget editing functionality
 - [x] Add budget switching mechanism
-- [ ] Create budget settings screen
+- [x] Create budget settings screen
 - [ ] Implement budget deletion with confirmation
 
 ### 4.2 Dashboard Screen

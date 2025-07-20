@@ -77,8 +77,8 @@
 ## Mobile App Development Status
 **Roadmap**: 12-phase React Native implementation plan
 **Current Phase**: Phase 4.1 Budget Management (IN PROGRESS)  
-**Latest Completed**: Budget switching mechanism (Phase 4.1 fourth subtask COMPLETE ✅)
-**Phase 4.1 Status**: Budget list screen complete ✅, authentication fixed ✅, budget creation form complete ✅, budget editing functionality complete ✅, budget switching mechanism complete ✅
+**Latest Completed**: Budget settings screen (Phase 4.1 fifth subtask COMPLETE ✅)
+**Phase 4.1 Status**: Budget list screen complete ✅, authentication fixed ✅, budget creation form complete ✅, budget editing functionality complete ✅, budget switching mechanism complete ✅, budget settings screen complete ✅
 **Progress**: Project setup ✅, Core dependencies ✅, State management ✅, API client integration ✅, Navigation architecture ✅, Auth screens ✅, Design system ✅, Onboarding flow ✅, Token management ✅
 **Tech Stack**: React Native 0.80, TypeScript, React Navigation 6, Reanimated 3, @nvlp/client, React Native Biometrics, React Native Image Picker
 **Next Phase**: Complete Phase 4.1 Budget Management → Phase 4.2 Dashboard Screen
@@ -189,6 +189,30 @@
   - Updated BudgetListScreen to use shared context instead of local state
   - Header integration across multiple tab screens
   - Consistent sorting (default first, active, then inactive)
+
+### Budget Settings Screen Implementation (July 20, 2025):
+- **Feature**: Comprehensive budget configuration and management screen
+- **Navigation**: Accessible from Settings button on budget cards in budget list
+- **UI Sections**: 
+  - Budget Information header with name, description, and status badges
+  - Budget Information section with Edit Details navigation
+  - Budget Status section with Active/Default toggles
+  - Actions section with Duplicate and Delete options
+- **Smart Behaviors**:
+  - Auto-handles budget selection when deactivating currently selected budget
+  - Prevents deletion of last remaining budget with helpful message
+  - Duplicate budget creates copy with "(Copy)" suffix as active, non-default
+  - Real-time status badge updates (Default, Current, Active/Inactive)
+- **Business Logic**:
+  - Only active budgets can be set as default (disabled toggle with explanation)
+  - Deleting selected budget auto-selects next available active budget
+  - Comprehensive confirmation dialogs for destructive actions
+  - Integrated with budget context for immediate state updates
+- **Error Handling**:
+  - Graceful loading states and error recovery
+  - Detailed error messages for all operations
+  - Retry mechanisms for data loading failures
+- **Integration**: Full integration with BudgetContext and navigation stack
 
 ### Biometric Authentication Implementation (Phase 3.1 Complete):
 - **iOS Setup**: NSFaceIDUsageDescription in Info.plist required for Face ID
