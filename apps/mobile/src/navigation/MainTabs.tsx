@@ -6,8 +6,7 @@
 
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { useAuth } from '../context/AuthContext';
+import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '../theme';
 import { EnhancedProfileScreen } from '../screens/profile/EnhancedProfileScreen';
 import type { MainTabParamList } from './types';
@@ -16,16 +15,12 @@ const Tab = createBottomTabNavigator<MainTabParamList>();
 
 // Placeholder screens - these will be replaced with actual screens later
 const DashboardScreen = () => {
-  const { logout } = useAuth();
   const { theme } = useTheme();
   
   return (
     <View style={[styles.placeholder, { backgroundColor: theme.background }]}>
       <Text style={[styles.placeholderText, { color: theme.textPrimary }]}>Dashboard</Text>
       <Text style={[styles.placeholderSubtext, { color: theme.textSecondary }]}>Welcome! You're logged in.</Text>
-      <TouchableOpacity style={styles.logoutButton} onPress={() => logout()}>
-        <Text style={styles.logoutButtonText}>Logout</Text>
-      </TouchableOpacity>
     </View>
   );
 };
@@ -145,17 +140,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     // color removed - using theme
     marginBottom: 32,
-  },
-  logoutButton: {
-    backgroundColor: '#dc3545',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-  logoutButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
   },
 });
 
