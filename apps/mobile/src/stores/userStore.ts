@@ -34,7 +34,7 @@ export const useUserStore = create<UserStore>()(
           }
 
           // TODO: Replace with actual NVLP API call
-          const response = await fetch('https://edge-api.nvlp.app/profile', {
+          const response = await fetch('https://edge-api.nvlp.app/api/profile', {
             method: 'GET',
             headers: {
               'Authorization': `Bearer ${token}`,
@@ -77,7 +77,7 @@ export const useUserStore = create<UserStore>()(
           }
 
           // TODO: Replace with actual NVLP API call
-          const response = await fetch('https://edge-api.nvlp.app/profile', {
+          const response = await fetch('https://edge-api.nvlp.app/api/profile', {
             method: 'PATCH',
             headers: {
               'Authorization': `Bearer ${token}`,

@@ -6,7 +6,7 @@ export const config = {
   api: {
     baseUrl: 'http://localhost:3000',
     dbApiUrl: 'https://db-api.nvlp.app',
-    edgeApiUrl: 'https://edge-api.nvlp.app',
+    edgeApiUrl: 'https://edge-api.nvlp.app/api',
   },
   
   // Supabase Configuration

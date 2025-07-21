@@ -176,7 +176,7 @@ async function processOfflineAction(action: any) {
       break;
 
     case 'UPDATE_PROFILE':
-      await fetch('https://edge-api.nvlp.app/profile', {
+      await fetch('https://edge-api.nvlp.app/api/profile', {
         method: 'PATCH',
         headers,
         body: JSON.stringify(data),

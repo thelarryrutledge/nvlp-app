@@ -12,8 +12,10 @@ import {
   StyleSheet,
   RefreshControl,
   Alert,
+  TouchableOpacity,
+  SafeAreaView,
+  ActivityIndicator,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { useThemedStyles, useTheme, spacing, typography } from '../../theme';
 import { Card } from '../../components/ui';
@@ -25,7 +27,7 @@ import type { DashboardData } from '@nvlp/types';
 export const DashboardScreen: React.FC = () => {
   const { theme } = useTheme();
   const styles = useThemedStyles(createStyles);
-  const { selectedBudget, isLoading: budgetLoading } = useBudget();
+  const { selectedBudget, isLoading: budgetLoading, budgets } = useBudget();
   
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -98,13 +100,29 @@ export const DashboardScreen: React.FC = () => {
     );
   }
 
+  // Show loading state while budgets are being loaded initially
+  if (budgetLoading && !selectedBudget) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={theme.primary} />
+          <Text style={styles.loadingText}>Loading budgets...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   if (!selectedBudget) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyTitle}>No Budget Selected</Text>
+          <Text style={styles.emptyTitle}>
+            {budgets.length === 0 ? 'No Budgets Found' : 'No Budget Selected'}
+          </Text>
           <Text style={styles.emptyDescription}>
-            Please select a budget using the switcher above to view your dashboard.
+            {budgets.length === 0 
+              ? 'Go to the Budgets tab to create your first budget.'
+              : 'Please select a budget using the switcher above to view your dashboard.'}
           </Text>
         </View>
       </SafeAreaView>
@@ -139,6 +157,50 @@ export const DashboardScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Quick Action Buttons */}
+      <View style={styles.quickActionsContainer}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.quickActionsContent}
+        >
+          <TouchableOpacity style={styles.quickActionButton} activeOpacity={0.7}>
+            <View style={styles.quickActionIcon}>
+              <Text style={styles.quickActionIconText}>➕</Text>
+            </View>
+            <Text style={styles.quickActionLabel}>Add Transaction</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.quickActionButton} activeOpacity={0.7}>
+            <View style={styles.quickActionIcon}>
+              <Text style={styles.quickActionIconText}>💸</Text>
+            </View>
+            <Text style={styles.quickActionLabel}>Quick Expense</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.quickActionButton} activeOpacity={0.7}>
+            <View style={styles.quickActionIcon}>
+              <Text style={styles.quickActionIconText}>📊</Text>
+            </View>
+            <Text style={styles.quickActionLabel}>View Reports</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.quickActionButton} activeOpacity={0.7}>
+            <View style={styles.quickActionIcon}>
+              <Text style={styles.quickActionIconText}>✉️</Text>
+            </View>
+            <Text style={styles.quickActionLabel}>Envelopes</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.quickActionButton} activeOpacity={0.7}>
+            <View style={styles.quickActionIcon}>
+              <Text style={styles.quickActionIconText}>🏦</Text>
+            </View>
+            <Text style={styles.quickActionLabel}>Add Income</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </View>
+      
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         refreshControl={
@@ -155,7 +217,7 @@ export const DashboardScreen: React.FC = () => {
         <Card variant="elevated" padding="large" style={styles.overviewCard}>
           <View style={styles.overviewHeader}>
             <Text style={styles.overviewTitle}>Budget Overview</Text>
-            <Text style={styles.budgetName}>{budget_overview.budget.name}</Text>
+            <Text style={styles.budgetName}>{budget_overview.budget?.name || selectedBudget.name}</Text>
           </View>
           
           <View style={styles.balanceRow}>
@@ -512,6 +574,44 @@ function createStyles(theme: Theme) {
     transactionAmount: {
       ...typography.body,
       fontWeight: '600' as const,
+    },
+    // Quick Actions Styles
+    quickActionsContainer: {
+      backgroundColor: theme.surface,
+      paddingVertical: spacing.md,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.border,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
+    },
+    quickActionsContent: {
+      paddingHorizontal: spacing.lg,
+    },
+    quickActionButton: {
+      alignItems: 'center' as const,
+      marginRight: spacing.lg,
+      width: 72,
+    },
+    quickActionIcon: {
+      width: 48,
+      height: 48,
+      borderRadius: 24,
+      backgroundColor: theme.primary,
+      justifyContent: 'center' as const,
+      alignItems: 'center' as const,
+      marginBottom: spacing.xs,
+    },
+    quickActionIconText: {
+      fontSize: 20,
+    },
+    quickActionLabel: {
+      ...typography.caption,
+      color: theme.textSecondary,
+      textAlign: 'center' as const,
+      fontSize: 11,
     },
   });
 }

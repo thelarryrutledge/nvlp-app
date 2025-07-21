@@ -6,6 +6,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { budgetService } from '../services/api/budgetService';
+import { useAuth } from './AuthContext';
 import type { Budget } from '@nvlp/types';
 
 export interface BudgetState {
@@ -30,6 +31,7 @@ export interface BudgetProviderProps {
 }
 
 export const BudgetProvider: React.FC<BudgetProviderProps> = ({ children }) => {
+  const { user } = useAuth();
   const [state, setState] = useState<BudgetState>({
     budgets: [],
     selectedBudget: null,
@@ -93,10 +95,24 @@ export const BudgetProvider: React.FC<BudgetProviderProps> = ({ children }) => {
     }));
   }, []);
 
-  // Load budgets on mount
+  // Load budgets when user changes (login/logout)
   useEffect(() => {
-    loadBudgets();
-  }, [loadBudgets]);
+    if (user) {
+      // Small delay to ensure auth token is properly set
+      const timer = setTimeout(() => {
+        loadBudgets();
+      }, 100);
+      return () => clearTimeout(timer);
+    } else {
+      // Clear budgets when user logs out
+      setState({
+        budgets: [],
+        selectedBudget: null,
+        isLoading: false,
+        error: null,
+      });
+    }
+  }, [user, loadBudgets]);
 
   const contextValue: BudgetContextType = {
     ...state,

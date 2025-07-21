@@ -25,7 +25,7 @@ export const useAuthStore = create<AuthStore>()(
 
         try {
           // TODO: Replace with actual NVLP API call
-          const response = await fetch('https://edge-api.nvlp.app/auth/login', {
+          const response = await fetch('https://edge-api.nvlp.app/api/auth/login', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -65,7 +65,7 @@ export const useAuthStore = create<AuthStore>()(
           
           // TODO: Replace with actual NVLP API call for logout
           if (token) {
-            await fetch('https://edge-api.nvlp.app/auth/logout', {
+            await fetch('https://edge-api.nvlp.app/api/auth/logout', {
               method: 'POST',
               headers: {
                 'Authorization': `Bearer ${token}`,
@@ -95,7 +95,7 @@ export const useAuthStore = create<AuthStore>()(
 
         try {
           // TODO: Replace with actual NVLP API call
-          const response = await fetch('https://edge-api.nvlp.app/auth/refresh', {
+          const response = await fetch('https://edge-api.nvlp.app/api/auth/refresh', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

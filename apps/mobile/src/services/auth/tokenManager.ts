@@ -4,6 +4,11 @@
  * Manages secure storage, refresh, and validation of authentication tokens
  * using React Native Keychain for secure storage with biometric protection
  * and AsyncStorage for non-secure storage and migration support
+ * 
+ * NOTE: iOS Simulator does not fully clear keychain data when deleting an app.
+ * To force clear auth state in development:
+ * 1. Reset the simulator (Device > Erase All Content and Settings), or
+ * 2. Use the logout function to clear credentials manually
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
