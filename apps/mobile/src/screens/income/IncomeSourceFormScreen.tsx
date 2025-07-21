@@ -124,7 +124,7 @@ export const IncomeSourceFormScreen: React.FC = () => {
       setFormData({
         name: incomeSource.name,
         description: incomeSource.description || '',
-        expectedAmount: incomeSource.expected_monthly_amount?.toString() || '',
+        expectedAmount: incomeSource.expected_amount?.toString() || '',
         frequency: incomeSource.frequency,
         customDay: incomeSource.custom_day?.toString() || '',
         weeklyDay: incomeSource.weekly_day?.toString() || '1',
@@ -188,25 +188,7 @@ export const IncomeSourceFormScreen: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const calculateMonthlyAmount = (amount: number, frequency: IncomeFrequency): number => {
-    switch (frequency) {
-      case 'weekly':
-        return amount * 52 / 12; // 52 weeks / 12 months
-      case 'bi_weekly':
-        return amount * 26 / 12; // 26 payments / 12 months
-      case 'twice_monthly':
-        return amount * 2; // 2 payments per month
-      case 'monthly':
-        return amount;
-      case 'annually':
-        return amount / 12;
-      case 'custom':
-      case 'one_time':
-        return amount; // Use as-is for custom/one-time
-      default:
-        return amount;
-    }
-  };
+  // Amount calculations are now handled by the database trigger
 
   const handleSave = async () => {
     if (!validateForm() || !selectedBudget) return;
@@ -214,12 +196,11 @@ export const IncomeSourceFormScreen: React.FC = () => {
     setIsSaving(true);
     try {
       const amount = formData.expectedAmount ? Number(formData.expectedAmount) : null;
-      const monthlyAmount = amount ? calculateMonthlyAmount(amount, formData.frequency) : null;
 
       const incomeSourceData: any = {
         name: formData.name.trim(),
         description: formData.description.trim() || null,
-        expected_monthly_amount: monthlyAmount,
+        expected_amount: amount, // Store the original frequency amount
         frequency: formData.frequency,
         should_notify: formData.shouldNotify,
         is_active: formData.isActive,
@@ -262,6 +243,19 @@ export const IncomeSourceFormScreen: React.FC = () => {
     // Clear error when user starts typing
     if (errors[key]) {
       setErrors(prev => ({ ...prev, [key]: undefined }));
+    }
+  };
+
+  const handleActiveToggle = (value: boolean) => {
+    // If turning off active, also turn off notifications
+    if (!value) {
+      setFormData(prev => ({ 
+        ...prev, 
+        isActive: value,
+        shouldNotify: false // Auto-disable notifications when inactive
+      }));
+    } else {
+      setFormData(prev => ({ ...prev, isActive: value }));
     }
   };
 
@@ -598,13 +592,20 @@ export const IncomeSourceFormScreen: React.FC = () => {
             <View style={styles.switchRow}>
               <View style={styles.switchInfo}>
                 <Text style={styles.switchLabel}>Enable Notifications</Text>
-                <Text style={styles.switchDescription}>
-                  Get notified about expected income
+                <Text style={[
+                  styles.switchDescription,
+                  !formData.isActive && styles.disabledText
+                ]}>
+                  {formData.isActive 
+                    ? 'Get notified about expected income'
+                    : 'Notifications disabled for inactive sources'
+                  }
                 </Text>
               </View>
               <Switch
                 value={formData.shouldNotify}
                 onValueChange={(value) => updateFormData('shouldNotify', value)}
+                disabled={!formData.isActive}
                 trackColor={{ false: theme.border, true: theme.primaryLight }}
                 thumbColor={formData.shouldNotify ? theme.primary : theme.textTertiary}
               />
@@ -619,7 +620,7 @@ export const IncomeSourceFormScreen: React.FC = () => {
               </View>
               <Switch
                 value={formData.isActive}
-                onValueChange={(value) => updateFormData('isActive', value)}
+                onValueChange={handleActiveToggle}
                 trackColor={{ false: theme.border, true: theme.primaryLight }}
                 thumbColor={formData.isActive ? theme.primary : theme.textTertiary}
               />
@@ -785,6 +786,10 @@ function createStyles(theme: Theme) {
       ...typography.caption,
       color: theme.textSecondary,
       marginTop: spacing.xs,
+    },
+    disabledText: {
+      color: theme.textTertiary,
+      opacity: 0.7,
     },
     actionButtons: {
       flexDirection: 'row' as const,

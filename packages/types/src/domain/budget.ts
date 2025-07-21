@@ -21,7 +21,8 @@ export interface IncomeSource {
   name: string;
   description: string | null;
   is_active: boolean;
-  expected_monthly_amount: number | null;
+  expected_amount: number | null; // Original amount for the frequency (source of truth)
+  expected_monthly_amount: number | null; // Auto-calculated monthly equivalent (backwards compatibility)
   should_notify: boolean;
   frequency: IncomeFrequency;
   custom_day: number | null;

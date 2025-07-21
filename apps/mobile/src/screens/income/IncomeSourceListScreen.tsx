@@ -16,6 +16,7 @@ import {
   SafeAreaView,
   ActivityIndicator,
 } from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useThemedStyles, useTheme, spacing, typography, Theme } from '../../theme';
 import { Card } from '../../components/ui';
@@ -138,15 +139,17 @@ export const IncomeSourceListScreen: React.FC = () => {
   };
 
   const renderIncomeSource = (incomeSource: IncomeSource) => (
-    <TouchableOpacity
+    <Card
       key={incomeSource.id}
-      style={styles.incomeSourceItem}
-      onPress={() => handleEditIncomeSource(incomeSource)}
-      onLongPress={() => handleDeleteIncomeSource(incomeSource)}
-      activeOpacity={0.7}
+      variant="elevated"
+      padding="large"
+      style={[
+        styles.incomeSourceCard,
+        !incomeSource.is_active && styles.inactiveIncomeSourceCard
+      ]}
     >
-      <View style={styles.incomeSourceInfo}>
-        <View style={styles.incomeSourceHeader}>
+      <View style={styles.incomeSourceHeader}>
+        <View style={styles.incomeSourceTitleRow}>
           <Text style={styles.incomeSourceName}>{incomeSource.name}</Text>
           {!incomeSource.is_active && (
             <View style={styles.inactiveBadge}>
@@ -154,48 +157,67 @@ export const IncomeSourceListScreen: React.FC = () => {
             </View>
           )}
         </View>
-        
-        {incomeSource.description && (
-          <Text style={styles.incomeSourceDescription}>{incomeSource.description}</Text>
-        )}
-        
-        <View style={styles.incomeSourceDetails}>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Expected Amount:</Text>
-            <Text style={styles.detailValue}>
-              {incomeSource.expected_monthly_amount 
-                ? formatCurrency(incomeSource.expected_monthly_amount)
-                : 'Not set'}
-            </Text>
-          </View>
-          
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Frequency:</Text>
-            <Text style={styles.detailValue}>
-              {formatFrequency(incomeSource.frequency)}
-            </Text>
-          </View>
-          
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Next Expected:</Text>
-            <Text style={styles.detailValue}>
-              {formatNextExpectedDate(incomeSource.next_expected_date)}
-            </Text>
-          </View>
-          
-          {incomeSource.should_notify && (
-            <View style={styles.notificationIndicator}>
-              <Text style={styles.notificationText}>🔔 Notifications enabled</Text>
-            </View>
-          )}
+        <View style={styles.incomeSourceActions}>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => handleEditIncomeSource(incomeSource)}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Icon name="pencil" size={18} color={theme.primary} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => handleDeleteIncomeSource(incomeSource)}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Icon name="trash-outline" size={18} color={theme.error} />
+          </TouchableOpacity>
         </View>
       </View>
-    </TouchableOpacity>
+      
+      {incomeSource.description && (
+        <Text style={styles.incomeSourceDescription}>{incomeSource.description}</Text>
+      )}
+      
+      <View style={styles.incomeSourceDetails}>
+        <View style={styles.detailRow}>
+          <Text style={styles.detailLabel}>Expected Monthly:</Text>
+          <Text style={styles.detailValue}>
+            {incomeSource.expected_monthly_amount 
+              ? formatCurrency(incomeSource.expected_monthly_amount)
+              : 'Not set'}
+          </Text>
+        </View>
+        
+        <View style={styles.detailRow}>
+          <Text style={styles.detailLabel}>Frequency:</Text>
+          <Text style={styles.detailValue}>
+            {formatFrequency(incomeSource.frequency)}
+          </Text>
+        </View>
+        
+        <View style={styles.detailRow}>
+          <Text style={styles.detailLabel}>Next Expected:</Text>
+          <Text style={styles.detailValue}>
+            {formatNextExpectedDate(incomeSource.next_expected_date)}
+          </Text>
+        </View>
+        
+        {incomeSource.should_notify && (
+          <View style={styles.notificationIndicator}>
+            <Text style={styles.notificationText}>🔔 Notifications enabled</Text>
+          </View>
+        )}
+      </View>
+    </Card>
   );
 
-  // Separate active and inactive income sources
-  const activeIncomeSources = incomeSources.filter(is => is.is_active);
-  const inactiveIncomeSources = incomeSources.filter(is => !is.is_active);
+  // Sort income sources: active first, then inactive (like budget list)
+  const sortedIncomeSources = [...incomeSources].sort((a, b) => {
+    if (a.is_active && !b.is_active) return -1;
+    if (!a.is_active && b.is_active) return 1;
+    return a.name.localeCompare(b.name); // Alphabetical within each group
+  });
 
   if (budgetLoading && !selectedBudget) {
     return (
@@ -266,21 +288,7 @@ export const IncomeSourceListScreen: React.FC = () => {
           </Card>
         ) : (
           <>
-            {/* Active Income Sources */}
-            {activeIncomeSources.length > 0 && (
-              <Card variant="elevated" padding="medium" style={styles.sectionCard}>
-                <Text style={styles.sectionTitle}>Active Income Sources</Text>
-                {activeIncomeSources.map(renderIncomeSource)}
-              </Card>
-            )}
-
-            {/* Inactive Income Sources */}
-            {inactiveIncomeSources.length > 0 && (
-              <Card variant="elevated" padding="medium" style={styles.sectionCard}>
-                <Text style={styles.sectionTitle}>Inactive Income Sources</Text>
-                {inactiveIncomeSources.map(renderIncomeSource)}
-              </Card>
-            )}
+            {sortedIncomeSources.map(renderIncomeSource)}
           </>
         )}
       </ScrollView>
@@ -357,34 +365,46 @@ function createStyles(theme: Theme) {
       alignItems: 'center' as const,
       paddingVertical: spacing.xl,
     },
-    sectionCard: {
-      marginBottom: spacing.lg,
-    },
-    sectionTitle: {
-      ...typography.h4,
-      color: theme.textPrimary,
+    incomeSourceCard: {
       marginBottom: spacing.md,
     },
-    incomeSourceItem: {
-      paddingVertical: spacing.md,
-      borderBottomWidth: 1,
-      borderBottomColor: theme.border,
-    },
-    incomeSourceInfo: {
-      flex: 1,
+    inactiveIncomeSourceCard: {
+      opacity: 0.7,
+      backgroundColor: theme.border, // Light gray distinct from screen background
     },
     incomeSourceHeader: {
       flexDirection: 'row' as const,
-      alignItems: 'center' as const,
+      alignItems: 'flex-start' as const,
       justifyContent: 'space-between' as const,
       marginBottom: spacing.xs,
+    },
+    incomeSourceTitleRow: {
+      flexDirection: 'row' as const,
+      alignItems: 'center' as const,
+      flex: 1,
+      marginRight: spacing.sm,
     },
     incomeSourceName: {
       ...typography.body,
       color: theme.textPrimary,
       fontWeight: '600' as const,
-      flex: 1,
       marginRight: spacing.sm,
+    },
+    incomeSourceActions: {
+      flexDirection: 'row' as const,
+      alignItems: 'center' as const,
+      gap: spacing.sm,
+    },
+    actionButton: {
+      padding: spacing.xs,
+      borderRadius: 6,
+      backgroundColor: theme.surface,
+      borderWidth: 1,
+      borderColor: theme.border,
+      alignItems: 'center' as const,
+      justifyContent: 'center' as const,
+      minWidth: 32,
+      minHeight: 32,
     },
     incomeSourceDescription: {
       ...typography.caption,
