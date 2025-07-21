@@ -108,12 +108,12 @@
 - [x] Build envelope summary cards
 - [x] Implement recent transactions list
 - [x] Add spending insights widgets
-- [ ] Create quick action buttons
+- [x] Create quick action buttons
 
 ### 4.3 Income Management
-- [ ] Build income sources list screen
-- [ ] Create add/edit income source form
-- [ ] Implement frequency picker component
+- [x] Build income sources list screen
+- [x] Create add/edit income source form
+- [x] Implement frequency picker component
 - [ ] Add expected income calendar view
 - [ ] Create income tracking notifications
 - [ ] Build income history screen

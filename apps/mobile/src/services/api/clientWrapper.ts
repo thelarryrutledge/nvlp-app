@@ -166,6 +166,82 @@ class ApiClientWrapper {
   }
 
   /**
+   * Enhanced category methods with interceptor support
+   */
+  async getCategories(budgetId?: string, params?: any) {
+    return this.executeWithInterceptors(
+      () => apiClient.getCategories(budgetId, params),
+      { method: 'GET', url: `/categories${budgetId ? `?budget_id=${budgetId}` : ''}` }
+    );
+  }
+
+  async getCategory(id: string) {
+    return this.executeWithInterceptors(
+      () => apiClient.getCategory(id),
+      { method: 'GET', url: `/categories/${id}` }
+    );
+  }
+
+  async createCategory(input: any) {
+    return this.executeWithInterceptors(
+      () => apiClient.createCategory(input),
+      { method: 'POST', url: '/categories', data: input }
+    );
+  }
+
+  async updateCategory(id: string, updates: any) {
+    return this.executeWithInterceptors(
+      () => apiClient.updateCategory(id, updates),
+      { method: 'PATCH', url: `/categories/${id}`, data: updates }
+    );
+  }
+
+  async deleteCategory(id: string) {
+    return this.executeWithInterceptors(
+      () => apiClient.deleteCategory(id),
+      { method: 'DELETE', url: `/categories/${id}` }
+    );
+  }
+
+  /**
+   * Enhanced income source methods with interceptor support
+   */
+  async getIncomeSources(budgetId?: string, params?: any) {
+    return this.executeWithInterceptors(
+      () => apiClient.getIncomeSources(budgetId, params),
+      { method: 'GET', url: `/income_sources${budgetId ? `?budget_id=${budgetId}` : ''}` }
+    );
+  }
+
+  async getIncomeSource(id: string) {
+    return this.executeWithInterceptors(
+      () => apiClient.getIncomeSource(id),
+      { method: 'GET', url: `/income_sources/${id}` }
+    );
+  }
+
+  async createIncomeSource(input: any) {
+    return this.executeWithInterceptors(
+      () => apiClient.createIncomeSource(input),
+      { method: 'POST', url: '/income_sources', data: input }
+    );
+  }
+
+  async updateIncomeSource(id: string, updates: any) {
+    return this.executeWithInterceptors(
+      () => apiClient.updateIncomeSource(id, updates),
+      { method: 'PATCH', url: `/income_sources/${id}`, data: updates }
+    );
+  }
+
+  async deleteIncomeSource(id: string) {
+    return this.executeWithInterceptors(
+      () => apiClient.deleteIncomeSource(id),
+      { method: 'DELETE', url: `/income_sources/${id}` }
+    );
+  }
+
+  /**
    * Enhanced envelope methods with interceptor support
    */
   async getEnvelopes(budgetId?: string, params?: any) {

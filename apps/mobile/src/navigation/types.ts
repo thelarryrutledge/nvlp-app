@@ -35,6 +35,9 @@ export type MainStackParamList = {
   BudgetCreate: undefined;
   BudgetEdit: { budgetId: string };
   BudgetSettings: { budgetId: string };
+  CategoryList: undefined;
+  IncomeSourceList: undefined;
+  IncomeSourceForm: { incomeSourceId?: string };
   // Add other main app screens here
 };
 

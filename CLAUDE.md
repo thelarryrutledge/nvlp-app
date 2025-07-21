@@ -76,12 +76,34 @@
 
 ## Mobile App Development Status
 **Roadmap**: 12-phase React Native implementation plan
-**Current Phase**: Phase 4.2 Dashboard Screen (IN PROGRESS)  
-**Latest Completed**: Dashboard main layout with comprehensive data display (Phase 4.2 first subtask COMPLETE ✅)
+**Current Phase**: Phase 4.3 Income Management (IN PROGRESS)  
+**Latest Completed**: Income source management system complete (Phase 4.3 first 3 subtasks COMPLETE ✅)
 **Phase 4.1 Status**: Budget list screen complete ✅, authentication fixed ✅, budget creation form complete ✅, budget editing functionality complete ✅, budget switching mechanism complete ✅, budget settings screen complete ✅, budget deletion with confirmation complete ✅
-**Progress**: Project setup ✅, Core dependencies ✅, State management ✅, API client integration ✅, Navigation architecture ✅, Auth screens ✅, Design system ✅, Onboarding flow ✅, Token management ✅
+**Phase 4.2 Status**: Dashboard Screen complete ✅, quick action buttons complete ✅
+**Phase 4.3 Status**: Income sources list screen complete ✅, income source form complete ✅, frequency picker dropdown complete ✅
+**Progress**: Project setup ✅, Core dependencies ✅, State management ✅, API client integration ✅, Navigation architecture ✅, Auth screens ✅, Design system ✅, Onboarding flow ✅, Token management ✅, Budget management ✅, Dashboard screen ✅
 **Tech Stack**: React Native 0.80, TypeScript, React Navigation 6, Reanimated 3, @nvlp/client, React Native Biometrics, React Native Image Picker
-**Next Phase**: Continue Phase 4.2 Dashboard Screen (quick action buttons remaining)
+**Next Phase**: Complete Phase 4.3 Income Management (income calendar view, notifications, history)
+
+### Recent Completed Tasks (Phase 4.2 & 4.3):
+**Dashboard Screen (Phase 4.2):**
+- ✅ Built comprehensive dashboard with financial overview display
+- ✅ Added budget balance visualization with spending insights
+- ✅ Integrated envelope summary cards showing allocation status
+- ✅ Created quick action buttons in header for easy navigation
+- ✅ Fixed budget loading after login with proper auth state handling
+- ✅ Added API routing fixes with custom domain Edge Functions
+
+**Income Source Management (Phase 4.3):**
+- ✅ Created income sources list screen with active/inactive grouping
+- ✅ Built comprehensive income source form with frequency-specific configuration
+- ✅ Implemented clean dropdown frequency picker (replaced cluttered radio group)
+- ✅ Added support for all income frequencies: weekly, bi-weekly, twice monthly (15th/last day), monthly, annually, custom, one-time
+- ✅ Fixed database schema mismatch between TypeScript types and actual columns
+- ✅ Implemented "Last Day of Month" option for monthly schedules using -1 convention
+- ✅ Added dynamic amount labels that change based on selected frequency
+- ✅ Created proper validation for frequency-specific fields
+- ✅ Fixed Budget Settings screen icon (cash-outline for Income Sources)
 
 ### Recent Completed Tasks (Phase 3.1 & 3.2):
 **Authentication & Core Screens:**

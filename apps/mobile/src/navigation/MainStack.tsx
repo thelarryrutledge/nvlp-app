@@ -15,6 +15,9 @@ import { SessionTestScreen } from '../screens/developer/SessionTestScreen';
 import { BudgetCreateScreen } from '../screens/budgets/BudgetCreateScreen';
 import { BudgetEditScreen } from '../screens/budgets/BudgetEditScreen';
 import { BudgetSettingsScreen } from '../screens/budgets/BudgetSettingsScreen';
+import { CategoryListScreen } from '../screens/categories/CategoryListScreen';
+import { IncomeSourceListScreen } from '../screens/income/IncomeSourceListScreen';
+import { IncomeSourceFormScreen } from '../screens/income/IncomeSourceFormScreen';
 import { useTheme } from '../theme';
 import type { MainStackParamList } from './types';
 
@@ -115,6 +118,34 @@ export const MainStack: React.FC = () => {
           title: 'Budget Settings',
           headerBackTitle: 'Back',
         }}
+      />
+      <Stack.Screen
+        name="CategoryList"
+        component={CategoryListScreen}
+        options={{
+          headerShown: true,
+          title: 'Categories',
+          headerBackTitle: 'Back',
+        }}
+      />
+      <Stack.Screen
+        name="IncomeSourceList"
+        component={IncomeSourceListScreen}
+        options={{
+          headerShown: true,
+          title: 'Income Sources',
+          headerBackTitle: 'Back',
+        }}
+      />
+      <Stack.Screen
+        name="IncomeSourceForm"
+        component={IncomeSourceFormScreen}
+        options={({ route }) => ({
+          headerShown: true,
+          title: (route.params as any)?.incomeSourceId ? 'Edit Income Source' : 'Add Income Source',
+          headerBackTitle: 'Back',
+          presentation: 'modal',
+        })}
       />
     </Stack.Navigator>
   );

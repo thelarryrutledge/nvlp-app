@@ -25,6 +25,8 @@ export interface IncomeSource {
   should_notify: boolean;
   frequency: IncomeFrequency;
   custom_day: number | null;
+  weekly_day: number | null;
+  monthly_day: number | null;
   next_expected_date: string | null;
   created_at: string;
   updated_at: string;

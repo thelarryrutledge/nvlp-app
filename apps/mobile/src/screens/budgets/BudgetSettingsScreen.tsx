@@ -256,6 +256,22 @@ export const BudgetSettingsScreen: React.FC = () => {
           icon: 'pencil',
           onPress: handleEditBudget,
         },
+        {
+          id: 'categories',
+          title: 'Categories',
+          subtitle: 'Manage expense and income categories',
+          type: 'navigation',
+          icon: 'folder',
+          onPress: () => (navigation as any).navigate('CategoryList'),
+        },
+        {
+          id: 'income-sources',
+          title: 'Income Sources',
+          subtitle: 'Manage expected income and sources',
+          type: 'navigation',
+          icon: 'cash-outline',
+          onPress: () => (navigation as any).navigate('IncomeSourceList'),
+        },
       ],
     },
     {
