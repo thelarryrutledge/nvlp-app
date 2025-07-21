@@ -110,12 +110,12 @@
 - [x] Add spending insights widgets
 - [x] Create quick action buttons
 
-### 4.3 Income Management ✅ COMPLETE
+### 4.3 Income Management
 - [x] Build income sources list screen
 - [x] Create add/edit income source form  
 - [x] Implement frequency picker component
 - [x] Fix rounding errors with database schema improvements (expected_amount column)
-- [ ] Add expected income calendar view
+- [x] Add expected income calendar view
 - [ ] Create income tracking notifications
 - [ ] Build income history screen
 

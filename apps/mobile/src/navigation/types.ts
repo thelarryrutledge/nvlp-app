@@ -38,6 +38,7 @@ export type MainStackParamList = {
   CategoryList: undefined;
   IncomeSourceList: undefined;
   IncomeSourceForm: { incomeSourceId?: string };
+  IncomeCalendar: undefined;
   // Add other main app screens here
 };
 

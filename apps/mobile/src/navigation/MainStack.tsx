@@ -18,6 +18,7 @@ import { BudgetSettingsScreen } from '../screens/budgets/BudgetSettingsScreen';
 import { CategoryListScreen } from '../screens/categories/CategoryListScreen';
 import { IncomeSourceListScreen } from '../screens/income/IncomeSourceListScreen';
 import { IncomeSourceFormScreen } from '../screens/income/IncomeSourceFormScreen';
+import { IncomeCalendarScreen } from '../screens/income/IncomeCalendarScreen';
 import { useTheme } from '../theme';
 import type { MainStackParamList } from './types';
 
@@ -146,6 +147,15 @@ export const MainStack: React.FC = () => {
           headerBackTitle: 'Back',
           presentation: 'modal',
         })}
+      />
+      <Stack.Screen
+        name="IncomeCalendar"
+        component={IncomeCalendarScreen}
+        options={{
+          headerShown: true,
+          title: 'Income Calendar',
+          headerBackTitle: 'Back',
+        }}
       />
     </Stack.Navigator>
   );

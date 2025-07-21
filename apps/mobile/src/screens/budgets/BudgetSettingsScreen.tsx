@@ -272,6 +272,14 @@ export const BudgetSettingsScreen: React.FC = () => {
           icon: 'cash-outline',
           onPress: () => (navigation as any).navigate('IncomeSourceList'),
         },
+        {
+          id: 'income-calendar',
+          title: 'Income Calendar',
+          subtitle: 'View expected income in calendar format',
+          type: 'navigation',
+          icon: 'calendar-outline',
+          onPress: () => (navigation as any).navigate('IncomeCalendar'),
+        },
       ],
     },
     {
