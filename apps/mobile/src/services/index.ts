@@ -10,4 +10,8 @@ export * from './auth';
 // Cache services
 export * from './cache';
 
-// Sync services
+// Notification services
+export * from './notifications';
+
+// Permission services
+export { permissionService } from './permissions/permissionService';

@@ -11,6 +11,7 @@ import { secureCredentialStorage } from '../services/auth/secureCredentialStorag
 import { rememberMeService } from '../services/auth/rememberMeService';
 import { authService } from '../services/api';
 import { apiClient } from '../services/api/client';
+import { notificationService } from '../services/notifications/notificationService';
 import type { LoginCredentials, RegisterCredentials, AuthResult } from '../services/api';
 
 export interface AuthState {
@@ -82,6 +83,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       const tokenData = await tokenManager.loadTokens();
       updateAuthState(tokenData);
+
+      // Initialize notification service
+      await notificationService.initialize();
     } catch (error) {
       setAuthState(prev => ({
         ...prev,

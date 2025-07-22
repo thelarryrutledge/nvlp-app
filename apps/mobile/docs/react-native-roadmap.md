@@ -116,8 +116,8 @@
 - [x] Implement frequency picker component
 - [x] Fix rounding errors with database schema improvements (expected_amount column)
 - [x] Add expected income calendar view
-- [ ] Create income tracking notifications
-- [ ] Build income history screen
+- [x] Create income tracking notifications
+- [x] Build income history screen
 
 ## Phase 5: Envelope & Category Management
 

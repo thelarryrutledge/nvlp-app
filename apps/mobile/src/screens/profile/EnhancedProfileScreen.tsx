@@ -465,6 +465,13 @@ export const EnhancedProfileScreen: React.FC = () => {
                 />
               }
             />
+            <SettingItem
+              icon="cash"
+              title="Income Notifications"
+              description="Configure income tracking notifications"
+              onPress={() => (navigation as any).navigate('NotificationSettings')}
+              showArrow
+            />
           </Card>
         </View>
 

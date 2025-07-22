@@ -280,6 +280,14 @@ export const BudgetSettingsScreen: React.FC = () => {
           icon: 'calendar-outline',
           onPress: () => (navigation as any).navigate('IncomeCalendar'),
         },
+        {
+          id: 'income-history',
+          title: 'Income History',
+          subtitle: 'Track actual vs expected income',
+          type: 'navigation',
+          icon: 'analytics-outline',
+          onPress: () => (navigation as any).navigate('IncomeHistory'),
+        },
       ],
     },
     {

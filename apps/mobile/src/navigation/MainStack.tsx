@@ -5,7 +5,9 @@
  */
 
 import React from 'react';
+import { View, TouchableOpacity } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import Icon from 'react-native-vector-icons/Ionicons';
 import { MainTabs } from './MainTabs';
 import { VerificationHandler } from '../screens/VerificationHandler';
 import { DesignSystemExample } from '../screens/DesignSystemExample';
@@ -19,6 +21,8 @@ import { CategoryListScreen } from '../screens/categories/CategoryListScreen';
 import { IncomeSourceListScreen } from '../screens/income/IncomeSourceListScreen';
 import { IncomeSourceFormScreen } from '../screens/income/IncomeSourceFormScreen';
 import { IncomeCalendarScreen } from '../screens/income/IncomeCalendarScreen';
+import { IncomeHistoryScreen } from '../screens/income/IncomeHistoryScreen';
+import { NotificationSettingsScreen } from '../screens/settings/NotificationSettingsScreen';
 import { useTheme } from '../theme';
 import type { MainStackParamList } from './types';
 
@@ -132,11 +136,27 @@ export const MainStack: React.FC = () => {
       <Stack.Screen
         name="IncomeSourceList"
         component={IncomeSourceListScreen}
-        options={{
+        options={({ navigation }) => ({
           headerShown: true,
           title: 'Income Sources',
           headerBackTitle: 'Back',
-        }}
+          headerRight: () => (
+            <View style={{ flexDirection: 'row', marginRight: -8 }}>
+              <TouchableOpacity
+                style={{ padding: 8, marginRight: 4 }}
+                onPress={() => navigation.navigate('IncomeCalendar' as never)}
+              >
+                <Icon name="calendar-outline" size={24} color="#059669" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{ padding: 8 }}
+                onPress={() => navigation.navigate('IncomeHistory' as never)}
+              >
+                <Icon name="analytics-outline" size={24} color="#059669" />
+              </TouchableOpacity>
+            </View>
+          ),
+        })}
       />
       <Stack.Screen
         name="IncomeSourceForm"
@@ -154,6 +174,24 @@ export const MainStack: React.FC = () => {
         options={{
           headerShown: true,
           title: 'Income Calendar',
+          headerBackTitle: 'Back',
+        }}
+      />
+      <Stack.Screen
+        name="IncomeHistory"
+        component={IncomeHistoryScreen}
+        options={{
+          headerShown: true,
+          title: 'Income History',
+          headerBackTitle: 'Back',
+        }}
+      />
+      <Stack.Screen
+        name="NotificationSettings"
+        component={NotificationSettingsScreen}
+        options={{
+          headerShown: true,
+          title: 'Notification Settings',
           headerBackTitle: 'Back',
         }}
       />

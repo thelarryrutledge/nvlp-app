@@ -6,6 +6,7 @@
 
 import { enhancedApiClient } from './clientWrapper';
 import { transformError, logError } from './errors';
+import { notificationService } from '../notifications/notificationService';
 import type { IncomeSource, CreateIncomeSourceInput, UpdateIncomeSourceInput } from '@nvlp/types';
 
 class IncomeSourceService {
@@ -48,6 +49,17 @@ class IncomeSourceService {
         ...data,
         budget_id: budgetId,
       });
+
+      // Schedule notifications for the new income source if enabled
+      if (incomeSource.should_notify && incomeSource.is_active) {
+        try {
+          await notificationService.scheduleIncomeNotifications(incomeSource);
+        } catch (notificationError) {
+          console.warn('Failed to schedule notifications for new income source:', notificationError);
+          // Don't fail the creation if notifications fail
+        }
+      }
+
       return incomeSource;
     } catch (error) {
       const apiError = transformError(error);
@@ -62,6 +74,15 @@ class IncomeSourceService {
   async updateIncomeSource(incomeSourceId: string, data: UpdateIncomeSourceInput): Promise<IncomeSource> {
     try {
       const incomeSource = await enhancedApiClient.updateIncomeSource(incomeSourceId, data);
+
+      // Update notifications for the income source
+      try {
+        await notificationService.updateIncomeSourceNotifications(incomeSource);
+      } catch (notificationError) {
+        console.warn('Failed to update notifications for income source:', notificationError);
+        // Don't fail the update if notifications fail
+      }
+
       return incomeSource;
     } catch (error) {
       const apiError = transformError(error);
@@ -76,6 +97,14 @@ class IncomeSourceService {
   async deleteIncomeSource(incomeSourceId: string): Promise<void> {
     try {
       await enhancedApiClient.deleteIncomeSource(incomeSourceId);
+
+      // Clear notifications for the deleted income source
+      try {
+        await notificationService.clearIncomeSourceNotifications(incomeSourceId);
+      } catch (notificationError) {
+        console.warn('Failed to clear notifications for deleted income source:', notificationError);
+        // Don't fail the deletion if notification cleanup fails
+      }
     } catch (error) {
       const apiError = transformError(error);
       logError(apiError, 'IncomeSourceService.deleteIncomeSource');
