@@ -78,6 +78,12 @@ const ENVELOPE_ICONS = [
   'gift-outline',         // Gifts
   'construct-outline',    // Maintenance
   'refresh-outline',      // Subscriptions
+  'cafe-outline',         // Coffee/Dining
+  'train-outline',        // Transportation
+  'phone-portrait-outline', // Technology
+  'bag-outline',          // Shopping/Misc
+  'pizza-outline',        // Food/Dining
+  'bed-outline',          // Accommodation
   
   // Savings Envelope Icons
   'trending-up-outline',  // Savings/Investment
@@ -90,15 +96,24 @@ const ENVELOPE_ICONS = [
   'bicycle-outline',      // Recreation
   'umbrella-outline',     // Emergency Fund
   'shield-outline',       // Security/Insurance
+  'tennisball-outline',   // Sports
+  'trail-sign-outline',   // Adventure/Travel
+  'ticket-outline',       // Events/Entertainment
+  'time-outline',         // Time-based goals
+  'star-outline',         // Achievement
+  'map-outline',          // Travel planning
   
   // Debt Envelope Icons
   'trending-down-outline', // Debt Reduction
   'card-outline',         // Credit Cards
   'business-outline',     // Loans
-  'school-outline',       // Student Loans
-  'home-outline',         // Mortgage
-  'car-outline',         // Car Loan
-  'medical-outline',     // Medical Debt
+  'calculator-outline',   // Financial calculations
+  'receipt-outline',      // Bills/Payments
+  'document-text-outline', // Documentation
+  'warning-outline',      // Alert/Priority
+  'checkmark-circle-outline', // Goal completion
+  'close-circle-outline', // Debt elimination
+  'alert-circle-outline', // Important reminders
 ];
 
 const ENVELOPE_TYPE_OPTIONS: { value: EnvelopeType; label: string; description: string; icon: string }[] = [

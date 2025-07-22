@@ -132,6 +132,12 @@
 - ✅ Integrated with envelope service API for create and update operations
 - ✅ Added proper navigation integration with MainStack as modal presentation
 - ✅ Implemented comprehensive loading states and error handling
+- ✅ Enhanced notification system with both balance alerts and date alerts
+- ✅ Added context-aware notification labels for each envelope type:
+  * Regular envelopes: Alert Above/Below Amount + Review Date reminders
+  * Savings envelopes: Savings Goal Amount + Goal Deadline + Alert If Savings Drop Below
+  * Debt envelopes: Alert When Saved For Extra Payment + Alert If Below Minimum Payment + Payment Reminder Date
+- ✅ Implemented automatic field reset when switching envelope types for better UX
 
 ### Recent Completed Tasks (Phase 5.1):
 **Category Management (Phase 5.1):**
