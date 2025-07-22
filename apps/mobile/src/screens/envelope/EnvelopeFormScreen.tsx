@@ -42,6 +42,7 @@ interface EnvelopeFormData {
   should_notify: boolean;
   notify_above_amount: string; // String for form input, converted to number
   notify_below_amount: string;
+  notify_date: string;
   // Debt-specific fields
   debt_balance: string;
   minimum_payment: string;
@@ -142,6 +143,7 @@ export const EnvelopeFormScreen: React.FC = () => {
     should_notify: false,
     notify_above_amount: '',
     notify_below_amount: '',
+    notify_date: '',
     debt_balance: '',
     minimum_payment: '',
     due_date: '',
@@ -195,6 +197,7 @@ export const EnvelopeFormScreen: React.FC = () => {
           should_notify: envelopeData.should_notify,
           notify_above_amount: envelopeData.notify_above_amount?.toString() || '',
           notify_below_amount: envelopeData.notify_below_amount?.toString() || '',
+          notify_date: envelopeData.notify_date || '',
           debt_balance: envelopeData.debt_balance?.toString() || '',
           minimum_payment: envelopeData.minimum_payment?.toString() || '',
           due_date: envelopeData.due_date || '',
@@ -285,6 +288,7 @@ export const EnvelopeFormScreen: React.FC = () => {
         should_notify: formData.should_notify,
         notify_above_amount: formData.notify_above_amount ? Number(formData.notify_above_amount) : undefined,
         notify_below_amount: formData.notify_below_amount ? Number(formData.notify_below_amount) : undefined,
+        notify_date: formData.notify_date || undefined,
         debt_balance: formData.debt_balance ? Number(formData.debt_balance) : undefined,
         minimum_payment: formData.minimum_payment ? Number(formData.minimum_payment) : undefined,
         due_date: formData.due_date || undefined,
@@ -333,6 +337,9 @@ export const EnvelopeFormScreen: React.FC = () => {
       updateFormData('due_date', '');
     }
     
+    // Reset notify_date when changing type to allow re-entering with new context
+    updateFormData('notify_date', '');
+    
     // Update icon to match type if still using default
     const typeOption = ENVELOPE_TYPE_OPTIONS.find(opt => opt.value === newType);
     if (typeOption) {
@@ -347,6 +354,42 @@ export const EnvelopeFormScreen: React.FC = () => {
     return category?.name || 'Select Category';
   };
 
+  const getNotifyDateLabel = (envelopeType: EnvelopeType): string => {
+    switch (envelopeType) {
+      case 'savings':
+        return 'Goal Deadline';
+      case 'debt':
+        return 'Payment Reminder Date';
+      case 'regular':
+      default:
+        return 'Review Date';
+    }
+  };
+
+  const getNotifyAboveAmountLabel = (envelopeType: EnvelopeType): string => {
+    switch (envelopeType) {
+      case 'savings':
+        return 'Savings Goal Amount';
+      case 'debt':
+        return 'Alert When Saved For Extra Payment';
+      case 'regular':
+      default:
+        return 'Alert Above Amount';
+    }
+  };
+
+  const getNotifyBelowAmountLabel = (envelopeType: EnvelopeType): string => {
+    switch (envelopeType) {
+      case 'savings':
+        return 'Alert If Savings Drop Below';
+      case 'debt':
+        return 'Alert If Below Minimum Payment';
+      case 'regular':
+      default:
+        return 'Alert Below Amount';
+    }
+  };
+
   const renderFormField = (
     label: string,
     value: string,
@@ -355,7 +398,7 @@ export const EnvelopeFormScreen: React.FC = () => {
       placeholder?: string;
       multiline?: boolean;
       keyboardType?: 'default' | 'numeric';
-      error?: string;
+      error?: string | undefined;
       maxLength?: number;
     }
   ) => (
@@ -588,7 +631,7 @@ export const EnvelopeFormScreen: React.FC = () => {
           {formData.should_notify && (
             <>
               {renderFormField(
-                formData.envelope_type === 'savings' ? 'Savings Goal Amount' : 'Alert Above Amount',
+                getNotifyAboveAmountLabel(formData.envelope_type),
                 formData.notify_above_amount,
                 (text) => updateFormData('notify_above_amount', text),
                 {
@@ -599,13 +642,22 @@ export const EnvelopeFormScreen: React.FC = () => {
               )}
 
               {renderFormField(
-                'Alert Below Amount',
+                getNotifyBelowAmountLabel(formData.envelope_type),
                 formData.notify_below_amount,
                 (text) => updateFormData('notify_below_amount', text),
                 {
                   placeholder: '0.00',
                   keyboardType: 'numeric',
                   error: errors.notify_below_amount,
+                }
+              )}
+
+              {renderFormField(
+                getNotifyDateLabel(formData.envelope_type),
+                formData.notify_date,
+                (text) => updateFormData('notify_date', text),
+                {
+                  placeholder: 'YYYY-MM-DD (optional)',
                 }
               )}
             </>
