@@ -18,7 +18,7 @@ import {
 } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useThemedStyles, useTheme, spacing, typography } from '../../theme';
-import { Card } from '../../components/ui';
+import { Card, Tooltip } from '../../components/ui';
 import { EnvelopeProgressSummary } from '../../components/envelope';
 import { useBudget } from '../../context';
 import { dashboardService } from '../../services/api/dashboardService';
@@ -173,40 +173,50 @@ export const DashboardScreen: React.FC = () => {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.quickActionsContent}
         >
-          <TouchableOpacity style={styles.quickActionButton} activeOpacity={0.7}>
-            <View style={styles.quickActionIcon}>
-              <Text style={styles.quickActionIconText}>➕</Text>
-            </View>
-            <Text style={styles.quickActionLabel}>Add Transaction</Text>
-          </TouchableOpacity>
+          <Tooltip content="Add a new transaction">
+            <TouchableOpacity style={styles.quickActionButton} activeOpacity={0.7}>
+              <View style={styles.quickActionIcon}>
+                <Text style={styles.quickActionIconText}>➕</Text>
+              </View>
+              <Text style={styles.quickActionLabel}>Add Transaction</Text>
+            </TouchableOpacity>
+          </Tooltip>
           
-          <TouchableOpacity style={styles.quickActionButton} activeOpacity={0.7}>
-            <View style={styles.quickActionIcon}>
-              <Text style={styles.quickActionIconText}>💸</Text>
-            </View>
-            <Text style={styles.quickActionLabel}>Quick Expense</Text>
-          </TouchableOpacity>
+          <Tooltip content="Record a quick expense">
+            <TouchableOpacity style={styles.quickActionButton} activeOpacity={0.7}>
+              <View style={styles.quickActionIcon}>
+                <Text style={styles.quickActionIconText}>💸</Text>
+              </View>
+              <Text style={styles.quickActionLabel}>Quick Expense</Text>
+            </TouchableOpacity>
+          </Tooltip>
           
-          <TouchableOpacity style={styles.quickActionButton} activeOpacity={0.7}>
-            <View style={styles.quickActionIcon}>
-              <Text style={styles.quickActionIconText}>📊</Text>
-            </View>
-            <Text style={styles.quickActionLabel}>View Reports</Text>
-          </TouchableOpacity>
+          <Tooltip content="View spending reports">
+            <TouchableOpacity style={styles.quickActionButton} activeOpacity={0.7}>
+              <View style={styles.quickActionIcon}>
+                <Text style={styles.quickActionIconText}>📊</Text>
+              </View>
+              <Text style={styles.quickActionLabel}>View Reports</Text>
+            </TouchableOpacity>
+          </Tooltip>
           
-          <TouchableOpacity style={styles.quickActionButton} activeOpacity={0.7}>
-            <View style={styles.quickActionIcon}>
-              <Text style={styles.quickActionIconText}>✉️</Text>
-            </View>
-            <Text style={styles.quickActionLabel}>Envelopes</Text>
-          </TouchableOpacity>
+          <Tooltip content="Manage your envelopes">
+            <TouchableOpacity style={styles.quickActionButton} activeOpacity={0.7}>
+              <View style={styles.quickActionIcon}>
+                <Text style={styles.quickActionIconText}>✉️</Text>
+              </View>
+              <Text style={styles.quickActionLabel}>Envelopes</Text>
+            </TouchableOpacity>
+          </Tooltip>
           
-          <TouchableOpacity style={styles.quickActionButton} activeOpacity={0.7}>
-            <View style={styles.quickActionIcon}>
-              <Text style={styles.quickActionIconText}>🏦</Text>
-            </View>
-            <Text style={styles.quickActionLabel}>Add Income</Text>
-          </TouchableOpacity>
+          <Tooltip content="Add income source">
+            <TouchableOpacity style={styles.quickActionButton} activeOpacity={0.7}>
+              <View style={styles.quickActionIcon}>
+                <Text style={styles.quickActionIconText}>🏦</Text>
+              </View>
+              <Text style={styles.quickActionLabel}>Add Income</Text>
+            </TouchableOpacity>
+          </Tooltip>
         </ScrollView>
       </View>
       

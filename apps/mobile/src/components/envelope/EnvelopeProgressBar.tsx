@@ -65,16 +65,18 @@ export const EnvelopeProgressBar: React.FC<EnvelopeProgressBarProps> = ({
           return null;
         }
         
-        // For debt, show remaining debt as a percentage (100% = full debt, 0% = paid off)
+        // For debt, current_balance represents money saved to pay debt (positive) or debt remaining (negative)
+        // Progress bar shows debt remaining: 100% = full debt, 0% = paid off
         const totalDebt = envelope.debt_balance;
-        const remaining = Math.abs(envelope.current_balance);
-        const remainingPercent = (remaining / totalDebt) * 100;
+        const moneySaved = Math.max(0, envelope.current_balance); // Money saved to pay debt
+        const debtRemaining = totalDebt - moneySaved;
+        const remainingPercent = Math.max(0, (debtRemaining / totalDebt) * 100);
         const paidOffPercent = 100 - remainingPercent;
         
         return {
           progress: Math.max(0, Math.min(remainingPercent, 100)),
           label: `${paidOffPercent.toFixed(0)}% paid off`,
-          sublabel: `${formatCurrency(remaining)} remaining of ${formatCurrency(totalDebt)}`,
+          sublabel: `${formatCurrency(debtRemaining)} remaining of ${formatCurrency(totalDebt)}`,
           color: theme.error, // Red for debt
           icon: remainingPercent <= 0 ? 'checkmark-circle' : 'trending-down',
           showOverflow: false,

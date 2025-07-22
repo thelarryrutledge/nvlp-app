@@ -98,11 +98,12 @@ export const EnvelopeDetailScreen: React.FC = () => {
   const handleEarlyPayoff = () => {
     if (!envelope || envelope.envelope_type !== 'debt') return;
 
-    const remainingDebt = Math.abs(envelope.current_balance);
+    const moneySaved = Math.max(0, envelope.current_balance);
+    const remainingDebt = envelope.debt_balance - moneySaved;
     
     Alert.alert(
       'Early Debt Payoff',
-      `This will mark your ${envelope.name} as paid off!\n\nRemaining balance: ${formatCurrency(remainingDebt)}\n\nThe payoff transaction will be recorded as ${formatCurrency(remainingDebt)} and the envelope will be marked as fully paid.`,
+      `This will mark your ${envelope.name} as paid off!\n\nRemaining debt: ${formatCurrency(remainingDebt)}\n\nThe payoff transaction will be recorded as ${formatCurrency(remainingDebt)} and the envelope will be marked as fully paid.`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -396,7 +397,7 @@ export const EnvelopeDetailScreen: React.FC = () => {
             )}
             
             {/* Early Payoff Button */}
-            {Math.abs(envelope.current_balance) > 0 && (
+            {envelope.debt_balance > Math.max(0, envelope.current_balance) && (
               <TouchableOpacity
                 style={styles.earlyPayoffButton}
                 onPress={handleEarlyPayoff}

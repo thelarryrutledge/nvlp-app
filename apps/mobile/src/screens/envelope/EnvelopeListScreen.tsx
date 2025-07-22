@@ -19,7 +19,7 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useThemedStyles, useTheme, spacing, typography, Theme } from '../../theme';
-import { Card } from '../../components/ui';
+import { Card, Tooltip } from '../../components/ui';
 import { EnvelopeProgressBar } from '../../components/envelope';
 import { useBudget } from '../../context';
 import { envelopeService } from '../../services/api/envelopeService';
@@ -35,6 +35,7 @@ export const EnvelopeListScreen: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activeFilter, setActiveFilter] = useState<'all' | 'regular' | 'savings' | 'debt'>('all');
 
   const loadEnvelopes = useCallback(async (showRefreshIndicator = false) => {
     if (!selectedBudget) {
@@ -258,56 +259,71 @@ export const EnvelopeListScreen: React.FC = () => {
           
           {/* Action Buttons */}
           <View style={styles.envelopeActions}>
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={(e) => {
-                e.stopPropagation();
-                handleFundEnvelope(envelope);
-              }}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <Icon name="add-circle-outline" size={18} color={theme.success} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={(e) => {
-                e.stopPropagation();
-                handleTransferEnvelope(envelope);
-              }}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <Icon name="swap-horizontal" size={18} color={theme.primary} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={(e) => {
-                e.stopPropagation();
-                handleEditEnvelope(envelope);
-              }}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <Icon name="pencil" size={18} color={theme.primary} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={(e) => {
-                e.stopPropagation();
-                handleDeleteEnvelope(envelope);
-              }}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <Icon name="trash-outline" size={18} color={theme.error} />
-            </TouchableOpacity>
+            <Tooltip content="Add Money">
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  handleFundEnvelope(envelope);
+                }}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Icon name="add-circle-outline" size={18} color={theme.success} />
+              </TouchableOpacity>
+            </Tooltip>
+            <Tooltip content="Transfer Money">
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  handleTransferEnvelope(envelope);
+                }}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Icon name="swap-horizontal" size={18} color={theme.primary} />
+              </TouchableOpacity>
+            </Tooltip>
+            <Tooltip content="Edit Envelope">
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  handleEditEnvelope(envelope);
+                }}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Icon name="pencil" size={18} color={theme.primary} />
+              </TouchableOpacity>
+            </Tooltip>
+            <Tooltip content="Delete Envelope">
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  handleDeleteEnvelope(envelope);
+                }}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Icon name="trash-outline" size={18} color={theme.error} />
+              </TouchableOpacity>
+            </Tooltip>
           </View>
         </View>
       </TouchableOpacity>
     </Card>
   );
 
-  // Group envelopes by type and sort them
+  // Filter and group envelopes by type and sort them
   const groupedEnvelopes = React.useMemo(() => {
-    const activeEnvelopes = envelopes.filter(e => e.is_active);
-    const inactiveEnvelopes = envelopes.filter(e => !e.is_active);
+    let filteredEnvelopes = envelopes;
+    
+    // Apply type filter
+    if (activeFilter !== 'all') {
+      filteredEnvelopes = envelopes.filter(e => e.envelope_type === activeFilter);
+    }
+    
+    const activeEnvelopes = filteredEnvelopes.filter(e => e.is_active);
+    const inactiveEnvelopes = filteredEnvelopes.filter(e => !e.is_active);
     
     const groupByType = (envs: Envelope[]) => {
       const groups = {
@@ -333,7 +349,7 @@ export const EnvelopeListScreen: React.FC = () => {
       active: groupByType(activeEnvelopes),
       inactive: groupByType(inactiveEnvelopes),
     };
-  }, [envelopes]);
+  }, [envelopes, activeFilter]);
 
   // Calculate summary statistics
   const totalBalance = envelopes
@@ -393,8 +409,57 @@ export const EnvelopeListScreen: React.FC = () => {
   const hasActiveEnvelopes = Object.values(groupedEnvelopes.active).some(group => group.length > 0);
   const hasInactiveEnvelopes = Object.values(groupedEnvelopes.inactive).some(group => group.length > 0);
 
+  const renderFilterButtons = () => {
+    const filters: Array<{ key: 'all' | 'regular' | 'savings' | 'debt'; label: string; icon: string }> = [
+      { key: 'all', label: 'All', icon: 'apps-outline' },
+      { key: 'regular', label: 'Regular', icon: 'wallet-outline' },
+      { key: 'savings', label: 'Savings', icon: 'trending-up-outline' },
+      { key: 'debt', label: 'Debt', icon: 'trending-down-outline' },
+    ];
+
+    return (
+      <View style={styles.filterContainer}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterScrollContent}
+        >
+          {filters.map((filter) => (
+            <TouchableOpacity
+              key={filter.key}
+              style={[
+                styles.filterButton,
+                activeFilter === filter.key && styles.activeFilterButton,
+              ]}
+              onPress={() => setActiveFilter(filter.key)}
+            >
+              <Icon
+                name={filter.icon}
+                size={16}
+                color={
+                  activeFilter === filter.key ? theme.textOnPrimary : theme.textSecondary
+                }
+              />
+              <Text
+                style={[
+                  styles.filterButtonText,
+                  activeFilter === filter.key && styles.activeFilterButtonText,
+                ]}
+              >
+                {filter.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
+      {/* Filter Buttons */}
+      {envelopes.length > 0 && renderFilterButtons()}
+      
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         refreshControl={
@@ -820,6 +885,41 @@ function createStyles(theme: Theme) {
       fontSize: 28,
       color: theme.textOnPrimary,
       fontWeight: '300' as const,
+    },
+    // Filter Buttons Styles
+    filterContainer: {
+      backgroundColor: theme.surface,
+      paddingVertical: spacing.sm,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.border,
+    },
+    filterScrollContent: {
+      paddingHorizontal: spacing.lg,
+      gap: spacing.sm,
+    },
+    filterButton: {
+      flexDirection: 'row' as const,
+      alignItems: 'center' as const,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
+      borderRadius: 20,
+      backgroundColor: theme.background,
+      borderWidth: 1,
+      borderColor: theme.border,
+      gap: spacing.xs,
+    },
+    activeFilterButton: {
+      backgroundColor: theme.primary,
+      borderColor: theme.primary,
+    },
+    filterButtonText: {
+      ...typography.caption,
+      color: theme.textSecondary,
+      fontWeight: '500' as const,
+    },
+    activeFilterButtonText: {
+      color: theme.textOnPrimary,
+      fontWeight: '600' as const,
     },
   });
 }
