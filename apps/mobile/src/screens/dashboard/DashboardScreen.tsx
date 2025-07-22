@@ -16,20 +16,24 @@ import {
   SafeAreaView,
   ActivityIndicator,
 } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useThemedStyles, useTheme, spacing, typography } from '../../theme';
 import { Card } from '../../components/ui';
+import { EnvelopeProgressSummary } from '../../components/envelope';
 import { useBudget } from '../../context';
 import { dashboardService } from '../../services/api/dashboardService';
+import { envelopeService } from '../../services/api/envelopeService';
 import type { Theme } from '../../theme';
-import type { DashboardData } from '@nvlp/types';
+import type { DashboardData, Envelope } from '@nvlp/types';
 
 export const DashboardScreen: React.FC = () => {
   const { theme } = useTheme();
   const styles = useThemedStyles(createStyles);
+  const navigation = useNavigation();
   const { selectedBudget, isLoading: budgetLoading, budgets } = useBudget();
   
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [envelopes, setEnvelopes] = useState<Envelope[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,8 +53,13 @@ export const DashboardScreen: React.FC = () => {
       }
       setError(null);
 
-      const data = await dashboardService.getDashboardData(selectedBudget.id);
+      // Load dashboard data and envelopes concurrently
+      const [data, fetchedEnvelopes] = await Promise.all([
+        dashboardService.getDashboardData(selectedBudget.id),
+        envelopeService.getEnvelopes(selectedBudget.id)
+      ]);
       setDashboardData(data);
+      setEnvelopes(fetchedEnvelopes);
     } catch (error: any) {
       setError(error.message || 'Failed to load dashboard data');
       console.error('Dashboard error:', error);
@@ -270,6 +279,17 @@ export const DashboardScreen: React.FC = () => {
             </Text>
           </View>
         </Card>
+
+        {/* Envelope Progress Summary */}
+        <EnvelopeProgressSummary
+          envelopes={envelopes.filter(e => e.is_active)}
+          title="Envelope Goals"
+          onEnvelopePress={(envelope) => {
+            (navigation as any).navigate('EnvelopeDetail', { envelopeId: envelope.id });
+          }}
+          showEmptyState={true}
+          maxEnvelopes={5}
+        />
 
         {/* Top Envelopes */}
         {envelopes_summary.length > 0 && (

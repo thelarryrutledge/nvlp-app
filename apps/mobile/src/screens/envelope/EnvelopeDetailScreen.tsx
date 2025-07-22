@@ -20,6 +20,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import { useThemedStyles, useTheme, spacing, typography, Theme } from '../../theme';
 import { Card } from '../../components/ui';
+import { EnvelopeProgressBar } from '../../components/envelope';
 import { envelopeService } from '../../services/api/envelopeService';
 import type { Envelope } from '@nvlp/types';
 import type { RouteProp } from '@react-navigation/native';
@@ -304,51 +305,16 @@ export const EnvelopeDetailScreen: React.FC = () => {
               </Text>
             </View>
           )}
+          
+          {/* Progress Bar */}
+          <EnvelopeProgressBar 
+            envelope={envelope} 
+            showLabels={true}
+            height={10}
+            style={styles.progressBar}
+          />
         </Card>
 
-        {/* Savings Goal Progress (for savings envelopes) */}
-        {envelope.envelope_type === 'savings' && envelope.notify_above_amount && (
-          <Card variant="elevated" padding="large" style={styles.savingsCard}>
-            <View style={styles.savingsHeader}>
-              <Text style={styles.savingsTitle}>Savings Goal</Text>
-              <Text style={styles.savingsGoal}>
-                {formatCurrency(envelope.notify_above_amount)}
-              </Text>
-            </View>
-            
-            <View style={styles.progressContainer}>
-              <View style={styles.progressBackground}>
-                <View 
-                  style={[
-                    styles.progressBar,
-                    { 
-                      width: `${Math.min((envelope.current_balance / envelope.notify_above_amount) * 100, 100)}%`,
-                      backgroundColor: theme.success
-                    }
-                  ]} 
-                />
-              </View>
-              <Text style={styles.progressText}>
-                {Math.round((envelope.current_balance / envelope.notify_above_amount) * 100)}% Complete
-              </Text>
-            </View>
-
-            <View style={styles.savingsStats}>
-              <View style={styles.savingsStat}>
-                <Text style={styles.savingsStatLabel}>Remaining</Text>
-                <Text style={[styles.savingsStatValue, { color: theme.warning }]}>
-                  {formatCurrency(Math.max(0, envelope.notify_above_amount - envelope.current_balance))}
-                </Text>
-              </View>
-              <View style={styles.savingsStat}>
-                <Text style={styles.savingsStatLabel}>Progress</Text>
-                <Text style={[styles.savingsStatValue, { color: theme.success }]}>
-                  {formatCurrency(Math.max(0, envelope.current_balance))}
-                </Text>
-              </View>
-            </View>
-          </Card>
-        )}
 
         {/* Debt Information (for debt envelopes) */}
         {envelope.envelope_type === 'debt' && envelope.debt_balance > 0 && (
@@ -660,6 +626,10 @@ function createStyles(theme: Theme) {
       color: theme.error,
       fontWeight: '500' as const,
     },
+    progressBar: {
+      marginTop: spacing.lg,
+      width: '100%',
+    },
     savingsCard: {
       marginBottom: spacing.lg,
     },
@@ -678,26 +648,6 @@ function createStyles(theme: Theme) {
       ...typography.h3,
       color: theme.success,
       fontWeight: '700' as const,
-    },
-    progressContainer: {
-      marginBottom: spacing.lg,
-    },
-    progressBackground: {
-      height: 12,
-      backgroundColor: theme.success + '30',
-      borderRadius: 6,
-      overflow: 'hidden' as const,
-      marginBottom: spacing.sm,
-    },
-    progressBar: {
-      height: '100%',
-      borderRadius: 6,
-    },
-    progressText: {
-      ...typography.body,
-      color: theme.success,
-      textAlign: 'center' as const,
-      fontWeight: '600' as const,
     },
     savingsStats: {
       flexDirection: 'row' as const,

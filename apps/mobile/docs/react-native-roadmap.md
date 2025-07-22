@@ -138,7 +138,7 @@
 - [x] Create envelope notifications settings
 
 ### 5.3 Envelope Visualization
-- [ ] Create envelope balance progress bars
+- [x] Create envelope balance progress bars
 - [ ] Build envelope spending charts
 - [ ] Implement envelope history view
 - [ ] Add envelope goal tracking

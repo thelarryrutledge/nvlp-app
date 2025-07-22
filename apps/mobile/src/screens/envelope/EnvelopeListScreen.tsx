@@ -20,6 +20,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useThemedStyles, useTheme, spacing, typography, Theme } from '../../theme';
 import { Card } from '../../components/ui';
+import { EnvelopeProgressBar } from '../../components/envelope';
 import { useBudget } from '../../context';
 import { envelopeService } from '../../services/api/envelopeService';
 import type { Envelope } from '@nvlp/types';
@@ -246,25 +247,13 @@ export const EnvelopeListScreen: React.FC = () => {
               </View>
             )}
 
-            {/* Savings goal info */}
-            {envelope.envelope_type === 'savings' && envelope.notify_above_amount && (
-              <View style={styles.savingsInfo}>
-                <Text style={styles.savingsLabel}>
-                  Goal: {formatCurrency(envelope.notify_above_amount)}
-                </Text>
-                <View style={styles.progressContainer}>
-                  <View 
-                    style={[
-                      styles.progressBar,
-                      { 
-                        width: `${Math.min((envelope.current_balance / envelope.notify_above_amount) * 100, 100)}%`,
-                        backgroundColor: theme.success
-                      }
-                    ]} 
-                  />
-                </View>
-              </View>
-            )}
+            {/* Progress Bar for all envelope types */}
+            <EnvelopeProgressBar 
+              envelope={envelope} 
+              showLabels={true}
+              height={6}
+              style={styles.progressBarContainer}
+            />
           </View>
           
           {/* Action Buttons */}
@@ -780,15 +769,8 @@ function createStyles(theme: Theme) {
       fontWeight: '500' as const,
       marginBottom: spacing.xs,
     },
-    progressContainer: {
-      height: 6,
-      backgroundColor: theme.success + '30',
-      borderRadius: 3,
-      overflow: 'hidden' as const,
-    },
-    progressBar: {
-      height: '100%',
-      borderRadius: 3,
+    progressBarContainer: {
+      marginTop: spacing.md,
     },
     envelopeActions: {
       alignItems: 'center' as const,
