@@ -76,15 +76,31 @@
 
 ## Mobile App Development Status
 **Roadmap**: 12-phase React Native implementation plan
-**Current Phase**: Phase 5.2 Envelope Management (NEXT)  
-**Latest Completed**: Category management complete (Phase 5.1 COMPLETE ✅)
+**Current Phase**: Phase 5.2 Envelope Management (IN PROGRESS - 1/6 subtasks complete)  
+**Latest Completed**: Envelope list screen with balances (Phase 5.2.1 COMPLETE ✅)
 **Phase 4.1 Status**: Budget list screen complete ✅, authentication fixed ✅, budget creation form complete ✅, budget editing functionality complete ✅, budget switching mechanism complete ✅, budget settings screen complete ✅, budget deletion with confirmation complete ✅
 **Phase 4.2 Status**: Dashboard Screen complete ✅, quick action buttons complete ✅
 **Phase 4.3 Status**: Income sources list screen complete ✅, income source form complete ✅, frequency picker dropdown complete ✅, rounding error database fixes complete ✅, income calendar view complete ✅, income tracking notifications complete ✅, income history screen complete ✅
 **Phase 5.1 Status**: Categories list screen complete ✅, category creation/edit form complete ✅, category icon picker complete ✅, category color picker complete ✅, category reordering functionality complete ✅, category deletion complete ✅
 **Progress**: Project setup ✅, Core dependencies ✅, State management ✅, API client integration ✅, Navigation architecture ✅, Auth screens ✅, Design system ✅, Onboarding flow ✅, Token management ✅, Budget management ✅, Dashboard screen ✅, Income Management ✅, Category Management ✅
 **Tech Stack**: React Native 0.80, TypeScript, React Navigation 6, Reanimated 3, @nvlp/client, React Native Biometrics, React Native Image Picker, React Native Draggable FlatList
-**Next Phase**: Phase 5.2 Envelope Management
+**Next Subtask**: Phase 5.2.2 Envelope Detail Screen
+
+### Recent Completed Tasks (Phase 5.2):
+**Envelope List Screen Implementation (Phase 5.2.1):**
+- ✅ Created comprehensive envelope list screen with balance display and envelope type grouping
+- ✅ Implemented envelope visualization with custom icons, colors, and type-specific badges
+- ✅ Added envelope balance display with positive/negative indication and currency formatting
+- ✅ Built envelope type grouping (Regular, Savings, Debt) with section headers and counts
+- ✅ Integrated active/inactive envelope filtering with visual distinction
+- ✅ Added debt-specific information display (debt balance, minimum payments)
+- ✅ Implemented savings goal progress bars with visual completion indicators  
+- ✅ Created notification indicators for envelopes with alerts enabled
+- ✅ Added comprehensive summary statistics (total balance, active count, total debt)
+- ✅ Integrated with budget context for automatic budget-based filtering
+- ✅ Implemented navigation placeholders for envelope detail and form screens
+- ✅ Added proper error handling, loading states, and empty state messaging
+- ✅ Replaced MainTabs placeholder screen with fully functional EnvelopeListScreen
 
 ### Recent Completed Tasks (Phase 5.1):
 **Category Management (Phase 5.1):**

@@ -130,7 +130,7 @@
 - [x] Implement category deletion
 
 ### 5.2 Envelope Management
-- [ ] Design envelope list screen with balances
+- [x] Design envelope list screen with balances
 - [ ] Create envelope detail screen
 - [ ] Build envelope creation/edit form
 - [ ] Implement envelope funding interface

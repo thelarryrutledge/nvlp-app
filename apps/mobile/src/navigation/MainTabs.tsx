@@ -11,6 +11,7 @@ import { useTheme } from '../theme';
 import { EnhancedProfileScreen } from '../screens/profile/EnhancedProfileScreen';
 import { BudgetListScreen } from '../screens/budgets/BudgetListScreen';
 import { DashboardScreen } from '../screens/dashboard/DashboardScreen';
+import { EnvelopeListScreen } from '../screens/envelope';
 import { BudgetSwitcher } from '../components/budget';
 import type { MainTabParamList } from './types';
 
@@ -20,16 +21,6 @@ const Tab = createBottomTabNavigator<MainTabParamList>();
 
 // BudgetsScreen is now implemented as BudgetListScreen
 
-const EnvelopesScreen = () => {
-  const { theme } = useTheme();
-  return (
-    <View style={[styles.placeholder, { backgroundColor: theme.background }]}>
-      <Text style={[styles.placeholderText, { color: theme.textPrimary }]}>Envelopes</Text>
-      <Text style={[styles.placeholderSubtext, { color: theme.textSecondary }]}>Coming soon...</Text>
-      <Text style={[styles.placeholderSubtext, { color: theme.textSecondary }]}>Use the budget switcher above to select an active budget.</Text>
-    </View>
-  );
-};
 
 const TransactionsScreen = () => {
   const { theme } = useTheme();
@@ -89,7 +80,7 @@ export const MainTabs: React.FC = () => {
       />
       <Tab.Screen
         name="Envelopes"
-        component={EnvelopesScreen}
+        component={EnvelopeListScreen}
         options={{
           title: 'Envelopes',
           tabBarLabel: 'Envelopes',
