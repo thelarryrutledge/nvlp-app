@@ -134,7 +134,7 @@
 - [x] Create envelope detail screen
 - [x] Build envelope creation/edit form
 - [x] Implement envelope funding interface
-- [ ] Add envelope transfer functionality
+- [x] Add envelope transfer functionality
 - [ ] Create envelope notifications settings
 
 ### 5.3 Envelope Visualization

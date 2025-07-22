@@ -83,11 +83,9 @@ export const EnvelopeDetailScreen: React.FC = () => {
   };
 
   const handleTransferFromEnvelope = () => {
-    Alert.alert(
-      'Transfer From Envelope',
-      'Envelope transfer interface will be implemented in the next phase.',
-      [{ text: 'OK' }]
-    );
+    (navigation as any).navigate('EnvelopeTransfer', { 
+      envelopeId: envelope?.id 
+    });
   };
 
   const handleDeleteEnvelope = async () => {
