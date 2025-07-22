@@ -69,6 +69,7 @@ const ENVELOPE_ICONS = [
   'restaurant-outline',    // Food & Dining
   'car-outline',          // Transportation
   'storefront-outline',   // Shopping
+  'cart-outline',         // Shopping Cart
   'flash-outline',        // Utilities
   'medical-outline',      // Healthcare
   'shirt-outline',        // Clothing
@@ -84,6 +85,8 @@ const ENVELOPE_ICONS = [
   'bag-outline',          // Shopping/Misc
   'pizza-outline',        // Food/Dining
   'bed-outline',          // Accommodation
+  'beer-outline',         // Dining/Social
+  'triangle-outline',     // Creative/Design
   
   // Savings Envelope Icons
   'trending-up-outline',  // Savings/Investment
@@ -102,6 +105,7 @@ const ENVELOPE_ICONS = [
   'time-outline',         // Time-based goals
   'star-outline',         // Achievement
   'map-outline',          // Travel planning
+  'cash-outline',         // Money/Savings
   
   // Debt Envelope Icons
   'trending-down-outline', // Debt Reduction
