@@ -65,7 +65,7 @@ export const EnvelopeTransferScreen: React.FC = () => {
       // Load source envelope and all envelopes concurrently
       const [sourceEnvelope, allEnvelopes] = await Promise.all([
         envelopeService.getEnvelope(envelopeId),
-        envelopeService.getEnvelopes(selectedBudget.id, { is_active: true }),
+        envelopeService.getEnvelopes(selectedBudget.id),
       ]);
 
       setFromEnvelope(sourceEnvelope);
