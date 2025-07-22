@@ -338,6 +338,34 @@ export const IncomeHistoryScreen: React.FC = () => {
     }).format(amount);
   };
 
+  const formatCompactCurrency = (amount: number): string => {
+    // Use compact notation for large numbers in summary
+    if (Math.abs(amount) >= 1000000) {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        notation: 'compact',
+        maximumFractionDigits: 1,
+      }).format(amount);
+    } else if (Math.abs(amount) >= 10000) {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        maximumFractionDigits: 0,
+      }).format(amount);
+    }
+    return formatCurrency(amount);
+  };
+
+  const getDynamicFontSize = (amount: number): number => {
+    const absAmount = Math.abs(amount);
+    if (absAmount >= 1000000) return 14; // 1M+ = smallest
+    if (absAmount >= 100000) return 16;  // 100K+ = small
+    if (absAmount >= 10000) return 17;   // 10K+ = medium-small
+    if (absAmount >= 1000) return 18;    // 1K+ = medium
+    return 20; // Default size for under $1000
+  };
+
   const formatDate = (date: Date): string => {
     return date.toLocaleDateString('en-US', {
       month: 'short',
@@ -496,16 +524,47 @@ export const IncomeHistoryScreen: React.FC = () => {
         <View style={styles.summaryStats}>
           <View style={styles.statItem}>
             <Text style={styles.statLabel}>Expected</Text>
-            <Text style={styles.statValue}>{formatCurrency(totalStats.expectedTotal)}</Text>
+            <Text 
+              style={[
+                styles.statValue, 
+                { fontSize: getDynamicFontSize(totalStats.expectedTotal) }
+              ]}
+              numberOfLines={1}
+              adjustsFontSizeToFit={true}
+              minimumFontScale={0.6}
+            >
+              {formatCompactCurrency(totalStats.expectedTotal)}
+            </Text>
           </View>
           <View style={styles.statItem}>
             <Text style={styles.statLabel}>Actual</Text>
-            <Text style={styles.statValue}>{formatCurrency(totalStats.actualTotal)}</Text>
+            <Text 
+              style={[
+                styles.statValue, 
+                { fontSize: getDynamicFontSize(totalStats.actualTotal) }
+              ]}
+              numberOfLines={1}
+              adjustsFontSizeToFit={true}
+              minimumFontScale={0.6}
+            >
+              {formatCompactCurrency(totalStats.actualTotal)}
+            </Text>
           </View>
           <View style={styles.statItem}>
             <Text style={styles.statLabel}>Variance</Text>
-            <Text style={[styles.statValue, { color: getVarianceColor(totalStats.variance) }]}>
-              {totalStats.variance > 0 ? '+' : ''}{formatCurrency(totalStats.variance)}
+            <Text 
+              style={[
+                styles.statValue, 
+                { 
+                  color: getVarianceColor(totalStats.variance),
+                  fontSize: getDynamicFontSize(totalStats.variance)
+                }
+              ]}
+              numberOfLines={1}
+              adjustsFontSizeToFit={true}
+              minimumFontScale={0.6}
+            >
+              {totalStats.variance > 0 ? '+' : ''}{formatCompactCurrency(totalStats.variance)}
             </Text>
             <Text style={[styles.statPercent, { color: getVarianceColor(totalStats.variance) }]}>
               ({totalStats.variancePercent > 0 ? '+' : ''}{totalStats.variancePercent.toFixed(1)}%)
@@ -632,7 +691,7 @@ function createStyles(theme: Theme) {
     summaryCard: {
       marginHorizontal: spacing.lg,
       marginTop: spacing.md,
-      marginBottom: spacing.sm,
+      marginBottom: spacing.xs,
     },
     summaryHeader: {
       flexDirection: 'row' as const,
@@ -666,16 +725,19 @@ function createStyles(theme: Theme) {
     statItem: {
       alignItems: 'center' as const,
       flex: 1,
+      minWidth: 0, // Allow shrinking
     },
     statLabel: {
       ...typography.caption,
       color: theme.textSecondary,
       marginBottom: spacing.xs,
+      textAlign: 'center' as const,
     },
     statValue: {
       ...typography.h4,
       color: theme.textPrimary,
       fontWeight: '700' as const,
+      textAlign: 'center' as const,
     },
     statPercent: {
       ...typography.caption,
@@ -683,8 +745,9 @@ function createStyles(theme: Theme) {
     },
     timeRangeContainer: {
       paddingHorizontal: spacing.lg,
-      paddingVertical: spacing.sm,
-      maxHeight: 50,
+      paddingTop: spacing.sm,
+      paddingBottom: spacing.xl,
+      backgroundColor: theme.background,
     },
     timeRangeButton: {
       paddingHorizontal: spacing.md,
@@ -713,6 +776,7 @@ function createStyles(theme: Theme) {
       fontWeight: '600' as const,
     },
     listContent: {
+      paddingTop: spacing.sm,
       paddingBottom: spacing.xl,
     },
     sectionHeader: {
