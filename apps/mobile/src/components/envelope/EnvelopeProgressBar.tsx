@@ -65,17 +65,18 @@ export const EnvelopeProgressBar: React.FC<EnvelopeProgressBarProps> = ({
           return null;
         }
         
-        // For debt, we show how much has been paid off
+        // For debt, show remaining debt as a percentage (100% = full debt, 0% = paid off)
         const totalDebt = envelope.debt_balance;
-        const paidOff = totalDebt - Math.abs(envelope.current_balance);
-        const progress = (paidOff / totalDebt) * 100;
+        const remaining = Math.abs(envelope.current_balance);
+        const remainingPercent = (remaining / totalDebt) * 100;
+        const paidOffPercent = 100 - remainingPercent;
         
         return {
-          progress: Math.max(0, Math.min(progress, 100)),
-          label: `${Math.max(0, Math.min(progress, 100)).toFixed(0)}% paid off`,
-          sublabel: `${formatCurrency(Math.abs(envelope.current_balance))} remaining`,
-          color: progress >= 100 ? theme.success : theme.warning,
-          icon: progress >= 100 ? 'checkmark-circle' : 'trending-down',
+          progress: Math.max(0, Math.min(remainingPercent, 100)),
+          label: `${paidOffPercent.toFixed(0)}% paid off`,
+          sublabel: `${formatCurrency(remaining)} remaining of ${formatCurrency(totalDebt)}`,
+          color: theme.error, // Red for debt
+          icon: remainingPercent <= 0 ? 'checkmark-circle' : 'trending-down',
           showOverflow: false,
         };
       }
@@ -135,7 +136,7 @@ export const EnvelopeProgressBar: React.FC<EnvelopeProgressBarProps> = ({
                 {progressData.label}
               </Text>
             </View>
-            {progressData.showOverflow && progressData.overflowAmount > 0 && (
+            {progressData.showOverflow && progressData.overflowAmount && progressData.overflowAmount > 0 && (
               <Text style={[styles.overflowLabel, { color: progressData.color }]}>
                 +{formatCurrency(progressData.overflowAmount)}
               </Text>

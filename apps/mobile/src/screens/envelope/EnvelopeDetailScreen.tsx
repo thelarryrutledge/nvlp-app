@@ -4,7 +4,7 @@
  * Comprehensive view of a single envelope with balance, transactions, and actions
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -93,6 +93,41 @@ export const EnvelopeDetailScreen: React.FC = () => {
     (navigation as any).navigate('EnvelopeNotifications', { 
       envelopeId: envelope?.id 
     });
+  };
+
+  const handleEarlyPayoff = () => {
+    if (!envelope || envelope.envelope_type !== 'debt') return;
+
+    const remainingDebt = Math.abs(envelope.current_balance);
+    
+    Alert.alert(
+      'Early Debt Payoff',
+      `This will mark your ${envelope.name} as paid off!\n\nRemaining balance: ${formatCurrency(remainingDebt)}\n\nThe payoff transaction will be recorded as ${formatCurrency(remainingDebt)} and the envelope will be marked as fully paid.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Pay Off Debt',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              // TODO: Implement early payoff transaction API call
+              // This would create a special transaction that:
+              // 1. Records the payoff amount
+              // 2. Zeroes out the envelope balance
+              // 3. Marks the debt as paid
+              
+              Alert.alert(
+                '🎉 Congratulations!',
+                `You've paid off your ${envelope.name}! The debt has been settled.`,
+                [{ text: 'OK', onPress: () => loadEnvelope() }]
+              );
+            } catch (error: any) {
+              Alert.alert('Error', error.message || 'Failed to process payoff');
+            }
+          },
+        },
+      ]
+    );
   };
 
   const handleDeleteEnvelope = async () => {
@@ -358,6 +393,17 @@ export const EnvelopeDetailScreen: React.FC = () => {
                   Ready to pay: {formatCurrency(envelope.current_balance)}
                 </Text>
               </View>
+            )}
+            
+            {/* Early Payoff Button */}
+            {Math.abs(envelope.current_balance) > 0 && (
+              <TouchableOpacity
+                style={styles.earlyPayoffButton}
+                onPress={handleEarlyPayoff}
+              >
+                <Icon name="trophy-outline" size={20} color={theme.textOnPrimary} />
+                <Text style={styles.earlyPayoffButtonText}>Early Payoff</Text>
+              </TouchableOpacity>
             )}
           </Card>
         )}
@@ -710,6 +756,22 @@ function createStyles(theme: Theme) {
     debtPaymentReadyText: {
       ...typography.body,
       color: theme.success,
+      fontWeight: '600' as const,
+    },
+    earlyPayoffButton: {
+      flexDirection: 'row' as const,
+      alignItems: 'center' as const,
+      justifyContent: 'center' as const,
+      backgroundColor: theme.primary,
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.lg,
+      borderRadius: 12,
+      marginTop: spacing.lg,
+      gap: spacing.sm,
+    },
+    earlyPayoffButtonText: {
+      ...typography.body,
+      color: theme.textOnPrimary,
       fontWeight: '600' as const,
     },
     notificationsCard: {

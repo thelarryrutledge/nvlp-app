@@ -349,6 +349,21 @@ export const EnvelopeFormScreen: React.FC = () => {
   const handleTypeChange = (newType: EnvelopeType) => {
     updateFormData('envelope_type', newType);
     
+    // Auto-set category based on envelope type to reduce friction
+    if (newType === 'savings') {
+      // Find the savings category
+      const savingsCategory = categories.find(c => c.name.toLowerCase() === 'savings' && c.is_system_category);
+      if (savingsCategory) {
+        updateFormData('category_id', savingsCategory.id);
+      }
+    } else if (newType === 'debt') {
+      // Find the debt category
+      const debtCategory = categories.find(c => c.name.toLowerCase() === 'debt' && c.is_system_category);
+      if (debtCategory) {
+        updateFormData('category_id', debtCategory.id);
+      }
+    }
+    
     // Reset type-specific fields when changing type
     if (newType !== 'debt') {
       updateFormData('debt_balance', '');
