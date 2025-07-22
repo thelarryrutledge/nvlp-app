@@ -45,6 +45,7 @@ export type MainStackParamList = {
   EnvelopeForm: { envelopeId?: string };
   EnvelopeFunding: { envelopeId: string };
   EnvelopeTransfer: { envelopeId: string };
+  EnvelopeNotifications: { envelopeId: string };
   NotificationSettings: undefined;
   // Add other main app screens here
 };

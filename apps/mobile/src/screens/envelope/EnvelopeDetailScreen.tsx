@@ -88,6 +88,12 @@ export const EnvelopeDetailScreen: React.FC = () => {
     });
   };
 
+  const handleNotificationSettings = () => {
+    (navigation as any).navigate('EnvelopeNotifications', { 
+      envelopeId: envelope?.id 
+    });
+  };
+
   const handleDeleteEnvelope = async () => {
     if (!envelope) return;
 
@@ -478,7 +484,11 @@ export const EnvelopeDetailScreen: React.FC = () => {
           </View>
           
           <View style={styles.actionButtonsRow}>
+            {renderActionButton('notifications-outline', 'Alerts', handleNotificationSettings, 'secondary')}
             {renderActionButton('pencil-outline', 'Edit', handleEditEnvelope, 'secondary')}
+          </View>
+          
+          <View style={styles.actionButtonsRow}>
             {renderActionButton('trash-outline', 'Delete', handleDeleteEnvelope, 'danger')}
           </View>
         </View>
