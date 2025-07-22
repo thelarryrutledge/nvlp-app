@@ -20,7 +20,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import { useThemedStyles, useTheme, spacing, typography, Theme } from '../../theme';
 import { Card } from '../../components/ui';
-import { EnvelopeProgressBar } from '../../components/envelope';
+import { EnvelopeProgressBar, EnvelopeSpendingChart } from '../../components/envelope';
 import { envelopeService } from '../../services/api/envelopeService';
 import type { Envelope } from '@nvlp/types';
 import type { RouteProp } from '@react-navigation/native';
@@ -438,6 +438,15 @@ export const EnvelopeDetailScreen: React.FC = () => {
             </View>
           </Card>
         )}
+
+        {/* Spending Chart */}
+        <EnvelopeSpendingChart 
+          envelopeId={envelope.id}
+          chartType="line"
+          timePeriod="30d"
+          showControls={true}
+          height={220}
+        />
 
         {/* Recent Transactions */}
         <Card variant="elevated" padding="none" style={styles.transactionsCard}>

@@ -6,3 +6,4 @@
 
 export { EnvelopeProgressBar } from './EnvelopeProgressBar';
 export { EnvelopeProgressSummary } from './EnvelopeProgressSummary';
+export { EnvelopeSpendingChart } from './EnvelopeSpendingChart';

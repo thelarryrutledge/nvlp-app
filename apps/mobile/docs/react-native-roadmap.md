@@ -139,14 +139,24 @@
 
 ### 5.3 Envelope Visualization
 - [x] Create envelope balance progress bars
-- [ ] Build envelope spending charts
+- [x] Build envelope spending charts
 - [ ] Implement envelope history view
 - [ ] Add envelope goal tracking
 - [ ] Create envelope insights screen
 
-## Phase 6: Transaction Management
+## Phase 6: Payee Management
 
-### 6.1 Transaction Entry
+### 6.1 Payee Features
+- [ ] Create payee list screen with search
+- [ ] Build payee creation/edit form
+- [ ] Implement payee merge functionality
+- [ ] Add payee spending history
+- [ ] Create payee insights screen
+- [ ] Implement payee categorization
+
+## Phase 7: Transaction Management
+
+### 7.1 Transaction Entry
 - [ ] Create quick transaction entry screen
 - [ ] Build detailed transaction form
 - [ ] Implement amount input with calculator
@@ -154,7 +164,7 @@
 - [ ] Create envelope selection interface
 - [ ] Implement transaction type switching
 
-### 6.2 Transaction List & History
+### 7.2 Transaction List & History
 - [ ] Build searchable transaction list
 - [ ] Implement transaction filtering (date, type, envelope)
 - [ ] Create transaction detail view
@@ -162,23 +172,13 @@
 - [ ] Implement transaction deletion
 - [ ] Create transaction export functionality
 
-### 6.3 Advanced Transaction Features
+### 7.3 Advanced Transaction Features
 - [ ] Implement split transactions
 - [ ] Create recurring transaction management
 - [ ] Add transaction templates
 - [ ] Build bulk transaction operations
 - [ ] Implement transaction search
 - [ ] Create transaction insights
-
-## Phase 7: Payee Management
-
-### 7.1 Payee Features
-- [ ] Create payee list screen with search
-- [ ] Build payee creation/edit form
-- [ ] Implement payee merge functionality
-- [ ] Add payee spending history
-- [ ] Create payee insights screen
-- [ ] Implement payee categorization
 
 ## Phase 8: Reports & Analytics
 

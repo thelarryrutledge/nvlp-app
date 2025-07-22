@@ -76,15 +76,34 @@
 
 ## Mobile App Development Status
 **Roadmap**: 12-phase React Native implementation plan
-**Current Phase**: Phase 5.2 Envelope Management (IN PROGRESS - 3/6 subtasks complete)  
-**Latest Completed**: Envelope creation/edit form (Phase 5.2.3 COMPLETE ✅)
+**Current Phase**: Phase 5.3 Envelope Visualization (IN PROGRESS - 2/5 subtasks complete)  
+**Latest Completed**: Envelope spending charts (Phase 5.3.2 COMPLETE ✅)
 **Phase 4.1 Status**: Budget list screen complete ✅, authentication fixed ✅, budget creation form complete ✅, budget editing functionality complete ✅, budget switching mechanism complete ✅, budget settings screen complete ✅, budget deletion with confirmation complete ✅
 **Phase 4.2 Status**: Dashboard Screen complete ✅, quick action buttons complete ✅
 **Phase 4.3 Status**: Income sources list screen complete ✅, income source form complete ✅, frequency picker dropdown complete ✅, rounding error database fixes complete ✅, income calendar view complete ✅, income tracking notifications complete ✅, income history screen complete ✅
 **Phase 5.1 Status**: Categories list screen complete ✅, category creation/edit form complete ✅, category icon picker complete ✅, category color picker complete ✅, category reordering functionality complete ✅, category deletion complete ✅
-**Progress**: Project setup ✅, Core dependencies ✅, State management ✅, API client integration ✅, Navigation architecture ✅, Auth screens ✅, Design system ✅, Onboarding flow ✅, Token management ✅, Budget management ✅, Dashboard screen ✅, Income Management ✅, Category Management ✅
-**Tech Stack**: React Native 0.80, TypeScript, React Navigation 6, Reanimated 3, @nvlp/client, React Native Biometrics, React Native Image Picker, React Native Draggable FlatList
-**Next Subtask**: Phase 5.2.4 Envelope Funding Interface
+**Phase 5.2 Status**: Envelope list screen complete ✅, envelope detail screen complete ✅, envelope creation/edit form complete ✅, envelope funding interface complete ✅, envelope transfer functionality complete ✅, envelope notifications settings complete ✅
+**Progress**: Project setup ✅, Core dependencies ✅, State management ✅, API client integration ✅, Navigation architecture ✅, Auth screens ✅, Design system ✅, Onboarding flow ✅, Token management ✅, Budget management ✅, Dashboard screen ✅, Income Management ✅, Category Management ✅, Envelope Management ✅
+**Tech Stack**: React Native 0.80, TypeScript, React Navigation 6, Reanimated 3, @nvlp/client, React Native Biometrics, React Native Image Picker, React Native Draggable FlatList, React Native Chart Kit, React Native SVG
+**Next Subtask**: Phase 5.3.3 Implement Envelope History View
+
+### Recent Completed Tasks (Phase 5.3):
+**Envelope Spending Charts Implementation (Phase 5.3.2):**
+- ✅ Installed React Native Chart Kit and React Native SVG dependencies
+- ✅ Created comprehensive EnvelopeSpendingChart component with multiple visualization types
+- ✅ Implemented Line Chart for spending trends over time with configurable time periods
+- ✅ Added Bar Chart visualization for spending comparison across periods
+- ✅ Built Pie Chart for transaction type breakdown (funding, spending, transfers)
+- ✅ Added getEnvelopeTransactions method to transaction service for data retrieval
+- ✅ Integrated chart controls for switching between chart types (line, bar, pie)
+- ✅ Implemented time period selection (7 days, 30 days, 3 months, 6 months, 1 year)
+- ✅ Added proper data filtering and aggregation for different time periods
+- ✅ Created responsive chart sizing and theming integration
+- ✅ Implemented empty states and error handling for chart component
+- ✅ Added loading states with activity indicators
+- ✅ Integrated spending charts into EnvelopeDetailScreen
+- ✅ Added proper TypeScript typing and error handling
+- ✅ Built chart configuration with theme-aware colors and styling
 
 ### Recent Completed Tasks (Phase 5.2):
 **Envelope List Screen Implementation (Phase 5.2.1):**
