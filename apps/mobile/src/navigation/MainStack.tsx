@@ -23,6 +23,7 @@ import { IncomeSourceListScreen } from '../screens/income/IncomeSourceListScreen
 import { IncomeSourceFormScreen } from '../screens/income/IncomeSourceFormScreen';
 import { IncomeCalendarScreen } from '../screens/income/IncomeCalendarScreen';
 import { IncomeHistoryScreen } from '../screens/income/IncomeHistoryScreen';
+import { EnvelopeDetailScreen } from '../screens/envelope';
 import { NotificationSettingsScreen } from '../screens/settings/NotificationSettingsScreen';
 import { useTheme } from '../theme';
 import type { MainStackParamList } from './types';
@@ -194,6 +195,15 @@ export const MainStack: React.FC = () => {
         options={{
           headerShown: true,
           title: 'Income History',
+          headerBackTitle: 'Back',
+        }}
+      />
+      <Stack.Screen
+        name="EnvelopeDetail"
+        component={EnvelopeDetailScreen}
+        options={{
+          headerShown: true,
+          title: 'Envelope Details',
           headerBackTitle: 'Back',
         }}
       />

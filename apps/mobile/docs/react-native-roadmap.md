@@ -131,7 +131,7 @@
 
 ### 5.2 Envelope Management
 - [x] Design envelope list screen with balances
-- [ ] Create envelope detail screen
+- [x] Create envelope detail screen
 - [ ] Build envelope creation/edit form
 - [ ] Implement envelope funding interface
 - [ ] Add envelope transfer functionality

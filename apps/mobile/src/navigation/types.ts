@@ -41,6 +41,8 @@ export type MainStackParamList = {
   IncomeSourceForm: { incomeSourceId?: string };
   IncomeCalendar: undefined;
   IncomeHistory: undefined;
+  EnvelopeDetail: { envelopeId: string };
+  EnvelopeForm: { envelopeId?: string };
   NotificationSettings: undefined;
   // Add other main app screens here
 };
