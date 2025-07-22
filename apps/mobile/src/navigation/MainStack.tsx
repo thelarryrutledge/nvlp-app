@@ -18,6 +18,7 @@ import { BudgetCreateScreen } from '../screens/budgets/BudgetCreateScreen';
 import { BudgetEditScreen } from '../screens/budgets/BudgetEditScreen';
 import { BudgetSettingsScreen } from '../screens/budgets/BudgetSettingsScreen';
 import { CategoryListScreen } from '../screens/categories/CategoryListScreen';
+import { CategoryFormScreen } from '../screens/categories/CategoryFormScreen';
 import { IncomeSourceListScreen } from '../screens/income/IncomeSourceListScreen';
 import { IncomeSourceFormScreen } from '../screens/income/IncomeSourceFormScreen';
 import { IncomeCalendarScreen } from '../screens/income/IncomeCalendarScreen';
@@ -132,6 +133,16 @@ export const MainStack: React.FC = () => {
           title: 'Categories',
           headerBackTitle: 'Back',
         }}
+      />
+      <Stack.Screen
+        name="CategoryForm"
+        component={CategoryFormScreen}
+        options={({ route }) => ({
+          headerShown: true,
+          title: (route.params as any)?.categoryId ? 'Edit Category' : 'Add Category',
+          headerBackTitle: 'Back',
+          presentation: 'modal',
+        })}
       />
       <Stack.Screen
         name="IncomeSourceList"

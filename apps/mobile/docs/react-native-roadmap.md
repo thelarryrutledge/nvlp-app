@@ -121,13 +121,13 @@
 
 ## Phase 5: Envelope & Category Management
 
-### 5.1 Category Management
-- [ ] Create categories list screen
-- [ ] Build category creation/edit form
-- [ ] Implement category icon picker
-- [ ] Add category color picker
-- [ ] Create category reordering functionality
-- [ ] Implement category deletion
+### 5.1 Category Management ✅ COMPLETE
+- [x] Create categories list screen
+- [x] Build category creation/edit form
+- [x] Implement category icon picker
+- [x] Add category color picker
+- [x] Create category reordering functionality
+- [x] Implement category deletion
 
 ### 5.2 Envelope Management
 - [ ] Design envelope list screen with balances

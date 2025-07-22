@@ -76,16 +76,31 @@
 
 ## Mobile App Development Status
 **Roadmap**: 12-phase React Native implementation plan
-**Current Phase**: Phase 4.3 Income Management (IN PROGRESS)  
-**Latest Completed**: Income calendar view implementation (Phase 4.3 partial)
+**Current Phase**: Phase 5.2 Envelope Management (NEXT)  
+**Latest Completed**: Category management complete (Phase 5.1 COMPLETE ✅)
 **Phase 4.1 Status**: Budget list screen complete ✅, authentication fixed ✅, budget creation form complete ✅, budget editing functionality complete ✅, budget switching mechanism complete ✅, budget settings screen complete ✅, budget deletion with confirmation complete ✅
 **Phase 4.2 Status**: Dashboard Screen complete ✅, quick action buttons complete ✅
-**Phase 4.3 Status**: Income sources list screen complete ✅, income source form complete ✅, frequency picker dropdown complete ✅, rounding error database fixes complete ✅, income calendar view complete ✅
-**Progress**: Project setup ✅, Core dependencies ✅, State management ✅, API client integration ✅, Navigation architecture ✅, Auth screens ✅, Design system ✅, Onboarding flow ✅, Token management ✅, Budget management ✅, Dashboard screen ✅, Income Management ✅
-**Tech Stack**: React Native 0.80, TypeScript, React Navigation 6, Reanimated 3, @nvlp/client, React Native Biometrics, React Native Image Picker
-**Next Phase**: Complete Phase 4.3 (notifications, history) → Phase 5.1 Category Management
+**Phase 4.3 Status**: Income sources list screen complete ✅, income source form complete ✅, frequency picker dropdown complete ✅, rounding error database fixes complete ✅, income calendar view complete ✅, income tracking notifications complete ✅, income history screen complete ✅
+**Phase 5.1 Status**: Categories list screen complete ✅, category creation/edit form complete ✅, category icon picker complete ✅, category color picker complete ✅, category reordering functionality complete ✅, category deletion complete ✅
+**Progress**: Project setup ✅, Core dependencies ✅, State management ✅, API client integration ✅, Navigation architecture ✅, Auth screens ✅, Design system ✅, Onboarding flow ✅, Token management ✅, Budget management ✅, Dashboard screen ✅, Income Management ✅, Category Management ✅
+**Tech Stack**: React Native 0.80, TypeScript, React Navigation 6, Reanimated 3, @nvlp/client, React Native Biometrics, React Native Image Picker, React Native Draggable FlatList
+**Next Phase**: Phase 5.2 Envelope Management
 
-### Recent Completed Tasks (Phase 4.2 & 4.3):
+### Recent Completed Tasks (Phase 5.1):
+**Category Management (Phase 5.1):**
+- ✅ Created comprehensive category list screen with type-based filtering (expense/income/transfer)
+- ✅ Built full-featured category creation/edit form with real-time validation
+- ✅ Implemented professional icon picker with 38 Ionicons line-style icons
+- ✅ Added color picker with 10 carefully selected financial app colors
+- ✅ Created drag-and-drop category reordering functionality using react-native-draggable-flatlist
+- ✅ Fixed scrolling issues with nested ScrollView containing DraggableFlatList
+- ✅ Implemented category deletion with confirmation for user categories
+- ✅ Added system vs custom category separation with appropriate restrictions
+- ✅ Created comprehensive category visual preview with icon and color
+- ✅ Integrated professional line icons replacing emoji-based icons
+- ✅ Added proper TypeScript error handling for form validation
+
+**Recent Completed Tasks (Phase 4.2 & 4.3):**
 **Dashboard Screen (Phase 4.2):**
 - ✅ Built comprehensive dashboard with financial overview display
 - ✅ Added budget balance visualization with spending insights

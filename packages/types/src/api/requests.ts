@@ -49,6 +49,7 @@ export interface CreateCategoryInput {
   icon?: string;
   category_type?: CategoryType;
   sort_order?: number;
+  is_active?: boolean;
 }
 
 export interface UpdateCategoryInput {

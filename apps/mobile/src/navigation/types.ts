@@ -36,6 +36,7 @@ export type MainStackParamList = {
   BudgetEdit: { budgetId: string };
   BudgetSettings: { budgetId: string };
   CategoryList: undefined;
+  CategoryForm: { categoryId?: string; categoryType?: string };
   IncomeSourceList: undefined;
   IncomeSourceForm: { incomeSourceId?: string };
   IncomeCalendar: undefined;
