@@ -23,7 +23,7 @@ import { IncomeSourceListScreen } from '../screens/income/IncomeSourceListScreen
 import { IncomeSourceFormScreen } from '../screens/income/IncomeSourceFormScreen';
 import { IncomeCalendarScreen } from '../screens/income/IncomeCalendarScreen';
 import { IncomeHistoryScreen } from '../screens/income/IncomeHistoryScreen';
-import { EnvelopeDetailScreen, EnvelopeFormScreen } from '../screens/envelope';
+import { EnvelopeDetailScreen, EnvelopeFormScreen, EnvelopeFundingScreen } from '../screens/envelope';
 import { NotificationSettingsScreen } from '../screens/settings/NotificationSettingsScreen';
 import { useTheme } from '../theme';
 import type { MainStackParamList } from './types';
@@ -216,6 +216,16 @@ export const MainStack: React.FC = () => {
           headerBackTitle: 'Back',
           presentation: 'modal',
         })}
+      />
+      <Stack.Screen
+        name="EnvelopeFunding"
+        component={EnvelopeFundingScreen}
+        options={{
+          headerShown: true,
+          title: 'Fund Envelope',
+          headerBackTitle: 'Back',
+          presentation: 'modal',
+        }}
       />
       <Stack.Screen
         name="NotificationSettings"

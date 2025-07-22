@@ -93,6 +93,12 @@ export const EnvelopeListScreen: React.FC = () => {
     });
   };
 
+  const handleFundEnvelope = (envelope: Envelope) => {
+    (navigation as any).navigate('EnvelopeFunding', { 
+      envelopeId: envelope.id 
+    });
+  };
+
   const handleDeleteEnvelope = async (envelope: Envelope) => {
     Alert.alert(
       'Delete Envelope',
@@ -257,6 +263,16 @@ export const EnvelopeListScreen: React.FC = () => {
           
           {/* Action Buttons */}
           <View style={styles.envelopeActions}>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={(e) => {
+                e.stopPropagation();
+                handleFundEnvelope(envelope);
+              }}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Icon name="add-circle-outline" size={18} color={theme.success} />
+            </TouchableOpacity>
             <TouchableOpacity
               style={styles.actionButton}
               onPress={(e) => {

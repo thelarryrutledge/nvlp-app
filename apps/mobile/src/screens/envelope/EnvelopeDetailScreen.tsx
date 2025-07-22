@@ -77,11 +77,9 @@ export const EnvelopeDetailScreen: React.FC = () => {
   };
 
   const handleFundEnvelope = () => {
-    Alert.alert(
-      'Fund Envelope',
-      'Envelope funding interface will be implemented in the next phase.',
-      [{ text: 'OK' }]
-    );
+    (navigation as any).navigate('EnvelopeFunding', { 
+      envelopeId: envelope?.id 
+    });
   };
 
   const handleTransferFromEnvelope = () => {

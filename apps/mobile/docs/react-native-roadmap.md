@@ -133,7 +133,7 @@
 - [x] Design envelope list screen with balances
 - [x] Create envelope detail screen
 - [x] Build envelope creation/edit form
-- [ ] Implement envelope funding interface
+- [x] Implement envelope funding interface
 - [ ] Add envelope transfer functionality
 - [ ] Create envelope notifications settings
 

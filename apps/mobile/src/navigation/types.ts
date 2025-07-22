@@ -43,6 +43,7 @@ export type MainStackParamList = {
   IncomeHistory: undefined;
   EnvelopeDetail: { envelopeId: string };
   EnvelopeForm: { envelopeId?: string };
+  EnvelopeFunding: { envelopeId: string };
   NotificationSettings: undefined;
   // Add other main app screens here
 };
