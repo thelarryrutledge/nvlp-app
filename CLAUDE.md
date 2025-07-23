@@ -104,6 +104,20 @@
 - ✅ Integrated spending charts into EnvelopeDetailScreen
 - ✅ Added proper TypeScript typing and error handling
 - ✅ Built chart configuration with theme-aware colors and styling
+- ✅ Fixed authentication error with tokenManager.getAccessToken() implementation
+
+**Envelope Reordering Implementation (Enhancement):**
+- ✅ Added updateEnvelopeOrder method to envelope service for batch sort order updates
+- ✅ Implemented drag-and-drop functionality in EnvelopeListScreen using react-native-draggable-flatlist
+- ✅ Added reorder mode toggle with clear visual indicators and instructions
+- ✅ Created separate draggable and static render functions for envelopes
+- ✅ Implemented section-based reordering (envelopes stay within their type groups: regular/savings/debt)
+- ✅ Added visual feedback for active dragging with ScaleDecorator and shadow effects
+- ✅ Created reorder handle indicator and hide action buttons during reorder mode
+- ✅ Added comprehensive styling for reorder mode UI elements
+- ✅ Integrated with existing envelope grouping logic for type-specific reordering
+- ✅ Fixed TypeScript issues with envelope properties (notify_above_amount as savings goal)
+- ✅ Maintained performance with disabled scrolling in nested DraggableFlatList components
 
 ### Recent Completed Tasks (Phase 5.2):
 **Envelope List Screen Implementation (Phase 5.2.1):**

@@ -77,6 +77,24 @@ class EnvelopeService {
       throw apiError;
     }
   }
+
+  /**
+   * Update envelope order for drag-and-drop reordering
+   */
+  async updateEnvelopeOrder(envelopes: { id: string; sort_order: number }[]): Promise<void> {
+    try {
+      // Update each envelope's sort order
+      await Promise.all(
+        envelopes.map(({ id, sort_order }) =>
+          enhancedApiClient.updateEnvelope(id, { sort_order })
+        )
+      );
+    } catch (error) {
+      const apiError = transformError(error);
+      logError(apiError, 'EnvelopeService.updateEnvelopeOrder');
+      throw apiError;
+    }
+  }
 }
 
 export const envelopeService = new EnvelopeService();

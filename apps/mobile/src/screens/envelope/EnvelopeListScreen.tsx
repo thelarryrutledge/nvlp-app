@@ -18,6 +18,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import DraggableFlatList, { ScaleDecorator, RenderItemParams } from 'react-native-draggable-flatlist';
 import { useThemedStyles, useTheme, spacing, typography, Theme } from '../../theme';
 import { Card, Tooltip } from '../../components/ui';
 import { EnvelopeProgressBar } from '../../components/envelope';
@@ -36,6 +37,7 @@ export const EnvelopeListScreen: React.FC = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<'all' | 'regular' | 'savings' | 'debt'>('all');
+  const [isReorderMode, setIsReorderMode] = useState(false);
 
   const loadEnvelopes = useCallback(async (showRefreshIndicator = false) => {
     if (!selectedBudget) {
@@ -129,6 +131,38 @@ export const EnvelopeListScreen: React.FC = () => {
     );
   };
 
+  const handleToggleReorderMode = () => {
+    setIsReorderMode(!isReorderMode);
+  };
+
+  const handleReorderEnvelopes = async (reorderedEnvelopes: Envelope[], envelopeType: string) => {
+    try {
+      // Update local state immediately for smooth UX
+      const updatedEnvelopes = envelopes.map(env => {
+        const reorderedItem = reorderedEnvelopes.find(r => r.id === env.id);
+        if (reorderedItem) {
+          const index = reorderedEnvelopes.indexOf(reorderedItem);
+          return { ...env, sort_order: index };
+        }
+        return env;
+      });
+      setEnvelopes(updatedEnvelopes);
+
+      // Prepare the update data with new sort orders
+      const updates = reorderedEnvelopes.map((envelope, index) => ({
+        id: envelope.id,
+        sort_order: index,
+      }));
+
+      // Update the backend
+      await envelopeService.updateEnvelopeOrder(updates);
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to update envelope order');
+      // Reload to restore original order on error
+      await loadEnvelopes();
+    }
+  };
+
   const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -175,14 +209,149 @@ export const EnvelopeListScreen: React.FC = () => {
     );
   };
 
-  const renderEnvelope = (envelope: Envelope) => (
+  const renderDraggableEnvelope = ({ item: envelope, drag, isActive }: RenderItemParams<Envelope>) => (
+    <ScaleDecorator>
+      <Card
+        variant="elevated"
+        padding="large"
+        style={[
+          styles.envelopeCard,
+          !envelope.is_active ? styles.inactiveEnvelopeCard : undefined,
+          isActive ? styles.dragActiveItem : undefined,
+        ].filter(Boolean) as any}
+      >
+        <TouchableOpacity
+          style={styles.envelopeContent}
+          onPress={() => isReorderMode ? undefined : handleViewEnvelope(envelope)}
+          onLongPress={drag}
+          disabled={isActive}
+          activeOpacity={isReorderMode ? 1 : 0.7}
+        >
+          <View style={styles.envelopeHeader}>
+            {renderEnvelopeIcon(envelope)}
+            <View style={styles.envelopeInfo}>
+              <View style={styles.envelopeNameRow}>
+                <Text style={styles.envelopeName}>{envelope.name}</Text>
+                {!envelope.is_active && (
+                  <View style={styles.inactiveBadge}>
+                    <Text style={styles.inactiveBadgeText}>Inactive</Text>
+                  </View>
+                )}
+              </View>
+              {envelope.description && (
+                <Text style={styles.envelopeDescription}>{envelope.description}</Text>
+              )}
+              
+              {/* Balance Display */}
+              <View style={styles.balanceRow}>
+                <Text style={styles.balanceLabel}>Balance:</Text>
+                <Text style={[
+                  styles.balanceValue,
+                  envelope.current_balance < 0 && styles.negativeBalance
+                ]}>
+                  {formatCurrency(envelope.current_balance)}
+                </Text>
+              </View>
+
+              {/* Envelope Type Badge */}
+              <View style={styles.typeRow}>
+                <View style={[
+                  styles.typeBadge,
+                  { backgroundColor: getEnvelopeTypeColor(envelope.envelope_type) + '20' }
+                ]}>
+                  <Text style={[
+                    styles.typeBadgeText,
+                    { color: getEnvelopeTypeColor(envelope.envelope_type) }
+                  ]}>
+                    {envelope.envelope_type.charAt(0).toUpperCase() + envelope.envelope_type.slice(1)}
+                  </Text>
+                </View>
+                
+                {/* Notification Icon */}
+                {envelope.should_notify && (
+                  <Tooltip content="Notifications enabled">
+                    <Icon name="notifications-outline" size={16} color={theme.warning} />
+                  </Tooltip>
+                )}
+              </View>
+
+              {/* Savings Goal Progress */}
+              {envelope.envelope_type === 'savings' && envelope.notify_above_amount && (
+                <View style={styles.progressSection}>
+                  <View style={styles.progressHeader}>
+                    <Text style={styles.progressLabel}>Savings Goal</Text>
+                    <Text style={styles.progressValue}>
+                      {formatCurrency(envelope.current_balance)} / {formatCurrency(envelope.notify_above_amount)}
+                    </Text>
+                  </View>
+                  <EnvelopeProgressBar 
+                    envelope={envelope} 
+                    showLabels={false}
+                    height={4}
+                    style={styles.progressBar}
+                  />
+                </View>
+              )}
+
+              {/* Debt Info */}
+              {envelope.envelope_type === 'debt' && envelope.minimum_payment && (
+                <View style={styles.debtInfo}>
+                  <Icon name="calendar-outline" size={14} color={theme.textSecondary} />
+                  <Text style={styles.debtInfoText}>
+                    Min. payment: {formatCurrency(envelope.minimum_payment)}
+                  </Text>
+                </View>
+              )}
+            </View>
+          </View>
+
+          {/* Action Buttons - Only show when not in reorder mode */}
+          {!isReorderMode && (
+            <View style={styles.actionButtons}>
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={() => handleFundEnvelope(envelope)}
+              >
+                <Icon name="add-circle-outline" size={20} color={theme.primary} />
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={() => handleTransferEnvelope(envelope)}
+              >
+                <Icon name="swap-horizontal-outline" size={20} color={theme.primary} />
+              </TouchableOpacity>
+              
+              {!envelope.is_system_envelope && (
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  onPress={() => handleDeleteEnvelope(envelope)}
+                >
+                  <Icon name="trash-outline" size={20} color={theme.error} />
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+
+          {/* Reorder Handle - Only show in reorder mode */}
+          {isReorderMode && (
+            <View style={styles.reorderHandle}>
+              <Icon name="reorder-three-outline" size={24} color={theme.textSecondary} />
+            </View>
+          )}
+        </TouchableOpacity>
+      </Card>
+    </ScaleDecorator>
+  );
+
+  const renderStaticEnvelope = (envelope: Envelope) => (
     <Card
       key={envelope.id}
       variant="elevated"
       padding="large"
       style={[
         styles.envelopeCard,
-        !envelope.is_active && styles.inactiveEnvelopeCard
+        !envelope.is_active ? styles.inactiveEnvelopeCard : undefined
       ]}
     >
       <TouchableOpacity
@@ -460,6 +629,35 @@ export const EnvelopeListScreen: React.FC = () => {
       {/* Filter Buttons */}
       {envelopes.length > 0 && renderFilterButtons()}
       
+      {/* Reorder Mode Toggle */}
+      {envelopes.length >= 2 && !isReorderMode && (
+        <View style={styles.reorderHeader}>
+          <TouchableOpacity
+            style={styles.reorderButton}
+            onPress={handleToggleReorderMode}
+          >
+            <Icon name="reorder-three-outline" size={20} color={theme.primary} />
+            <Text style={styles.reorderButtonText}>Reorder Envelopes</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+      
+      {/* Reorder Mode Active Header */}
+      {isReorderMode && (
+        <View style={styles.reorderActiveHeader}>
+          <View style={styles.reorderActiveInfo}>
+            <Icon name="information-circle-outline" size={20} color={theme.textSecondary} />
+            <Text style={styles.reorderActiveText}>Long press and drag to reorder</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.reorderDoneButton}
+            onPress={() => setIsReorderMode(false)}
+          >
+            <Text style={styles.reorderDoneButtonText}>Done</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+      
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         refreshControl={
@@ -527,7 +725,18 @@ export const EnvelopeListScreen: React.FC = () => {
                       <Text style={styles.sectionCount}>{groupedEnvelopes.active.regular.length}</Text>
                     </View>
                     <View style={styles.sectionContent}>
-                      {groupedEnvelopes.active.regular.map(renderEnvelope)}
+                      {isReorderMode ? (
+                        <DraggableFlatList
+                          data={groupedEnvelopes.active.regular}
+                          onDragEnd={({ data }) => handleReorderEnvelopes(data, 'regular')}
+                          keyExtractor={(item) => item.id}
+                          renderItem={renderDraggableEnvelope}
+                          scrollEnabled={false}
+                          nestedScrollEnabled={false}
+                        />
+                      ) : (
+                        groupedEnvelopes.active.regular.map(renderStaticEnvelope)
+                      )}
                     </View>
                   </Card>
                 )}
@@ -540,7 +749,18 @@ export const EnvelopeListScreen: React.FC = () => {
                       <Text style={styles.sectionCount}>{groupedEnvelopes.active.savings.length}</Text>
                     </View>
                     <View style={styles.sectionContent}>
-                      {groupedEnvelopes.active.savings.map(renderEnvelope)}
+                      {isReorderMode ? (
+                        <DraggableFlatList
+                          data={groupedEnvelopes.active.savings}
+                          onDragEnd={({ data }) => handleReorderEnvelopes(data, 'savings')}
+                          keyExtractor={(item) => item.id}
+                          renderItem={renderDraggableEnvelope}
+                          scrollEnabled={false}
+                          nestedScrollEnabled={false}
+                        />
+                      ) : (
+                        groupedEnvelopes.active.savings.map(renderStaticEnvelope)
+                      )}
                     </View>
                   </Card>
                 )}
@@ -553,7 +773,18 @@ export const EnvelopeListScreen: React.FC = () => {
                       <Text style={styles.sectionCount}>{groupedEnvelopes.active.debt.length}</Text>
                     </View>
                     <View style={styles.sectionContent}>
-                      {groupedEnvelopes.active.debt.map(renderEnvelope)}
+                      {isReorderMode ? (
+                        <DraggableFlatList
+                          data={groupedEnvelopes.active.debt}
+                          onDragEnd={({ data }) => handleReorderEnvelopes(data, 'debt')}
+                          keyExtractor={(item) => item.id}
+                          renderItem={renderDraggableEnvelope}
+                          scrollEnabled={false}
+                          nestedScrollEnabled={false}
+                        />
+                      ) : (
+                        groupedEnvelopes.active.debt.map(renderStaticEnvelope)
+                      )}
                     </View>
                   </Card>
                 )}
@@ -574,7 +805,7 @@ export const EnvelopeListScreen: React.FC = () => {
                     ...groupedEnvelopes.inactive.regular,
                     ...groupedEnvelopes.inactive.savings,
                     ...groupedEnvelopes.inactive.debt,
-                  ].map(renderEnvelope)}
+                  ].map(renderStaticEnvelope)}
                 </View>
               </Card>
             )}
@@ -920,6 +1151,97 @@ function createStyles(theme: Theme) {
     activeFilterButtonText: {
       color: theme.textOnPrimary,
       fontWeight: '600' as const,
+    },
+    // Reorder Mode Styles
+    reorderHeader: {
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.md,
+    },
+    reorderButton: {
+      flexDirection: 'row' as const,
+      alignItems: 'center' as const,
+      gap: spacing.sm,
+    },
+    reorderButtonText: {
+      ...typography.body,
+      color: theme.primary,
+      fontWeight: '500' as const,
+    },
+    reorderActiveHeader: {
+      flexDirection: 'row' as const,
+      justifyContent: 'space-between' as const,
+      alignItems: 'center' as const,
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.md,
+      backgroundColor: theme.primaryLight + '20',
+      borderBottomWidth: 1,
+      borderBottomColor: theme.primaryLight,
+    },
+    reorderActiveInfo: {
+      flexDirection: 'row' as const,
+      alignItems: 'center' as const,
+      gap: spacing.sm,
+    },
+    reorderActiveText: {
+      ...typography.body,
+      color: theme.textSecondary,
+    },
+    reorderDoneButton: {
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.sm,
+      backgroundColor: theme.primary,
+      borderRadius: 20,
+    },
+    reorderDoneButtonText: {
+      ...typography.body,
+      color: theme.textOnPrimary,
+      fontWeight: '600' as const,
+    },
+    // Drag and Drop Styles
+    dragActiveItem: {
+      opacity: 0.8,
+      backgroundColor: theme.surface,
+      elevation: 8,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 8,
+    },
+    actionButtons: {
+      flexDirection: 'row' as const,
+      gap: spacing.sm,
+      marginTop: spacing.md,
+    },
+    reorderHandle: {
+      paddingLeft: spacing.md,
+      justifyContent: 'center' as const,
+    },
+    // Progress Section Styles
+    progressSection: {
+      marginTop: spacing.md,
+    },
+    progressHeader: {
+      flexDirection: 'row' as const,
+      justifyContent: 'space-between' as const,
+      alignItems: 'center' as const,
+      marginBottom: spacing.xs,
+    },
+    progressLabel: {
+      ...typography.caption,
+      color: theme.textSecondary,
+    },
+    progressValue: {
+      ...typography.caption,
+      color: theme.primary,
+      fontWeight: '600' as const,
+    },
+    progressBar: {
+      marginTop: spacing.xs,
+    },
+    debtInfoText: {
+      ...typography.caption,
+      color: theme.textSecondary,
+      marginLeft: spacing.xs,
     },
   });
 }
