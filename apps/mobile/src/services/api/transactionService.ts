@@ -5,8 +5,8 @@
  */
 
 import { enhancedApiClient } from './clientWrapper';
-import { apiClient } from './client';
 import { transformError, logError } from './errors';
+import { tokenManager } from '../auth/tokenManager';
 import type { Transaction } from '@nvlp/types';
 
 interface AllocationTransactionRequest {
@@ -53,7 +53,7 @@ class TransactionService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${await apiClient.getAccessToken()}`,
+          'Authorization': `Bearer ${tokenManager.getAccessToken()}`,
         },
         body: JSON.stringify(transactionData),
       });
@@ -92,7 +92,7 @@ class TransactionService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${await apiClient.getAccessToken()}`,
+          'Authorization': `Bearer ${tokenManager.getAccessToken()}`,
         },
         body: JSON.stringify(transactionData),
       });
@@ -130,7 +130,7 @@ class TransactionService {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${await apiClient.getAccessToken()}`,
+          'Authorization': `Bearer ${tokenManager.getAccessToken()}`,
           'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFucGF0bG9zb21vcG9pbXRzbXNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE2NTg5MzcsImV4cCI6MjA2NzIzNDkzN30.__GhvGGWqhC_i1ztp1-A1VEsL3JVWrtdpQG_uJS8tB8',
         },
       });
