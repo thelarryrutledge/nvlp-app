@@ -148,7 +148,7 @@
 - [x] Create payee list screen with search
 - [x] Build payee creation/edit form
 - [x] Implement payee merge functionality
-- [ ] Add payee spending history
+- [x] Add payee spending history
 - [ ] Create payee insights screen
 - [ ] Implement payee categorization
 
