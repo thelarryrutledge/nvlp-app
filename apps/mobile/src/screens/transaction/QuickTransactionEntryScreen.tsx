@@ -366,9 +366,7 @@ export const QuickTransactionEntryScreen: React.FC = () => {
               
               {showEnvelopeSelector && (
                 <View style={[styles.dropdown, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-                  {envelopes
-                    .filter(e => e.current_balance > 0) // Only show envelopes with positive balance
-                    .map((envelope) => (
+                  {envelopes.map((envelope) => (
                       <TouchableOpacity
                         key={envelope.id}
                         style={styles.dropdownItem}
@@ -381,7 +379,16 @@ export const QuickTransactionEntryScreen: React.FC = () => {
                           <Text style={[styles.envelopeName, { color: theme.textPrimary }]}>
                             {envelope.name}
                           </Text>
-                          <Text style={[styles.envelopeBalance, { color: theme.textSecondary }]}>
+                          <Text style={[
+                            styles.envelopeBalance, 
+                            { 
+                              color: envelope.current_balance > 0 
+                                ? theme.textSecondary 
+                                : envelope.current_balance === 0 
+                                  ? '#D97706' 
+                                  : '#EF4444' 
+                            }
+                          ]}>
                             ${envelope.current_balance.toFixed(2)}
                           </Text>
                         </View>
