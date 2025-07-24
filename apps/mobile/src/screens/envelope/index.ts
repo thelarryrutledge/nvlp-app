@@ -5,3 +5,4 @@ export { EnvelopeFormScreen } from './EnvelopeFormScreen';
 export { EnvelopeFundingScreen } from './EnvelopeFundingScreen';
 export { EnvelopeTransferScreen } from './EnvelopeTransferScreen';
 export { EnvelopeNotificationsScreen } from './EnvelopeNotificationsScreen';
+export { EnvelopeHistoryScreen } from './EnvelopeHistoryScreen';

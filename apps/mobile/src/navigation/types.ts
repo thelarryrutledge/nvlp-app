@@ -46,7 +46,11 @@ export type MainStackParamList = {
   EnvelopeFunding: { envelopeId: string };
   EnvelopeTransfer: { envelopeId: string };
   EnvelopeNotifications: { envelopeId: string };
+  EnvelopeHistory: { envelopeId: string };
   NotificationSettings: undefined;
+  PayeeList: undefined;
+  PayeeDetail: { payeeId: string };
+  PayeeForm: { payeeId?: string };
   // Add other main app screens here
 };
 

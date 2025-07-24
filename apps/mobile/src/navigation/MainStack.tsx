@@ -23,8 +23,9 @@ import { IncomeSourceListScreen } from '../screens/income/IncomeSourceListScreen
 import { IncomeSourceFormScreen } from '../screens/income/IncomeSourceFormScreen';
 import { IncomeCalendarScreen } from '../screens/income/IncomeCalendarScreen';
 import { IncomeHistoryScreen } from '../screens/income/IncomeHistoryScreen';
-import { EnvelopeDetailScreen, EnvelopeFormScreen, EnvelopeFundingScreen, EnvelopeTransferScreen, EnvelopeNotificationsScreen } from '../screens/envelope';
+import { EnvelopeDetailScreen, EnvelopeFormScreen, EnvelopeFundingScreen, EnvelopeTransferScreen, EnvelopeNotificationsScreen, EnvelopeHistoryScreen } from '../screens/envelope';
 import { NotificationSettingsScreen } from '../screens/settings/NotificationSettingsScreen';
+import { PayeeListScreen, PayeeDetailScreen, PayeeFormScreen } from '../screens/payees';
 import { useTheme } from '../theme';
 import type { MainStackParamList } from './types';
 
@@ -247,6 +248,15 @@ export const MainStack: React.FC = () => {
         }}
       />
       <Stack.Screen
+        name="EnvelopeHistory"
+        component={EnvelopeHistoryScreen}
+        options={{
+          headerShown: true,
+          title: 'Transaction History',
+          headerBackTitle: 'Back',
+        }}
+      />
+      <Stack.Screen
         name="NotificationSettings"
         component={NotificationSettingsScreen}
         options={{
@@ -254,6 +264,34 @@ export const MainStack: React.FC = () => {
           title: 'Notification Settings',
           headerBackTitle: 'Back',
         }}
+      />
+      <Stack.Screen
+        name="PayeeList"
+        component={PayeeListScreen}
+        options={{
+          headerShown: true,
+          title: 'Payees',
+          headerBackTitle: 'Back',
+        }}
+      />
+      <Stack.Screen
+        name="PayeeDetail"
+        component={PayeeDetailScreen}
+        options={{
+          headerShown: true,
+          title: 'Payee Details',
+          headerBackTitle: 'Back',
+        }}
+      />
+      <Stack.Screen
+        name="PayeeForm"
+        component={PayeeFormScreen}
+        options={({ route }) => ({
+          headerShown: true,
+          title: (route.params as any)?.payeeId ? 'Edit Payee' : 'Add Payee',
+          headerBackTitle: 'Back',
+          presentation: 'modal',
+        })}
       />
     </Stack.Navigator>
   );

@@ -140,15 +140,13 @@
 ### 5.3 Envelope Visualization
 - [x] Create envelope balance progress bars
 - [x] Build envelope spending charts
-- [ ] Implement envelope history view
-- [ ] Add envelope goal tracking
-- [ ] Create envelope insights screen
+- [x] Implement envelope history view
 
 ## Phase 6: Payee Management
 
 ### 6.1 Payee Features
-- [ ] Create payee list screen with search
-- [ ] Build payee creation/edit form
+- [x] Create payee list screen with search
+- [x] Build payee creation/edit form
 - [ ] Implement payee merge functionality
 - [ ] Add payee spending history
 - [ ] Create payee insights screen
@@ -323,6 +321,21 @@
 - Battery efficient (no excessive drain)
 - Network efficient (minimal data usage)
 - Fast sync times (under 5 seconds)
+
+## Post-MVP Enhancements
+
+### Advanced Analytics (Low Priority)
+- [ ] Envelope insights screen with AI-powered recommendations
+- [ ] Spending pattern analysis and predictions
+- [ ] Cross-envelope comparative analytics
+- [ ] Budget optimization suggestions
+
+### Additional Features
+- [ ] Recurring transaction templates
+- [ ] Bill reminders and scheduling
+- [ ] Multi-currency support
+- [ ] Family/shared budget management
+- [ ] Advanced reporting and data export
 
 ## Development Best Practices
 

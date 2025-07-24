@@ -452,7 +452,10 @@ export const EnvelopeDetailScreen: React.FC = () => {
         <Card variant="elevated" padding="none" style={styles.transactionsCard}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Recent Transactions</Text>
-            <TouchableOpacity style={styles.viewAllButton}>
+            <TouchableOpacity 
+              style={styles.viewAllButton}
+              onPress={() => (navigation as any).navigate('EnvelopeHistory', { envelopeId: envelope.id })}
+            >
               <Text style={styles.viewAllButtonText}>View All</Text>
               <Icon name="chevron-forward" size={16} color={theme.primary} />
             </TouchableOpacity>

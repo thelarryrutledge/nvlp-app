@@ -273,6 +273,14 @@ export const BudgetSettingsScreen: React.FC = () => {
           onPress: () => (navigation as any).navigate('IncomeSourceList'),
         },
         {
+          id: 'payees',
+          title: 'Payees',
+          subtitle: 'Manage payees and payment history',
+          type: 'navigation',
+          icon: 'people-outline',
+          onPress: () => (navigation as any).navigate('PayeeList'),
+        },
+        {
           id: 'income-calendar',
           title: 'Income Calendar',
           subtitle: 'View expected income in calendar format',
