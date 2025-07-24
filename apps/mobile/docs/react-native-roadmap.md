@@ -149,7 +149,7 @@
 - [x] Build payee creation/edit form
 - [x] Implement payee merge functionality
 - [x] Add payee spending history
-- [ ] Create payee insights screen
+- [x] Create payee insights screen
 - [ ] Implement payee categorization
 
 ## Phase 7: Transaction Management

@@ -27,6 +27,7 @@ type RootStackParamList = {
   PayeeDetail: { payeeId: string };
   PayeeMerge: { payeeId: string };
   PayeeHistory: { payeeId: string };
+  PayeeInsights: { payeeId: string };
 };
 
 type PayeeDetailScreenNavigationProp = NavigationProp<RootStackParamList, 'PayeeDetail'>;
@@ -223,6 +224,18 @@ export const PayeeDetailScreen: React.FC = () => {
             View Spending History
           </Text>
           <Icon name="chevron-right" size={20} color="#10B981" />
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[styles.historyButton, { backgroundColor: '#3B82F610' }]}
+          onPress={() => navigation.navigate('PayeeInsights', { payeeId })}
+          activeOpacity={0.7}
+        >
+          <Icon name="analytics" size={20} color="#3B82F6" />
+          <Text style={[styles.historyButtonText, { color: '#3B82F6' }]}>
+            View Spending Insights
+          </Text>
+          <Icon name="chevron-right" size={20} color="#3B82F6" />
         </TouchableOpacity>
       </View>
     );
