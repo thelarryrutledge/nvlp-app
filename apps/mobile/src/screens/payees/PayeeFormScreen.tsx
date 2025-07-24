@@ -65,6 +65,19 @@ const colorOptions = [
   '#EC4899',
 ];
 
+// Payee categories for better organization
+const payeeCategories = [
+  { id: 'essential', name: 'Essential', color: '#DC2626', icon: 'local-grocery-store' },
+  { id: 'utilities', name: 'Utilities', color: '#F59E0B', icon: 'flash-on' },
+  { id: 'healthcare', name: 'Healthcare', color: '#EF4444', icon: 'local-hospital' },
+  { id: 'entertainment', name: 'Entertainment', color: '#8B5CF6', icon: 'movie' },
+  { id: 'transport', name: 'Transport', color: '#3B82F6', icon: 'directions-car' },
+  { id: 'shopping', name: 'Shopping', color: '#EC4899', icon: 'shopping-bag' },
+  { id: 'food', name: 'Food & Dining', color: '#F97316', icon: 'restaurant' },
+  { id: 'services', name: 'Services', color: '#10B981', icon: 'build' },
+  { id: 'other', name: 'Other', color: '#6B7280', icon: 'more-horiz' },
+];
+
 export const PayeeFormScreen: React.FC = () => {
   const navigation = useNavigation<PayeeFormScreenNavigationProp>();
   const route = useRoute<PayeeFormScreenRouteProp>();
@@ -82,6 +95,7 @@ export const PayeeFormScreen: React.FC = () => {
     name: '',
     description: '',
     payee_type: 'business' as PayeeType,
+    category: 'other',
     color: '#10B981',
     icon: '',
     email: '',
@@ -101,10 +115,21 @@ export const PayeeFormScreen: React.FC = () => {
   const loadPayee = async () => {
     try {
       const payee = await client.getPayee(payeeId!);
+      
+      // Extract category from description if it follows our format: [category:id]
+      let category = 'other';
+      let description = payee.description || '';
+      const categoryMatch = description.match(/\[category:(\w+)\]/);
+      if (categoryMatch) {
+        category = categoryMatch[1];
+        description = description.replace(/\[category:\w+\]\s*/, '');
+      }
+      
       setFormData({
         name: payee.name,
-        description: payee.description || '',
+        description,
         payee_type: payee.payee_type,
+        category,
         color: payee.color || '#10B981',
         icon: payee.icon || '',
         email: payee.email || '',
@@ -136,10 +161,14 @@ export const PayeeFormScreen: React.FC = () => {
 
     setSaving(true);
     try {
+      // Embed category info in description for now
+      const categoryTag = formData.category !== 'other' ? `[category:${formData.category}] ` : '';
+      const fullDescription = categoryTag + (formData.description.trim() || '');
+      
       if (isEditing) {
         const updates: UpdatePayeeInput = {
           name: formData.name.trim(),
-          description: formData.description.trim() || undefined,
+          description: fullDescription || undefined,
           payee_type: formData.payee_type,
           color: formData.color,
           icon: formData.icon.trim() || undefined,
@@ -155,7 +184,7 @@ export const PayeeFormScreen: React.FC = () => {
         const input: CreatePayeeInput = {
           budget_id: selectedBudget.id,
           name: formData.name.trim(),
-          description: formData.description.trim() || null,
+          description: fullDescription || null,
           payee_type: formData.payee_type,
           color: formData.color,
           icon: formData.icon.trim() || null,
@@ -239,6 +268,44 @@ export const PayeeFormScreen: React.FC = () => {
     </View>
   );
 
+  const renderCategorySelector = () => (
+    <View style={styles.categorySelector}>
+      {payeeCategories.map((category) => {
+        const isSelected = formData.category === category.id;
+        return (
+          <TouchableOpacity
+            key={category.id}
+            style={[
+              styles.categoryOption,
+              {
+                backgroundColor: isSelected ? category.color + '20' : theme.surface,
+                borderColor: isSelected ? category.color : theme.border,
+              },
+            ]}
+            onPress={() => setFormData({ ...formData, category: category.id })}
+            activeOpacity={0.7}
+          >
+            <Icon
+              name={category.icon}
+              size={20}
+              color={isSelected ? category.color : theme.textSecondary}
+            />
+            <Text
+              style={[
+                styles.categoryLabel,
+                {
+                  color: isSelected ? category.color : theme.textSecondary,
+                },
+              ]}
+            >
+              {category.name}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+
   if (loading) {
     return <LoadingState message="Loading payee..." />;
   }
@@ -297,6 +364,13 @@ export const PayeeFormScreen: React.FC = () => {
               Type
             </Text>
             {renderTypeSelector()}
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={[styles.label, { color: theme.textSecondary }]}>
+              Category
+            </Text>
+            {renderCategorySelector()}
           </View>
 
           <View style={styles.inputGroup}>
@@ -507,6 +581,26 @@ const styles = StyleSheet.create({
   colorOptionSelected: {
     borderWidth: 2,
     borderColor: '#171717',
+  },
+  categorySelector: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginHorizontal: -4,
+  },
+  categoryOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    margin: 4,
+    minWidth: '45%',
+  },
+  categoryLabel: {
+    marginLeft: 8,
+    fontSize: 14,
+    fontWeight: '500' as const,
   },
   saveButton: {
     backgroundColor: '#10B981',

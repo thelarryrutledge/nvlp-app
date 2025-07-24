@@ -52,6 +52,25 @@ const payeeTypeLabels: Record<PayeeType, string> = {
   other: 'Other',
 };
 
+// Payee categories for filtering
+const payeeCategories = [
+  { id: 'essential', name: 'Essential', color: '#DC2626', icon: 'local-grocery-store' },
+  { id: 'utilities', name: 'Utilities', color: '#F59E0B', icon: 'flash-on' },
+  { id: 'healthcare', name: 'Healthcare', color: '#EF4444', icon: 'local-hospital' },
+  { id: 'entertainment', name: 'Entertainment', color: '#8B5CF6', icon: 'movie' },
+  { id: 'transport', name: 'Transport', color: '#3B82F6', icon: 'directions-car' },
+  { id: 'shopping', name: 'Shopping', color: '#EC4899', icon: 'shopping-bag' },
+  { id: 'food', name: 'Food & Dining', color: '#F97316', icon: 'restaurant' },
+  { id: 'services', name: 'Services', color: '#10B981', icon: 'build' },
+  { id: 'other', name: 'Other', color: '#6B7280', icon: 'more-horiz' },
+];
+
+// Extract category from payee description
+const extractPayeeCategory = (payee: Payee): string => {
+  const categoryMatch = payee.description?.match(/\[category:(\w+)\]/);
+  return categoryMatch ? categoryMatch[1] : 'other';
+};
+
 export const PayeeListScreen: React.FC = () => {
   const navigation = useNavigation<PayeeListScreenNavigationProp>();
   const route = useRoute<PayeeListScreenRouteProp>();
@@ -66,6 +85,7 @@ export const PayeeListScreen: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState<PayeeType | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const loadPayees = useCallback(async () => {
     if (!selectedBudget?.id) return;
@@ -107,9 +127,14 @@ export const PayeeListScreen: React.FC = () => {
       filtered = filtered.filter((payee) => payee.payee_type === selectedType);
     }
 
+    // Filter by category
+    if (selectedCategory) {
+      filtered = filtered.filter((payee) => extractPayeeCategory(payee) === selectedCategory);
+    }
+
     // Sort by name
     return filtered.sort((a, b) => a.name.localeCompare(b.name));
-  }, [payees, searchQuery, selectedType]);
+  }, [payees, searchQuery, selectedType, selectedCategory]);
 
   const handleRefresh = useCallback(() => {
     setRefreshing(true);
@@ -234,6 +259,61 @@ export const PayeeListScreen: React.FC = () => {
     );
   };
 
+  const renderCategoryFilter = () => {
+    const categories: (string | null)[] = [
+      null,
+      ...payeeCategories.map(cat => cat.id),
+    ];
+
+    return (
+      <View style={styles.categoryFilterContainer}>
+        <FlatList
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          data={categories}
+          keyExtractor={(item) => item || 'all'}
+          renderItem={({ item }) => {
+            const isSelected = selectedCategory === item;
+            const categoryData = item ? payeeCategories.find(cat => cat.id === item) : null;
+            const label = categoryData ? categoryData.name : 'All';
+            const iconName = categoryData ? categoryData.icon : 'filter-list';
+            const color = categoryData ? categoryData.color : theme.textPrimarySecondary;
+
+            return (
+              <TouchableOpacity
+                style={[
+                  styles.categoryFilterChip,
+                  {
+                    backgroundColor: isSelected ? color : theme.surface,
+                    borderColor: isSelected ? color : theme.border,
+                  },
+                ]}
+                onPress={() => setSelectedCategory(item)}
+                activeOpacity={0.7}
+              >
+                <Icon
+                  name={iconName}
+                  size={16}
+                  color={isSelected ? 'white' : color}
+                />
+                <Text
+                  style={[
+                    styles.categoryFilterLabel,
+                    {
+                      color: isSelected ? 'white' : color,
+                    },
+                  ]}
+                >
+                  {label}
+                </Text>
+              </TouchableOpacity>
+            );
+          }}
+        />
+      </View>
+    );
+  };
+
   if (loading) {
     return <LoadingState message="Loading payees..." />;
   }
@@ -266,6 +346,7 @@ export const PayeeListScreen: React.FC = () => {
           )}
         </View>
         {renderTypeFilter()}
+        {renderCategoryFilter()}
       </View>
 
       <FlatList
@@ -283,9 +364,9 @@ export const PayeeListScreen: React.FC = () => {
         ListEmptyComponent={
           <EmptyState
             icon="people"
-            title={searchQuery || selectedType ? 'No payees found' : 'No payees yet'}
+            title={searchQuery || selectedType || selectedCategory ? 'No payees found' : 'No payees yet'}
             message={
-              searchQuery || selectedType
+              searchQuery || selectedType || selectedCategory
                 ? 'Try adjusting your filters'
                 : 'Add your first payee to start tracking payments'
             }
@@ -331,6 +412,9 @@ const styles = StyleSheet.create({
   typeFilterContainer: {
     marginBottom: 10,
   },
+  categoryFilterContainer: {
+    marginBottom: 10,
+  },
   typeFilterChip: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -341,6 +425,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   typeFilterLabel: {
+    marginLeft: 4,
+    fontSize: 14,
+    fontWeight: '500' as const,
+  },
+  categoryFilterChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginRight: 8,
+    borderWidth: 1,
+  },
+  categoryFilterLabel: {
     marginLeft: 4,
     fontSize: 14,
     fontWeight: '500' as const,
