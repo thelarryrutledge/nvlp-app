@@ -147,7 +147,7 @@
 ### 6.1 Payee Features
 - [x] Create payee list screen with search
 - [x] Build payee creation/edit form
-- [ ] Implement payee merge functionality
+- [x] Implement payee merge functionality
 - [ ] Add payee spending history
 - [ ] Create payee insights screen
 - [ ] Implement payee categorization

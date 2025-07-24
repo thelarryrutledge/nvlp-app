@@ -25,6 +25,7 @@ type RootStackParamList = {
   PayeeList: undefined;
   PayeeForm: { payeeId?: string };
   PayeeDetail: { payeeId: string };
+  PayeeMerge: { payeeId: string };
 };
 
 type PayeeDetailScreenNavigationProp = NavigationProp<RootStackParamList, 'PayeeDetail'>;
@@ -83,6 +84,10 @@ export const PayeeDetailScreen: React.FC = () => {
     navigation.navigate('PayeeForm', { payeeId });
   }, [navigation, payeeId]);
 
+  const handleMerge = useCallback(() => {
+    navigation.navigate('PayeeMerge', { payeeId });
+  }, [navigation, payeeId]);
+
   const handleDelete = useCallback(() => {
     Alert.alert(
       'Delete Payee',
@@ -133,9 +138,9 @@ export const PayeeDetailScreen: React.FC = () => {
 
           return (
             <View key={field.label} style={styles.infoRow}>
-              <Icon name={field.icon} size={20} color={theme.textPrimarySecondary} />
+              <Icon name={field.icon} size={20} color={theme.textSecondary} />
               <View style={styles.infoContent}>
-                <Text style={[styles.infoLabel, { color: theme.textPrimarySecondary }]}>
+                <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>
                   {field.label}
                 </Text>
                 <Text style={[styles.infoValue, { color: theme.textPrimary }]}>
@@ -159,9 +164,9 @@ export const PayeeDetailScreen: React.FC = () => {
         </Text>
         {payee.preferred_payment_method && (
           <View style={styles.infoRow}>
-            <Icon name="payment" size={20} color={theme.textPrimarySecondary} />
+            <Icon name="payment" size={20} color={theme.textSecondary} />
             <View style={styles.infoContent}>
-              <Text style={[styles.infoLabel, { color: theme.textPrimarySecondary }]}>
+              <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>
                 Preferred Payment Method
               </Text>
               <Text style={[styles.infoValue, { color: theme.textPrimary }]}>
@@ -172,9 +177,9 @@ export const PayeeDetailScreen: React.FC = () => {
         )}
         {payee.account_number && (
           <View style={styles.infoRow}>
-            <Icon name="account-balance" size={20} color={theme.textPrimarySecondary} />
+            <Icon name="account-balance" size={20} color={theme.textSecondary} />
             <View style={styles.infoContent}>
-              <Text style={[styles.infoLabel, { color: theme.textPrimarySecondary }]}>
+              <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>
                 Account Number
               </Text>
               <Text style={[styles.infoValue, { color: theme.textPrimary }]}>
@@ -188,7 +193,7 @@ export const PayeeDetailScreen: React.FC = () => {
             <Text style={[styles.statValue, { color: '#059669' }]}>
               ${payee.total_paid.toFixed(2)}
             </Text>
-            <Text style={[styles.statLabel, { color: theme.textPrimarySecondary }]}>
+            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
               Total Paid
             </Text>
           </View>
@@ -197,10 +202,10 @@ export const PayeeDetailScreen: React.FC = () => {
               <Text style={[styles.statValue, { color: theme.textPrimary }]}>
                 ${payee.last_payment_amount?.toFixed(2) || '0.00'}
               </Text>
-              <Text style={[styles.statLabel, { color: theme.textPrimarySecondary }]}>
+              <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
                 Last Payment
               </Text>
-              <Text style={[styles.statDate, { color: theme.textPrimarySecondary }]}>
+              <Text style={[styles.statDate, { color: theme.textSecondary }]}>
                 {new Date(payee.last_payment_date).toLocaleDateString()}
               </Text>
             </View>
@@ -251,7 +256,7 @@ export const PayeeDetailScreen: React.FC = () => {
             </Text>
           </View>
           {payee.description && (
-            <Text style={[styles.description, { color: theme.textPrimarySecondary }]}>
+            <Text style={[styles.description, { color: theme.textSecondary }]}>
               {payee.description}
             </Text>
           )}
@@ -269,6 +274,16 @@ export const PayeeDetailScreen: React.FC = () => {
             <Icon name="edit" size={20} color={'#059669'} />
             <Text style={[styles.actionButtonText, { color: '#059669' }]}>
               Edit
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.actionButton, { backgroundColor: '#FFF7ED' }]}
+            onPress={handleMerge}
+            activeOpacity={0.7}
+          >
+            <Icon name="merge-type" size={20} color={'#F97316'} />
+            <Text style={[styles.actionButtonText, { color: '#F97316' }]}>
+              Merge
             </Text>
           </TouchableOpacity>
           <TouchableOpacity

@@ -51,6 +51,7 @@ export type MainStackParamList = {
   PayeeList: undefined;
   PayeeDetail: { payeeId: string };
   PayeeForm: { payeeId?: string };
+  PayeeMerge: { payeeId: string };
   // Add other main app screens here
 };
 
