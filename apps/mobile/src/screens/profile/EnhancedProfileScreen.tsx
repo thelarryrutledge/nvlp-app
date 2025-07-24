@@ -10,7 +10,7 @@
  * - Developer/debug options
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -24,6 +24,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
+import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 
 import { useThemedStyles, useTheme, spacing, typography } from '../../theme';
 import { Button, TextInput, Card, ProfileImagePicker } from '../../components/ui';
@@ -107,6 +108,11 @@ export const EnhancedProfileScreen: React.FC = () => {
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [budgetAlerts, setBudgetAlerts] = useState(true);
   const [checkingNotificationPermission, setCheckingNotificationPermission] = useState(false);
+
+  // Bottom sheet state
+  const privacyPolicySheetRef = useRef<BottomSheet>(null);
+  const termsOfServiceSheetRef = useRef<BottomSheet>(null);
+  const snapPoints = ['50%', '75%', '90%'];
 
   useEffect(() => {
     const checkBiometrics = async () => {
@@ -538,6 +544,35 @@ export const EnhancedProfileScreen: React.FC = () => {
           </Card>
         </View>
 
+        {/* Legal & About */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Legal & About</Text>
+          <Card variant="default" padding="none">
+            <SettingItem
+              icon="document-text"
+              title="Privacy Policy"
+              description="How we protect your privacy and data"
+              onPress={() => privacyPolicySheetRef.current?.snapToIndex(1)}
+              showArrow
+            />
+            <SettingItem
+              icon="document"
+              title="Terms of Service"
+              description="Terms and conditions of use"
+              onPress={() => termsOfServiceSheetRef.current?.snapToIndex(1)}
+              showArrow
+            />
+            <SettingItem
+              icon="information-circle"
+              title="App Version"
+              description="Version 0.0.1"
+              rightElement={
+                <Text style={styles.versionText}>0.0.1</Text>
+              }
+            />
+          </Card>
+        </View>
+
         {/* Sign Out */}
         <View style={styles.signOutSection}>
           <Button
@@ -602,6 +637,133 @@ export const EnhancedProfileScreen: React.FC = () => {
           </Card>
         </View>
       </Modal>
+
+      {/* Privacy Policy Bottom Sheet */}
+      <BottomSheet
+        ref={privacyPolicySheetRef}
+        index={-1}
+        snapPoints={snapPoints}
+        enablePanDownToClose={true}
+        backgroundStyle={styles.bottomSheetBackground}
+        handleIndicatorStyle={styles.bottomSheetIndicator}
+      >
+        <BottomSheetScrollView contentContainerStyle={styles.bottomSheetContent}>
+          <View style={styles.bottomSheetHeader}>
+            <Text style={styles.bottomSheetTitle}>Privacy Policy</Text>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => privacyPolicySheetRef.current?.close()}
+            >
+              <Icon name="close" size={24} color={theme.textSecondary} />
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.bottomSheetSubtitle}>Last updated: {new Date().toLocaleDateString()}</Text>
+          
+          <View style={styles.bottomSheetSection}>
+            <Text style={styles.bottomSheetSectionTitle}>Information We Collect</Text>
+            <Text style={styles.bottomSheetBody}>
+              NVLP is designed with privacy in mind. We collect only the information necessary to provide you with a secure and personalized budgeting experience:
+            </Text>
+            <Text style={styles.bottomSheetBullet}>• Account information (email, display name)</Text>
+            <Text style={styles.bottomSheetBullet}>• Budget and transaction data you create</Text>
+            <Text style={styles.bottomSheetBullet}>• Device information for security purposes</Text>
+          </View>
+
+          <View style={styles.bottomSheetSection}>
+            <Text style={styles.bottomSheetSectionTitle}>How We Use Your Information</Text>
+            <Text style={styles.bottomSheetBody}>Your information is used exclusively to:</Text>
+            <Text style={styles.bottomSheetBullet}>• Provide and maintain the NVLP service</Text>
+            <Text style={styles.bottomSheetBullet}>• Secure your account and data</Text>
+            <Text style={styles.bottomSheetBullet}>• Improve our application features</Text>
+            <Text style={styles.bottomSheetBullet}>• Communicate important service updates</Text>
+          </View>
+
+          <View style={styles.bottomSheetSection}>
+            <Text style={styles.bottomSheetSectionTitle}>Data Security</Text>
+            <Text style={styles.bottomSheetBody}>We implement industry-standard security measures:</Text>
+            <Text style={styles.bottomSheetBullet}>• End-to-end encryption for all data transmission</Text>
+            <Text style={styles.bottomSheetBullet}>• Secure cloud storage with Supabase</Text>
+            <Text style={styles.bottomSheetBullet}>• Biometric authentication support</Text>
+            <Text style={styles.bottomSheetBullet}>• Regular security audits and updates</Text>
+          </View>
+
+          <View style={styles.bottomSheetSection}>
+            <Text style={styles.bottomSheetSectionTitle}>Contact Us</Text>
+            <Text style={styles.bottomSheetBody}>
+              For questions about this Privacy Policy, contact us at:
+            </Text>
+            <Text style={styles.bottomSheetContact}>privacy@nvlp.app</Text>
+          </View>
+        </BottomSheetScrollView>
+      </BottomSheet>
+
+      {/* Terms of Service Bottom Sheet */}
+      <BottomSheet
+        ref={termsOfServiceSheetRef}
+        index={-1}
+        snapPoints={snapPoints}
+        enablePanDownToClose={true}
+        backgroundStyle={styles.bottomSheetBackground}
+        handleIndicatorStyle={styles.bottomSheetIndicator}
+      >
+        <BottomSheetScrollView contentContainerStyle={styles.bottomSheetContent}>
+          <View style={styles.bottomSheetHeader}>
+            <Text style={styles.bottomSheetTitle}>Terms of Service</Text>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => termsOfServiceSheetRef.current?.close()}
+            >
+              <Icon name="close" size={24} color={theme.textSecondary} />
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.bottomSheetSubtitle}>Last updated: {new Date().toLocaleDateString()}</Text>
+          
+          <View style={styles.bottomSheetSection}>
+            <Text style={styles.bottomSheetSectionTitle}>1. Acceptance of Terms</Text>
+            <Text style={styles.bottomSheetBody}>
+              By using the NVLP application, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our service.
+            </Text>
+          </View>
+
+          <View style={styles.bottomSheetSection}>
+            <Text style={styles.bottomSheetSectionTitle}>2. Description of Service</Text>
+            <Text style={styles.bottomSheetBody}>
+              NVLP is a personal finance management application that helps users manage their budgets using the envelope budgeting method.
+            </Text>
+          </View>
+
+          <View style={styles.bottomSheetSection}>
+            <Text style={styles.bottomSheetSectionTitle}>3. User Responsibilities</Text>
+            <Text style={styles.bottomSheetBody}>As a user, you are responsible for:</Text>
+            <Text style={styles.bottomSheetBullet}>• Maintaining the security of your account credentials</Text>
+            <Text style={styles.bottomSheetBullet}>• Providing accurate financial information</Text>
+            <Text style={styles.bottomSheetBullet}>• Using the service in accordance with applicable laws</Text>
+            <Text style={styles.bottomSheetBullet}>• Backing up your important financial data</Text>
+          </View>
+
+          <View style={styles.bottomSheetSection}>
+            <Text style={styles.bottomSheetSectionTitle}>4. Data Ownership</Text>
+            <Text style={styles.bottomSheetBody}>
+              You retain full ownership of all financial data you input into NVLP. We do not claim any ownership rights to your personal financial information.
+            </Text>
+          </View>
+
+          <View style={styles.bottomSheetSection}>
+            <Text style={styles.bottomSheetSectionTitle}>5. Limitation of Liability</Text>
+            <Text style={styles.bottomSheetBody}>
+              NVLP is provided "as is" without warranties of any kind. We are not responsible for any financial decisions made based on information in the app.
+            </Text>
+          </View>
+
+          <View style={styles.bottomSheetSection}>
+            <Text style={styles.bottomSheetSectionTitle}>Contact Information</Text>
+            <Text style={styles.bottomSheetBody}>
+              For questions about these Terms of Service, contact us at:
+            </Text>
+            <Text style={styles.bottomSheetContact}>support@nvlp.app</Text>
+          </View>
+        </BottomSheetScrollView>
+      </BottomSheet>
     </SafeAreaView>
   );
 };
@@ -708,6 +870,11 @@ function createStyles(theme: Theme) {
       alignItems: 'center' as const,
       gap: spacing.sm,
     },
+    versionText: {
+      ...typography.caption,
+      color: theme.textSecondary,
+      fontWeight: '500' as const,
+    },
     signOutSection: {
       marginTop: spacing.lg,
       marginBottom: spacing['2xl'],
@@ -744,6 +911,73 @@ function createStyles(theme: Theme) {
     },
     modalButton: {
       flex: 1,
+    },
+    bottomSheetBackground: {
+      backgroundColor: theme.surface,
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20,
+    },
+    bottomSheetIndicator: {
+      backgroundColor: theme.textTertiary,
+    },
+    bottomSheetContent: {
+      padding: spacing.lg,
+      paddingBottom: spacing['3xl'],
+    },
+    bottomSheetHeader: {
+      flexDirection: 'row' as const,
+      alignItems: 'center' as const,
+      justifyContent: 'space-between' as const,
+      marginBottom: spacing.xs,
+    },
+    bottomSheetTitle: {
+      ...typography.h2,
+      color: theme.textPrimary,
+      flex: 1,
+      textAlign: 'center' as const,
+    },
+    closeButton: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: theme.backgroundSecondary,
+      alignItems: 'center' as const,
+      justifyContent: 'center' as const,
+      position: 'absolute' as const,
+      right: 0,
+      top: -8,
+    },
+    bottomSheetSubtitle: {
+      ...typography.caption,
+      color: theme.textSecondary,
+      marginBottom: spacing.xl,
+      textAlign: 'center' as const,
+    },
+    bottomSheetSection: {
+      marginBottom: spacing.lg,
+    },
+    bottomSheetSectionTitle: {
+      ...typography.h4,
+      color: theme.textPrimary,
+      marginBottom: spacing.sm,
+    },
+    bottomSheetBody: {
+      ...typography.body,
+      color: theme.textPrimary,
+      lineHeight: 22,
+      marginBottom: spacing.sm,
+    },
+    bottomSheetBullet: {
+      ...typography.body,
+      color: theme.textPrimary,
+      lineHeight: 20,
+      marginBottom: spacing.xs,
+      marginLeft: spacing.sm,
+    },
+    bottomSheetContact: {
+      ...typography.bodyMedium,
+      color: theme.primary,
+      marginTop: spacing.xs,
     },
   });
 }
