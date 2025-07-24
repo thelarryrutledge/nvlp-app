@@ -21,6 +21,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useBudget } from '../../context/BudgetContext';
 import { useApiClient } from '../../hooks/useApiClient';
 import { LoadingState } from '../../components/ui';
+import { EnvelopePickerBottomSheet, PayeePickerBottomSheet } from '../../components/transaction';
 import { TransactionType } from '@nvlp/types';
 import { useTheme } from '../../theme';
 
@@ -90,9 +91,8 @@ export const QuickTransactionEntryScreen: React.FC = () => {
     transaction_date: new Date().toISOString().split('T')[0], // Today's date in YYYY-MM-DD format
   });
 
-  const [showTypeSelector, setShowTypeSelector] = useState(false);
-  const [showEnvelopeSelector, setShowEnvelopeSelector] = useState(false);
-  const [showPayeeSelector, setShowPayeeSelector] = useState(false);
+  const [showEnvelopeBottomSheet, setShowEnvelopeBottomSheet] = useState(false);
+  const [showPayeeBottomSheet, setShowPayeeBottomSheet] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -246,6 +246,18 @@ export const QuickTransactionEntryScreen: React.FC = () => {
     return payee?.name || 'Select Payee (Optional)';
   };
 
+  const handleEnvelopeSelect = (envelope: Envelope) => {
+    setFormData({ ...formData, envelope_id: envelope.id });
+  };
+
+  const handlePayeeSelect = (payee: Payee | null) => {
+    setFormData({ ...formData, payee_id: payee?.id || '' });
+  };
+
+  const handlePayeeCreated = (newPayee: Payee) => {
+    setPayees(prev => [...prev, newPayee]);
+  };
+
   const getSelectedTypeData = () => {
     return transactionTypes.find(t => t.value === formData.transaction_type);
   };
@@ -356,46 +368,13 @@ export const QuickTransactionEntryScreen: React.FC = () => {
               </Text>
               <TouchableOpacity
                 style={[styles.selectorButton, { borderColor: theme.border, backgroundColor: theme.surface }]}
-                onPress={() => setShowEnvelopeSelector(!showEnvelopeSelector)}
+                onPress={() => setShowEnvelopeBottomSheet(true)}
               >
                 <Text style={[styles.selectorButtonText, { color: theme.textPrimary }]}>
                   {getEnvelopeName(formData.envelope_id)}
                 </Text>
                 <Icon name="arrow-drop-down" size={24} color={theme.textSecondary} />
               </TouchableOpacity>
-              
-              {showEnvelopeSelector && (
-                <View style={[styles.dropdown, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-                  {envelopes.map((envelope) => (
-                      <TouchableOpacity
-                        key={envelope.id}
-                        style={styles.dropdownItem}
-                        onPress={() => {
-                          setFormData({ ...formData, envelope_id: envelope.id });
-                          setShowEnvelopeSelector(false);
-                        }}
-                      >
-                        <View style={styles.envelopeItem}>
-                          <Text style={[styles.envelopeName, { color: theme.textPrimary }]}>
-                            {envelope.name}
-                          </Text>
-                          <Text style={[
-                            styles.envelopeBalance, 
-                            { 
-                              color: envelope.current_balance > 0 
-                                ? theme.textSecondary 
-                                : envelope.current_balance === 0 
-                                  ? '#D97706' 
-                                  : '#EF4444' 
-                            }
-                          ]}>
-                            ${envelope.current_balance.toFixed(2)}
-                          </Text>
-                        </View>
-                      </TouchableOpacity>
-                    ))}
-                </View>
-              )}
             </View>
           )}
 
@@ -405,55 +384,13 @@ export const QuickTransactionEntryScreen: React.FC = () => {
             </Text>
             <TouchableOpacity
               style={[styles.selectorButton, { borderColor: theme.border, backgroundColor: theme.surface }]}
-              onPress={() => setShowPayeeSelector(!showPayeeSelector)}
+              onPress={() => setShowPayeeBottomSheet(true)}
             >
               <Text style={[styles.selectorButtonText, { color: theme.textPrimary }]}>
                 {getPayeeName(formData.payee_id)}
               </Text>
               <Icon name="arrow-drop-down" size={24} color={theme.textSecondary} />
             </TouchableOpacity>
-            
-            {showPayeeSelector && (
-              <View style={[styles.dropdown, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-                <TouchableOpacity
-                  style={styles.dropdownItem}
-                  onPress={() => {
-                    setFormData({ ...formData, payee_id: '' });
-                    setShowPayeeSelector(false);
-                  }}
-                >
-                  <Text style={[styles.dropdownItemText, { color: theme.textSecondary }]}>
-                    No Payee
-                  </Text>
-                </TouchableOpacity>
-                {payees.map((payee) => (
-                  <TouchableOpacity
-                    key={payee.id}
-                    style={styles.dropdownItem}
-                    onPress={() => {
-                      setFormData({ ...formData, payee_id: payee.id });
-                      setShowPayeeSelector(false);
-                    }}
-                  >
-                    <Text style={[styles.dropdownItemText, { color: theme.textPrimary }]}>
-                      {payee.name}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-                <TouchableOpacity
-                  style={[styles.dropdownItem, styles.addPayeeItem]}
-                  onPress={() => {
-                    setShowPayeeSelector(false);
-                    navigation.navigate('PayeeForm', {});
-                  }}
-                >
-                  <Icon name="add" size={20} color="#10B981" />
-                  <Text style={[styles.addPayeeText, { color: '#10B981' }]}>
-                    Add New Payee
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            )}
           </View>
 
           <View style={styles.inputGroup}>
@@ -488,6 +425,24 @@ export const QuickTransactionEntryScreen: React.FC = () => {
           )}
         </TouchableOpacity>
       </ScrollView>
+
+      {/* Bottom Sheets */}
+      <EnvelopePickerBottomSheet
+        isVisible={showEnvelopeBottomSheet}
+        onClose={() => setShowEnvelopeBottomSheet(false)}
+        onSelect={handleEnvelopeSelect}
+        envelopes={envelopes}
+        selectedEnvelopeId={formData.envelope_id}
+      />
+
+      <PayeePickerBottomSheet
+        isVisible={showPayeeBottomSheet}
+        onClose={() => setShowPayeeBottomSheet(false)}
+        onSelect={handlePayeeSelect}
+        payees={payees}
+        selectedPayeeId={formData.payee_id}
+        onPayeeCreated={handlePayeeCreated}
+      />
     </KeyboardAvoidingView>
   );
 };
@@ -584,45 +539,6 @@ const styles = StyleSheet.create({
   selectorButtonText: {
     fontSize: 16,
     fontWeight: '400' as const,
-  },
-  dropdown: {
-    borderWidth: 1,
-    borderRadius: 8,
-    marginTop: 4,
-    maxHeight: 200,
-  },
-  dropdownItem: {
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
-  },
-  dropdownItemText: {
-    fontSize: 16,
-    fontWeight: '400' as const,
-  },
-  envelopeItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  envelopeName: {
-    fontSize: 16,
-    fontWeight: '400' as const,
-  },
-  envelopeBalance: {
-    fontSize: 14,
-    fontWeight: '500' as const,
-  },
-  addPayeeItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    borderBottomWidth: 0,
-  },
-  addPayeeText: {
-    fontSize: 16,
-    fontWeight: '500' as const,
   },
   saveButton: {
     backgroundColor: '#10B981',
