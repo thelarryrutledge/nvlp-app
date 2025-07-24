@@ -174,7 +174,11 @@ export const DashboardScreen: React.FC = () => {
           contentContainerStyle={styles.quickActionsContent}
         >
           <Tooltip content="Add a new transaction">
-            <TouchableOpacity style={styles.quickActionButton} activeOpacity={0.7}>
+            <TouchableOpacity 
+              style={styles.quickActionButton} 
+              activeOpacity={0.7}
+              onPress={() => (navigation as any).navigate('QuickTransactionEntry')}
+            >
               <View style={styles.quickActionIcon}>
                 <Text style={styles.quickActionIconText}>➕</Text>
               </View>
@@ -183,7 +187,11 @@ export const DashboardScreen: React.FC = () => {
           </Tooltip>
           
           <Tooltip content="Record a quick expense">
-            <TouchableOpacity style={styles.quickActionButton} activeOpacity={0.7}>
+            <TouchableOpacity 
+              style={styles.quickActionButton} 
+              activeOpacity={0.7}
+              onPress={() => (navigation as any).navigate('QuickTransactionEntry')}
+            >
               <View style={styles.quickActionIcon}>
                 <Text style={styles.quickActionIconText}>💸</Text>
               </View>
