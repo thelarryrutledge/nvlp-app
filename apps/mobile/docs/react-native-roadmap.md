@@ -150,7 +150,7 @@
 - [x] Implement payee merge functionality
 - [x] Add payee spending history
 - [x] Create payee insights screen
-- [x] Implement payee categorization
+- ~~Implement payee categorization~~ (Removed - redundant with type system)
 
 ## Phase 7: Transaction Management
 

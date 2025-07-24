@@ -51,24 +51,6 @@ const payeeTypeLabels: Record<PayeeType, string> = {
   other: 'Other',
 };
 
-// Payee categories for display
-const payeeCategories = [
-  { id: 'essential', name: 'Essential', color: '#DC2626', icon: 'local-grocery-store' },
-  { id: 'utilities', name: 'Utilities', color: '#F59E0B', icon: 'flash-on' },
-  { id: 'healthcare', name: 'Healthcare', color: '#EF4444', icon: 'local-hospital' },
-  { id: 'entertainment', name: 'Entertainment', color: '#8B5CF6', icon: 'movie' },
-  { id: 'transport', name: 'Transport', color: '#3B82F6', icon: 'directions-car' },
-  { id: 'shopping', name: 'Shopping', color: '#EC4899', icon: 'shopping-bag' },
-  { id: 'food', name: 'Food & Dining', color: '#F97316', icon: 'restaurant' },
-  { id: 'services', name: 'Services', color: '#10B981', icon: 'build' },
-  { id: 'other', name: 'Other', color: '#6B7280', icon: 'more-horiz' },
-];
-
-// Extract category from payee description
-const extractPayeeCategory = (payee: Payee): string => {
-  const categoryMatch = payee.description?.match(/\[category:(\w+)\]/);
-  return categoryMatch ? categoryMatch[1] : 'other';
-};
 
 export const PayeeDetailScreen: React.FC = () => {
   const navigation = useNavigation<PayeeDetailScreenNavigationProp>();
@@ -300,28 +282,9 @@ export const PayeeDetailScreen: React.FC = () => {
               {payeeTypeLabels[payee.payee_type]}
             </Text>
           </View>
-          {(() => {
-            const categoryId = extractPayeeCategory(payee);
-            const categoryData = payeeCategories.find(cat => cat.id === categoryId);
-            if (categoryData && categoryId !== 'other') {
-              return (
-                <View style={[styles.categoryChip, { backgroundColor: categoryData.color + '20' }]}>
-                  <Icon
-                    name={categoryData.icon}
-                    size={16}
-                    color={categoryData.color}
-                  />
-                  <Text style={[styles.categoryLabel, { color: categoryData.color }]}>
-                    {categoryData.name}
-                  </Text>
-                </View>
-              );
-            }
-            return null;
-          })()}
           {payee.description && (
             <Text style={[styles.description, { color: theme.textSecondary }]}>
-              {payee.description.replace(/\[category:\w+\]\s*/, '')}
+              {payee.description}
             </Text>
           )}
         </View>
@@ -418,19 +381,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500' as const,
     color: '#047857',
-  },
-  categoryChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 16,
-    marginTop: 8,
-  },
-  categoryLabel: {
-    marginLeft: 4,
-    fontSize: 14,
-    fontWeight: '500' as const,
   },
   description: {
     fontSize: 16,
