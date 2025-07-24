@@ -128,8 +128,10 @@ export const PayeePickerBottomSheet: React.FC<Props> = ({
     } else if (filteredPayees.length > 0 && highlightedIndex < filteredPayees.length) {
       // Select highlighted payee
       const selectedPayee = filteredPayees[highlightedIndex];
-      onSelect(selectedPayee);
-      onClose();
+      if (selectedPayee) {
+        onSelect(selectedPayee);
+        onClose();
+      }
     }
   };
 
@@ -293,11 +295,12 @@ export const PayeePickerBottomSheet: React.FC<Props> = ({
       return renderNoPayeeOption();
     } else if (item.type === 'create') {
       return renderCreatePayeeOption();
-    } else {
+    } else if (item.type === 'payee' && item.payee) {
       // Adjust index for payee items (account for "No Payee" option when no search)
       const payeeIndex = !searchText.trim() ? index - 1 : index;
       return renderPayeeItem({ item: item.payee, index: payeeIndex });
     }
+    return null;
   };
 
   const listData = renderListData();
