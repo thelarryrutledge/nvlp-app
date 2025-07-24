@@ -155,7 +155,7 @@
 ## Phase 7: Transaction Management
 
 ### 7.1 Transaction Entry
-- [ ] Create quick transaction entry screen
+- [x] Create quick transaction entry screen
 - [ ] Build detailed transaction form
 - [ ] Implement amount input with calculator
 - [ ] Add payee selection/creation

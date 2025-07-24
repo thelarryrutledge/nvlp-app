@@ -26,6 +26,7 @@ import { IncomeHistoryScreen } from '../screens/income/IncomeHistoryScreen';
 import { EnvelopeDetailScreen, EnvelopeFormScreen, EnvelopeFundingScreen, EnvelopeTransferScreen, EnvelopeNotificationsScreen, EnvelopeHistoryScreen } from '../screens/envelope';
 import { NotificationSettingsScreen } from '../screens/settings/NotificationSettingsScreen';
 import { PayeeListScreen, PayeeDetailScreen, PayeeFormScreen, PayeeMergeScreen, PayeeHistoryScreen, PayeeInsightsScreen } from '../screens/payees';
+import { QuickTransactionEntryScreen } from '../screens/transaction';
 import { useTheme } from '../theme';
 import type { MainStackParamList } from './types';
 
@@ -319,6 +320,16 @@ export const MainStack: React.FC = () => {
           headerShown: true,
           title: 'Spending Insights',
           headerBackTitle: 'Back',
+        }}
+      />
+      <Stack.Screen
+        name="QuickTransactionEntry"
+        component={QuickTransactionEntryScreen}
+        options={{
+          headerShown: true,
+          title: 'Quick Transaction',
+          headerBackTitle: 'Back',
+          presentation: 'modal',
         }}
       />
     </Stack.Navigator>
