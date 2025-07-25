@@ -164,63 +164,45 @@ export const QuickTransactionEntryScreen: React.FC = () => {
 
   const createExpenseTransaction = async (amount: number) => {
     // For expenses, we need to reduce the envelope balance
-    const authState = client.getAuthState();
-    if (!authState?.accessToken) {
-      throw new Error('Not authenticated');
-    }
-
-    const response = await fetch('https://edge-api.nvlp.app/api/functions/v1/transactions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${authState.accessToken}`,
-      },
-      body: JSON.stringify({
-        budget_id: selectedBudget!.id,
-        transaction_type: 'expense',
-        amount: amount,
-        description: formData.description.trim() || 'Expense transaction',
-        transaction_date: formData.transaction_date,
-        from_envelope_id: formData.envelope_id,
-        payee_id: formData.payee_id || null,
-        is_cleared: true, // Quick transactions are marked as cleared by default
-      }),
+    const edgeFunctionTransport = client.getEdgeFunctionTransport();
+    
+    const response = await edgeFunctionTransport.post('transactions', {
+      budget_id: selectedBudget!.id,
+      transaction_type: 'expense',
+      amount: amount,
+      description: formData.description.trim() || 'Expense transaction',
+      transaction_date: formData.transaction_date,
+      from_envelope_id: formData.envelope_id,
+      payee_id: formData.payee_id || null,
+      is_cleared: true, // Quick transactions are marked as cleared by default
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to create expense transaction');
+    if (!response.success) {
+      throw new Error(response.error?.message || 'Failed to create expense transaction');
     }
+
+    return response.data;
   };
 
   const createIncomeTransaction = async (amount: number) => {
     // For income, we add to available budget (no envelope specified)
-    const authState = client.getAuthState();
-    if (!authState?.accessToken) {
-      throw new Error('Not authenticated');
-    }
-
-    const response = await fetch('https://edge-api.nvlp.app/api/functions/v1/transactions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${authState.accessToken}`,
-      },
-      body: JSON.stringify({
-        budget_id: selectedBudget!.id,
-        transaction_type: 'income',
-        amount: amount,
-        description: formData.description.trim() || 'Income transaction',
-        transaction_date: formData.transaction_date,
-        income_source_id: formData.payee_id || null, // Using payee_id to store income_source_id for now
-        is_cleared: true,
-      }),
+    const edgeFunctionTransport = client.getEdgeFunctionTransport();
+    
+    const response = await edgeFunctionTransport.post('transactions', {
+      budget_id: selectedBudget!.id,
+      transaction_type: 'income',
+      amount: amount,
+      description: formData.description.trim() || 'Income transaction',
+      transaction_date: formData.transaction_date,
+      income_source_id: formData.payee_id || null, // Using payee_id to store income_source_id for now
+      is_cleared: true,
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to create income transaction');
+    if (!response.success) {
+      throw new Error(response.error?.message || 'Failed to create income transaction');
     }
+
+    return response.data;
   };
 
   const validateForm = () => {
