@@ -152,7 +152,21 @@ export const QuickTransactionEntryScreen: React.FC = () => {
       }
 
       Alert.alert('Success', 'Transaction created successfully!', [
-        { text: 'OK', onPress: () => navigation.goBack() }
+        { 
+          text: 'OK', 
+          onPress: () => {
+            // Reset form
+            setFormData({
+              amount: '',
+              description: '',
+              transaction_type: 'expense',
+              envelope_id: '',
+              payee_id: '',
+              transaction_date: new Date().toISOString().split('T')[0],
+            });
+            navigation.goBack();
+          }
+        }
       ]);
     } catch (err) {
       console.error('Failed to create transaction:', err);
@@ -176,7 +190,7 @@ export const QuickTransactionEntryScreen: React.FC = () => {
       budget_id: selectedBudget!.id,
       transaction_type: 'expense',
       amount: amount,
-      description: formData.description.trim() || 'Expense transaction',
+      description: formData.description.trim() || `Expense - ${new Date().toISOString()}`,
       transaction_date: formData.transaction_date,
       from_envelope_id: formData.envelope_id,
       payee_id: formData.payee_id,
@@ -253,8 +267,18 @@ export const QuickTransactionEntryScreen: React.FC = () => {
       return false;
     }
 
+    if (formData.transaction_type === 'expense' && !formData.description.trim()) {
+      Alert.alert('Validation Error', 'Please enter a description for the expense.');
+      return false;
+    }
+
     if (formData.transaction_type === 'income' && !formData.payee_id) {
       Alert.alert('Validation Error', 'Please select an income source.');
+      return false;
+    }
+
+    if (formData.transaction_type === 'income' && !formData.description.trim()) {
+      Alert.alert('Validation Error', 'Please enter a description for the income.');
       return false;
     }
 
@@ -385,7 +409,7 @@ export const QuickTransactionEntryScreen: React.FC = () => {
 
           <View style={styles.inputGroup}>
             <Text style={[styles.label, { color: theme.textSecondary }]}>
-              Description {formData.transaction_type === 'income' ? '*' : '(Optional)'}
+              Description *
             </Text>
             <TextInput
               style={[styles.input, { color: theme.textPrimary, borderColor: theme.border }]}
