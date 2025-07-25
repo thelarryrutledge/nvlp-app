@@ -184,7 +184,10 @@ export const QuickTransactionEntryScreen: React.FC = () => {
 
   const createExpenseTransaction = async (amount: number) => {
     // For expenses, we need to reduce the envelope balance
-    const edgeFunctionTransport = client.getEdgeFunctionTransport();
+    const authState = client.getAuthState();
+    if (!authState?.accessToken) {
+      throw new Error('Not authenticated');
+    }
     
     const transactionData = {
       budget_id: selectedBudget!.id,
@@ -198,25 +201,37 @@ export const QuickTransactionEntryScreen: React.FC = () => {
     };
     
     console.log('Creating expense transaction with data:', transactionData);
-    const response = await edgeFunctionTransport.callFunction('transactions', transactionData);
+    
+    const response = await fetch('https://qnpatlosomopoimtsmsr.supabase.co/functions/v1/transactions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authState.accessToken}`,
+      },
+      body: JSON.stringify(transactionData),
+    });
 
-    if (response.error) {
-      console.error('Expense transaction error:', response.error);
-      const errorMessage = response.error.message || response.error.error || 'Failed to create expense transaction';
-      const errorDetails = response.error.details;
-      if (errorDetails && errorDetails.errors) {
-        console.error('Validation errors:', errorDetails.errors);
-        throw new Error(`${errorMessage}: ${errorDetails.errors.join(', ')}`);
+    const responseData = await response.json();
+    console.log('Raw response:', response.status, responseData);
+
+    if (!response.ok) {
+      console.error('Expense transaction error:', responseData);
+      if (responseData.details && responseData.details.errors) {
+        console.error('Validation errors:', responseData.details.errors);
+        throw new Error(`${responseData.error || 'Failed to create expense transaction'}: ${responseData.details.errors.join(', ')}`);
       }
-      throw new Error(errorMessage);
+      throw new Error(responseData.error || responseData.message || 'Failed to create expense transaction');
     }
 
-    return response.data;
+    return responseData;
   };
 
   const createIncomeTransaction = async (amount: number) => {
     // For income, we add to available budget (no envelope specified)
-    const edgeFunctionTransport = client.getEdgeFunctionTransport();
+    const authState = client.getAuthState();
+    if (!authState?.accessToken) {
+      throw new Error('Not authenticated');
+    }
     
     const transactionData = {
       budget_id: selectedBudget!.id,
@@ -229,20 +244,29 @@ export const QuickTransactionEntryScreen: React.FC = () => {
     };
     
     console.log('Creating income transaction with data:', transactionData);
-    const response = await edgeFunctionTransport.callFunction('transactions', transactionData);
+    
+    const response = await fetch('https://qnpatlosomopoimtsmsr.supabase.co/functions/v1/transactions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authState.accessToken}`,
+      },
+      body: JSON.stringify(transactionData),
+    });
 
-    if (response.error) {
-      console.error('Income transaction error:', response.error);
-      const errorMessage = response.error.message || response.error.error || 'Failed to create income transaction';
-      const errorDetails = response.error.details;
-      if (errorDetails && errorDetails.errors) {
-        console.error('Validation errors:', errorDetails.errors);
-        throw new Error(`${errorMessage}: ${errorDetails.errors.join(', ')}`);
+    const responseData = await response.json();
+    console.log('Raw response:', response.status, responseData);
+
+    if (!response.ok) {
+      console.error('Income transaction error:', responseData);
+      if (responseData.details && responseData.details.errors) {
+        console.error('Validation errors:', responseData.details.errors);
+        throw new Error(`${responseData.error || 'Failed to create income transaction'}: ${responseData.details.errors.join(', ')}`);
       }
-      throw new Error(errorMessage);
+      throw new Error(responseData.error || responseData.message || 'Failed to create income transaction');
     }
 
-    return response.data;
+    return responseData;
   };
 
   const validateForm = () => {
