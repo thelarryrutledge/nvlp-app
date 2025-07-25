@@ -264,7 +264,7 @@ export const PayeePickerBottomSheet: React.FC<Props> = ({
               {payee.name}
             </Text>
             <Text style={[styles.payeeType, { color: theme.textSecondary }]}>
-              {payee.payee_type.charAt(0).toUpperCase() + payee.payee_type.slice(1)}
+              {payee.payee_type ? payee.payee_type.charAt(0).toUpperCase() + payee.payee_type.slice(1) : 'Other'}
             </Text>
           </View>
         </View>

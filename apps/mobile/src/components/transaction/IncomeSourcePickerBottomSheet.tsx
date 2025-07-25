@@ -223,7 +223,7 @@ export const IncomeSourcePickerBottomSheet: React.FC<Props> = ({
               {incomeSource.name}
             </Text>
             <Text style={[styles.incomeSourceType, { color: theme.textSecondary }]}>
-              {incomeSource.source_type.charAt(0).toUpperCase() + incomeSource.source_type.slice(1)}
+              {incomeSource.source_type ? incomeSource.source_type.charAt(0).toUpperCase() + incomeSource.source_type.slice(1) : 'Other'}
             </Text>
           </View>
         </View>
