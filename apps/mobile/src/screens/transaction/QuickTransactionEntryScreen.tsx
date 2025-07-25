@@ -182,7 +182,34 @@ export const QuickTransactionEntryScreen: React.FC = () => {
     }
   };
 
-  const createExpenseTransaction = async (amount: number) => {
+  const validateTransaction = async (transactionData: any): Promise<{ valid: boolean; errors: string[] }> => {
+    const authState = client.getAuthState();
+    if (!authState?.accessToken) {
+      throw new Error('Not authenticated');
+    }
+
+    const response = await fetch('https://qnpatlosomopoimtsmsr.supabase.co/functions/v1/transactions/validate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authState.accessToken}`,
+      },
+      body: JSON.stringify(transactionData),
+    });
+
+    const responseData = await response.json();
+    console.log('Validation response:', response.status, responseData);
+
+    if (response.ok) {
+      return { valid: true, errors: [] };
+    }
+
+    // Return validation errors
+    const errors = responseData.details?.errors || [responseData.error || 'Validation failed'];
+    return { valid: false, errors };
+  };
+
+  const createExpenseTransaction = async (amount: number, skipValidation = false) => {
     // For expenses, we need to reduce the envelope balance
     const authState = client.getAuthState();
     if (!authState?.accessToken) {
@@ -201,6 +228,51 @@ export const QuickTransactionEntryScreen: React.FC = () => {
     };
     
     console.log('Creating expense transaction with data:', transactionData);
+
+    // Validate first unless we're skipping validation
+    if (!skipValidation) {
+      const validation = await validateTransaction(transactionData);
+      if (!validation.valid) {
+        // Check if it's an insufficient funds error
+        const hasInsufficientFunds = validation.errors.some(error => 
+          error.includes('Insufficient funds') || error.includes('Available:')
+        );
+        
+        if (hasInsufficientFunds) {
+          const envelope = envelopes.find(e => e.id === formData.envelope_id);
+          const envelopeName = envelope?.name || 'Selected envelope';
+          const availableAmount = envelope?.current_balance || 0;
+          
+          return new Promise((resolve, reject) => {
+            Alert.alert(
+              'Insufficient Funds',
+              `${envelopeName} has $${availableAmount.toFixed(2)} available, but you're trying to spend $${amount.toFixed(2)}. This will make the envelope balance negative.\n\nDo you want to proceed anyway?`,
+              [
+                {
+                  text: 'Cancel',
+                  style: 'cancel',
+                  onPress: () => reject(new Error('Transaction cancelled by user'))
+                },
+                {
+                  text: 'Proceed',
+                  onPress: async () => {
+                    try {
+                      const result = await createExpenseTransaction(amount, true);
+                      resolve(result);
+                    } catch (error) {
+                      reject(error);
+                    }
+                  }
+                }
+              ]
+            );
+          });
+        } else {
+          // Other validation errors
+          throw new Error(validation.errors.join(', '));
+        }
+      }
+    }
     
     const response = await fetch('https://qnpatlosomopoimtsmsr.supabase.co/functions/v1/transactions', {
       method: 'POST',

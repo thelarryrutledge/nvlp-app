@@ -432,15 +432,16 @@ serve(async (req) => {
           )
         }
         
-        const balanceValidation = await TransactionValidations.validateEnvelopeBalance(authenticatedSupabase, body)
-        if (!balanceValidation.valid) {
-          return createErrorResponse(
-            'Insufficient envelope balance',
-            'INSUFFICIENT_FUNDS',
-            400,
-            { errors: balanceValidation.errors }
-          )
-        }
+        // Skip balance validation for CREATE endpoint - UI handles user confirmation
+        // const balanceValidation = await TransactionValidations.validateEnvelopeBalance(authenticatedSupabase, body)
+        // if (!balanceValidation.valid) {
+        //   return createErrorResponse(
+        //     'Insufficient envelope balance',
+        //     'INSUFFICIENT_FUNDS',
+        //     400,
+        //     { errors: balanceValidation.errors }
+        //   )
+        // }
         
         // Add user tracking fields
         const transactionData = {
