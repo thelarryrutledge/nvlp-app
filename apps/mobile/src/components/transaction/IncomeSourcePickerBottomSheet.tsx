@@ -14,79 +14,80 @@ import { useTheme } from '../../theme';
 import { useBudget } from '../../context/BudgetContext';
 import { useApiClient } from '../../hooks/useApiClient';
 
-interface Payee {
+interface IncomeSource {
   id: string;
   name: string;
-  payee_type: string;
+  source_type: string;
+  color?: string;
 }
 
 interface Props {
   isVisible: boolean;
   onClose: () => void;
-  onSelect: (payee: Payee | null) => void;
-  payees: Payee[];
-  selectedPayeeId?: string;
-  onPayeeCreated?: (newPayee: Payee) => void;
+  onSelect: (incomeSource: IncomeSource) => void;
+  incomeSources: IncomeSource[];
+  selectedIncomeSourceId?: string;
+  onIncomeSourceCreated?: (newIncomeSource: IncomeSource) => void;
 }
 
-export const PayeePickerBottomSheet: React.FC<Props> = ({
+export const IncomeSourcePickerBottomSheet: React.FC<Props> = ({
   isVisible,
   onClose,
   onSelect,
-  payees,
-  selectedPayeeId,
-  onPayeeCreated,
+  incomeSources,
+  selectedIncomeSourceId,
+  onIncomeSourceCreated,
 }) => {
   const { theme } = useTheme();
   const { selectedBudget } = useBudget();
   const { client } = useApiClient();
   const [searchText, setSearchText] = useState('');
-  const [highlightedIndex, setHighlightedIndex] = useState(-1); // -1 for "No Payee" option
-  const [isCreatingPayee, setIsCreatingPayee] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState(0);
+  const [isCreatingIncomeSource, setIsCreatingIncomeSource] = useState(false);
   const searchInputRef = useRef<TextInput>(null);
 
-  // Filter payees based on search text
-  const filteredPayees = useMemo(() => {
-    if (!searchText.trim()) return payees;
+  // Filter income sources based on search text
+  const filteredIncomeSources = useMemo(() => {
+    if (!searchText.trim()) return incomeSources;
     
     const searchLower = searchText.toLowerCase().trim();
-    return payees.filter(payee =>
-      payee.name.toLowerCase().includes(searchLower)
+    return incomeSources.filter(source =>
+      source.name.toLowerCase().includes(searchLower)
     );
-  }, [payees, searchText]);
+  }, [incomeSources, searchText]);
 
-  // Check if search text matches any existing payee exactly
+  // Check if search text matches any existing income source exactly
   const exactMatch = useMemo(() => {
     if (!searchText.trim()) return null;
     
     const searchLower = searchText.toLowerCase().trim();
-    return payees.find(payee => 
-      payee.name.toLowerCase() === searchLower
+    return incomeSources.find(source => 
+      source.name.toLowerCase() === searchLower
     );
-  }, [payees, searchText]);
+  }, [incomeSources, searchText]);
 
-  // Should we show the "Create Payee" option?
+  // Should we show the "Create Income Source" option?
   const shouldShowCreateOption = useMemo(() => {
-    return searchText.trim().length > 0 && !exactMatch && filteredPayees.length === 0;
-  }, [searchText, exactMatch, filteredPayees]);
+    return searchText.trim().length > 0 && !exactMatch && filteredIncomeSources.length === 0;
+  }, [searchText, exactMatch, filteredIncomeSources]);
 
   // Update highlighted index when filtered results change
   useEffect(() => {
     if (shouldShowCreateOption) {
-      setHighlightedIndex(0); // Highlight "Create Payee" option
-    } else if (filteredPayees.length > 0) {
-      setHighlightedIndex(0); // Highlight first payee
+      setHighlightedIndex(0); // Highlight "Create Income Source" option
+    } else if (filteredIncomeSources.length > 0) {
+      setHighlightedIndex(0); // Highlight first income source
     } else {
-      setHighlightedIndex(-1); // Highlight "No Payee"
+      setHighlightedIndex(-1);
     }
-  }, [filteredPayees, shouldShowCreateOption]);
+  }, [filteredIncomeSources, shouldShowCreateOption]);
 
   // Handle sheet visibility changes
   useEffect(() => {
     if (isVisible) {
       // Clear search text when opening
       setSearchText('');
-      setHighlightedIndex(-1);
+      setHighlightedIndex(0);
       // Focus input after a short delay to ensure the sheet is fully rendered
       setTimeout(() => {
         searchInputRef.current?.focus();
@@ -94,126 +95,84 @@ export const PayeePickerBottomSheet: React.FC<Props> = ({
     }
   }, [isVisible]);
 
-  const createPayee = async (name: string) => {
+  const createIncomeSource = async (name: string) => {
     if (!selectedBudget?.id) {
       Alert.alert('Error', 'No budget selected.');
       return;
     }
 
-    setIsCreatingPayee(true);
+    setIsCreatingIncomeSource(true);
     try {
-      const newPayee = await client.createPayee({
+      const newIncomeSource = await client.createIncomeSource({
         budget_id: selectedBudget.id,
         name: name.trim(),
-        payee_type: 'other',
+        source_type: 'other',
         color: '#10B981',
       });
 
-      // Notify parent about the new payee
-      onPayeeCreated?.(newPayee);
+      // Notify parent about the new income source
+      onIncomeSourceCreated?.(newIncomeSource);
       
-      // Select the new payee
-      onSelect(newPayee);
+      // Select the new income source
+      onSelect(newIncomeSource);
       onClose();
     } catch (err) {
-      console.error('Failed to create payee:', err);
-      Alert.alert('Error', 'Failed to create payee. Please try again.');
+      console.error('Failed to create income source:', err);
+      Alert.alert('Error', 'Failed to create income source. Please try again.');
     } finally {
-      setIsCreatingPayee(false);
+      setIsCreatingIncomeSource(false);
     }
   };
 
   const handleEnterPress = () => {
     if (shouldShowCreateOption && highlightedIndex === 0) {
-      // Create new payee
-      createPayee(searchText);
-    } else if (highlightedIndex === -1) {
-      // Select "No Payee"
-      onSelect(null);
-      onClose();
-    } else if (filteredPayees.length > 0 && highlightedIndex < filteredPayees.length) {
-      // Select highlighted payee
-      const selectedPayee = filteredPayees[highlightedIndex];
-      if (selectedPayee) {
-        onSelect(selectedPayee);
+      // Create new income source
+      createIncomeSource(searchText);
+    } else if (filteredIncomeSources.length > 0 && highlightedIndex < filteredIncomeSources.length) {
+      // Select highlighted income source
+      const selectedIncomeSource = filteredIncomeSources[highlightedIndex];
+      if (selectedIncomeSource) {
+        onSelect(selectedIncomeSource);
         onClose();
       }
     }
   };
 
-  const handlePayeePress = (payee: Payee | null, index: number) => {
+  const handleIncomeSourcePress = (incomeSource: IncomeSource, index: number) => {
     setHighlightedIndex(index);
-    onSelect(payee);
+    onSelect(incomeSource);
     onClose();
   };
 
-  const handleCreatePayeePress = () => {
-    createPayee(searchText);
+  const handleCreateIncomeSourcePress = () => {
+    createIncomeSource(searchText);
   };
 
-  const renderNoPayeeOption = () => {
-    const isSelected = !selectedPayeeId;
-    const isHighlighted = highlightedIndex === -1;
-
-    return (
-      <TouchableOpacity
-        style={[
-          styles.payeeItem,
-          {
-            backgroundColor: isHighlighted 
-              ? theme.primary + '20' 
-              : isSelected 
-                ? theme.primary + '10' 
-                : 'transparent',
-            borderColor: isSelected ? theme.primary : theme.border,
-          },
-        ]}
-        onPress={() => handlePayeePress(null, -1)}
-        activeOpacity={0.7}
-      >
-        <View style={styles.payeeContent}>
-          <Icon name="person-off" size={24} color={theme.textSecondary} style={styles.payeeIcon} />
-          <View style={styles.payeeInfo}>
-            <Text style={[styles.payeeName, { color: theme.textSecondary }]}>
-              No Payee
-            </Text>
-            <Text style={[styles.payeeType, { color: theme.textTertiary }]}>
-              No payee selected
-            </Text>
-          </View>
-        </View>
-        {isSelected && (
-          <Icon name="check" size={20} color={theme.primary} />
-        )}
-      </TouchableOpacity>
-    );
-  };
-
-  const renderCreatePayeeOption = () => {
+  const renderCreateIncomeSourceOption = () => {
     const isHighlighted = highlightedIndex === 0;
 
     return (
       <TouchableOpacity
         style={[
-          styles.payeeItem,
-          styles.createPayeeItem,
+          styles.incomeSourceItem,
+          styles.createIncomeSourceItem,
           {
             backgroundColor: isHighlighted ? theme.primary + '20' : theme.surface,
             borderColor: theme.primary,
           },
         ]}
-        onPress={handleCreatePayeePress}
+        onPress={handleCreateIncomeSourcePress}
         activeOpacity={0.7}
-        disabled={isCreatingPayee}
+        disabled={isCreatingIncomeSource}
       >
-        <View style={styles.payeeContent}>
-          <Icon name="add" size={24} color={theme.primary} style={styles.payeeIcon} />
-          <View style={styles.payeeInfo}>
-            <Text style={[styles.payeeName, { color: theme.primary }]}>
-              {isCreatingPayee ? 'Creating...' : `Create "${searchText}"`}
+        <View style={styles.incomeSourceContent}>
+          <Icon name="add" size={24} color={theme.primary} style={styles.incomeSourceIcon} />
+          <View style={styles.incomeSourceInfo}>
+            <Text style={[styles.incomeSourceName, { color: theme.primary }]}>
+              {isCreatingIncomeSource ? 'Creating...' : `Create "${searchText}"`}
             </Text>
-            <Text style={[styles.payeeType, { color: theme.textSecondary }]}>
-              New payee
+            <Text style={[styles.incomeSourceType, { color: theme.textSecondary }]}>
+              New income source
             </Text>
           </View>
         </View>
@@ -221,25 +180,25 @@ export const PayeePickerBottomSheet: React.FC<Props> = ({
     );
   };
 
-  const renderPayeeItem = ({ item: payee, index }: { item: Payee; index: number }) => {
-    const isSelected = payee.id === selectedPayeeId;
+  const renderIncomeSourceItem = ({ item: incomeSource, index }: { item: IncomeSource; index: number }) => {
+    const isSelected = incomeSource.id === selectedIncomeSourceId;
     const isHighlighted = index === highlightedIndex;
     
-    const getPayeeIcon = (type: string) => {
+    const getIncomeSourceIcon = (type: string) => {
       switch (type) {
+        case 'salary': return 'work';
         case 'business': return 'business';
-        case 'person': return 'person';
-        case 'organization': return 'domain';
-        case 'utility': return 'flash-on';
-        case 'service': return 'build';
-        default: return 'more-horiz';
+        case 'investment': return 'trending-up';
+        case 'gift': return 'card-giftcard';
+        case 'bonus': return 'star';
+        default: return 'attach-money';
       }
     };
 
     return (
       <TouchableOpacity
         style={[
-          styles.payeeItem,
+          styles.incomeSourceItem,
           {
             backgroundColor: isHighlighted 
               ? theme.primary + '20' 
@@ -249,22 +208,22 @@ export const PayeePickerBottomSheet: React.FC<Props> = ({
             borderColor: isSelected ? theme.primary : theme.border,
           },
         ]}
-        onPress={() => handlePayeePress(payee, index)}
+        onPress={() => handleIncomeSourcePress(incomeSource, index)}
         activeOpacity={0.7}
       >
-        <View style={styles.payeeContent}>
+        <View style={styles.incomeSourceContent}>
           <Icon 
-            name={getPayeeIcon(payee.payee_type)} 
+            name={getIncomeSourceIcon(incomeSource.source_type)} 
             size={24} 
             color={theme.textSecondary} 
-            style={styles.payeeIcon} 
+            style={styles.incomeSourceIcon} 
           />
-          <View style={styles.payeeInfo}>
-            <Text style={[styles.payeeName, { color: theme.textPrimary }]}>
-              {payee.name}
+          <View style={styles.incomeSourceInfo}>
+            <Text style={[styles.incomeSourceName, { color: theme.textPrimary }]}>
+              {incomeSource.name}
             </Text>
-            <Text style={[styles.payeeType, { color: theme.textSecondary }]}>
-              {payee.payee_type.charAt(0).toUpperCase() + payee.payee_type.slice(1)}
+            <Text style={[styles.incomeSourceType, { color: theme.textSecondary }]}>
+              {incomeSource.source_type.charAt(0).toUpperCase() + incomeSource.source_type.slice(1)}
             </Text>
           </View>
         </View>
@@ -278,14 +237,9 @@ export const PayeePickerBottomSheet: React.FC<Props> = ({
   const renderListData = () => {
     const data = [];
     
-    // Always show "No Payee" option first if no search text
-    if (!searchText.trim()) {
-      data.push({ type: 'no-payee' });
-    }
-    
-    // Show filtered payees
-    filteredPayees.forEach(payee => {
-      data.push({ type: 'payee', payee });
+    // Show filtered income sources
+    filteredIncomeSources.forEach(source => {
+      data.push({ type: 'income-source', source });
     });
     
     // Show create option if applicable
@@ -297,14 +251,10 @@ export const PayeePickerBottomSheet: React.FC<Props> = ({
   };
 
   const renderItem = ({ item, index }: { item: any; index: number }) => {
-    if (item.type === 'no-payee') {
-      return renderNoPayeeOption();
-    } else if (item.type === 'create') {
-      return renderCreatePayeeOption();
-    } else if (item.type === 'payee' && item.payee) {
-      // Adjust index for payee items (account for "No Payee" option when no search)
-      const payeeIndex = !searchText.trim() ? index - 1 : index;
-      return renderPayeeItem({ item: item.payee, index: payeeIndex });
+    if (item.type === 'create') {
+      return renderCreateIncomeSourceOption();
+    } else if (item.type === 'income-source' && item.source) {
+      return renderIncomeSourceItem({ item: item.source, index });
     }
     return null;
   };
@@ -316,7 +266,7 @@ export const PayeePickerBottomSheet: React.FC<Props> = ({
       isVisible={isVisible}
       onClose={onClose}
       snapPoints={['90%']}
-      title="Select Payee"
+      title="Select Income Source"
     >
       <View style={styles.container}>
         <View style={styles.searchContainer}>
@@ -338,7 +288,7 @@ export const PayeePickerBottomSheet: React.FC<Props> = ({
             ]}
             value={searchText}
             onChangeText={setSearchText}
-            placeholder="Search payees or type to create new..."
+            placeholder="Search income sources or type to create new..."
             placeholderTextColor={theme.textSecondary}
             autoFocus
             returnKeyType="done"
@@ -358,18 +308,16 @@ export const PayeePickerBottomSheet: React.FC<Props> = ({
           data={listData}
           renderItem={renderItem}
           keyExtractor={(item, index) => 
-            item.type === 'no-payee' ? 'no-payee' : 
-            item.type === 'create' ? 'create' : 
-            item.payee.id
+            item.type === 'create' ? 'create' : item.source.id
           }
           style={styles.list}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             searchText.trim() && !shouldShowCreateOption ? (
               <View style={styles.emptyContainer}>
-                <Icon name="person-search" size={48} color={theme.textTertiary} />
+                <Icon name="attach-money" size={48} color={theme.textTertiary} />
                 <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
-                  No payees found
+                  No income sources found
                 </Text>
                 <Text style={[styles.emptySubtext, { color: theme.textTertiary }]}>
                   Try adjusting your search
@@ -411,7 +359,7 @@ const styles = StyleSheet.create({
   list: {
     flex: 1,
   },
-  payeeItem: {
+  incomeSourceItem: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
@@ -420,26 +368,26 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
   },
-  createPayeeItem: {
+  createIncomeSourceItem: {
     borderStyle: 'dashed',
   },
-  payeeContent: {
+  incomeSourceContent: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
   },
-  payeeIcon: {
+  incomeSourceIcon: {
     marginRight: 12,
   },
-  payeeInfo: {
+  incomeSourceInfo: {
     flex: 1,
   },
-  payeeName: {
+  incomeSourceName: {
     fontSize: 16,
     fontWeight: '500',
     marginBottom: 2,
   },
-  payeeType: {
+  incomeSourceType: {
     fontSize: 14,
     fontWeight: '400',
   },

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -36,6 +36,7 @@ export const EnvelopePickerBottomSheet: React.FC<Props> = ({
   const { theme } = useTheme();
   const [searchText, setSearchText] = useState('');
   const [highlightedIndex, setHighlightedIndex] = useState(0);
+  const searchInputRef = useRef<TextInput>(null);
 
   // Filter envelopes based on search text
   const filteredEnvelopes = useMemo(() => {
@@ -52,11 +53,16 @@ export const EnvelopePickerBottomSheet: React.FC<Props> = ({
     setHighlightedIndex(0);
   }, [filteredEnvelopes]);
 
-  // Reset search when sheet closes
+  // Handle sheet visibility changes
   useEffect(() => {
-    if (!isVisible) {
+    if (isVisible) {
+      // Clear search text when opening
       setSearchText('');
       setHighlightedIndex(0);
+      // Focus input after a short delay to ensure the sheet is fully rendered
+      setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, 100);
     }
   }, [isVisible]);
 
@@ -143,6 +149,7 @@ export const EnvelopePickerBottomSheet: React.FC<Props> = ({
             style={styles.searchIcon} 
           />
           <TextInput
+            ref={searchInputRef}
             style={[
               styles.searchInput,
               {

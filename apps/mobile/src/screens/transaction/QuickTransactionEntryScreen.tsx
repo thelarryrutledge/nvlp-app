@@ -21,7 +21,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useBudget } from '../../context/BudgetContext';
 import { useApiClient } from '../../hooks/useApiClient';
 import { LoadingState } from '../../components/ui';
-import { EnvelopePickerBottomSheet, PayeePickerBottomSheet } from '../../components/transaction';
+import { EnvelopePickerBottomSheet, PayeePickerBottomSheet, IncomeSourcePickerBottomSheet } from '../../components/transaction';
 import { TransactionType } from '@nvlp/types';
 import { useTheme } from '../../theme';
 
@@ -55,6 +55,13 @@ interface Payee {
   payee_type: string;
 }
 
+interface IncomeSource {
+  id: string;
+  name: string;
+  source_type: string;
+  color?: string;
+}
+
 const transactionTypes: { value: TransactionType; label: string; icon: string; description: string }[] = [
   { 
     value: 'expense', 
@@ -81,6 +88,7 @@ export const QuickTransactionEntryScreen: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [envelopes, setEnvelopes] = useState<Envelope[]>([]);
   const [payees, setPayees] = useState<Payee[]>([]);
+  const [incomeSources, setIncomeSources] = useState<IncomeSource[]>([]);
   
   const [formData, setFormData] = useState<TransactionFormData>({
     amount: '',
@@ -93,6 +101,7 @@ export const QuickTransactionEntryScreen: React.FC = () => {
 
   const [showEnvelopeBottomSheet, setShowEnvelopeBottomSheet] = useState(false);
   const [showPayeeBottomSheet, setShowPayeeBottomSheet] = useState(false);
+  const [showIncomeSourceBottomSheet, setShowIncomeSourceBottomSheet] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -106,22 +115,16 @@ export const QuickTransactionEntryScreen: React.FC = () => {
     try {
       setLoading(true);
       
-      // Load envelopes and payees in parallel
-      const [envelopesData, payeesData] = await Promise.all([
+      // Load envelopes, payees, and income sources in parallel
+      const [envelopesData, payeesData, incomeSourcesData] = await Promise.all([
         client.getEnvelopes(selectedBudget.id),
         client.getPayees(selectedBudget.id),
+        client.getIncomeSources(selectedBudget.id),
       ]);
 
       setEnvelopes(envelopesData || []);
       setPayees(payeesData || []);
-
-      // Set default envelope if available
-      if (envelopesData && envelopesData.length > 0 && !formData.envelope_id) {
-        setFormData(prev => ({
-          ...prev,
-          envelope_id: envelopesData[0].id
-        }));
-      }
+      setIncomeSources(incomeSourcesData || []);
     } catch (err) {
       console.error('Failed to load data:', err);
       Alert.alert('Error', 'Failed to load data. Please try again.');
@@ -161,17 +164,22 @@ export const QuickTransactionEntryScreen: React.FC = () => {
 
   const createExpenseTransaction = async (amount: number) => {
     // For expenses, we need to reduce the envelope balance
+    const authState = client.getAuthState();
+    if (!authState?.accessToken) {
+      throw new Error('Not authenticated');
+    }
+
     const response = await fetch('https://edge-api.nvlp.app/api/functions/v1/transactions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${await client.auth.getSession().then(s => s?.access_token)}`,
+        'Authorization': `Bearer ${authState.accessToken}`,
       },
       body: JSON.stringify({
         budget_id: selectedBudget!.id,
         transaction_type: 'expense',
         amount: amount,
-        description: formData.description.trim(),
+        description: formData.description.trim() || 'Expense transaction',
         transaction_date: formData.transaction_date,
         from_envelope_id: formData.envelope_id,
         payee_id: formData.payee_id || null,
@@ -187,20 +195,24 @@ export const QuickTransactionEntryScreen: React.FC = () => {
 
   const createIncomeTransaction = async (amount: number) => {
     // For income, we add to available budget (no envelope specified)
+    const authState = client.getAuthState();
+    if (!authState?.accessToken) {
+      throw new Error('Not authenticated');
+    }
+
     const response = await fetch('https://edge-api.nvlp.app/api/functions/v1/transactions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${await client.auth.getSession().then(s => s?.access_token)}`,
+        'Authorization': `Bearer ${authState.accessToken}`,
       },
       body: JSON.stringify({
         budget_id: selectedBudget!.id,
         transaction_type: 'income',
         amount: amount,
-        description: formData.description.trim(),
+        description: formData.description.trim() || 'Income transaction',
         transaction_date: formData.transaction_date,
-        to_envelope_id: null, // Income goes to available budget
-        payee_id: formData.payee_id || null,
+        income_source_id: formData.payee_id || null, // Using payee_id to store income_source_id for now
         is_cleared: true,
       }),
     });
@@ -223,13 +235,13 @@ export const QuickTransactionEntryScreen: React.FC = () => {
       return false;
     }
 
-    if (!formData.description.trim()) {
-      Alert.alert('Validation Error', 'Please enter a description.');
+    if (formData.transaction_type === 'expense' && !formData.envelope_id) {
+      Alert.alert('Validation Error', 'Please select an envelope for the expense.');
       return false;
     }
 
-    if (formData.transaction_type === 'expense' && !formData.envelope_id) {
-      Alert.alert('Validation Error', 'Please select an envelope for the expense.');
+    if (formData.transaction_type === 'income' && !formData.payee_id) {
+      Alert.alert('Validation Error', 'Please select an income source.');
       return false;
     }
 
@@ -242,6 +254,10 @@ export const QuickTransactionEntryScreen: React.FC = () => {
   };
 
   const getPayeeName = (payeeId: string): string => {
+    if (formData.transaction_type === 'income') {
+      const incomeSource = incomeSources.find(s => s.id === payeeId);
+      return incomeSource?.name || 'Select Income Source';
+    }
     const payee = payees.find(p => p.id === payeeId);
     return payee?.name || 'Select Payee (Optional)';
   };
@@ -256,6 +272,14 @@ export const QuickTransactionEntryScreen: React.FC = () => {
 
   const handlePayeeCreated = (newPayee: Payee) => {
     setPayees(prev => [...prev, newPayee]);
+  };
+
+  const handleIncomeSourceSelect = (incomeSource: IncomeSource) => {
+    setFormData({ ...formData, payee_id: incomeSource.id });
+  };
+
+  const handleIncomeSourceCreated = (newIncomeSource: IncomeSource) => {
+    setIncomeSources(prev => [...prev, newIncomeSource]);
   };
 
   const getSelectedTypeData = () => {
@@ -278,7 +302,7 @@ export const QuickTransactionEntryScreen: React.FC = () => {
                   borderColor: isSelected ? '#10B981' : theme.border,
                 },
               ]}
-              onPress={() => setFormData({ ...formData, transaction_type: type.value })}
+              onPress={() => setFormData({ ...formData, transaction_type: type.value, payee_id: '' })}
               activeOpacity={0.7}
             >
               <Icon
@@ -348,7 +372,7 @@ export const QuickTransactionEntryScreen: React.FC = () => {
 
           <View style={styles.inputGroup}>
             <Text style={[styles.label, { color: theme.textSecondary }]}>
-              Description *
+              Description {formData.transaction_type === 'income' ? '*' : '(Optional)'}
             </Text>
             <TextInput
               style={[styles.input, { color: theme.textPrimary, borderColor: theme.border }]}
@@ -359,6 +383,21 @@ export const QuickTransactionEntryScreen: React.FC = () => {
               multiline
               numberOfLines={2}
             />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={[styles.label, { color: theme.textSecondary }]}>
+              {formData.transaction_type === 'income' ? 'Income Source *' : 'Payee (Optional)'}
+            </Text>
+            <TouchableOpacity
+              style={[styles.selectorButton, { borderColor: theme.border, backgroundColor: theme.surface }]}
+              onPress={() => formData.transaction_type === 'income' ? setShowIncomeSourceBottomSheet(true) : setShowPayeeBottomSheet(true)}
+            >
+              <Text style={[styles.selectorButtonText, { color: theme.textPrimary }]}>
+                {getPayeeName(formData.payee_id)}
+              </Text>
+              <Icon name="arrow-drop-down" size={24} color={theme.textSecondary} />
+            </TouchableOpacity>
           </View>
 
           {formData.transaction_type === 'expense' && (
@@ -377,21 +416,6 @@ export const QuickTransactionEntryScreen: React.FC = () => {
               </TouchableOpacity>
             </View>
           )}
-
-          <View style={styles.inputGroup}>
-            <Text style={[styles.label, { color: theme.textSecondary }]}>
-              Payee (Optional)
-            </Text>
-            <TouchableOpacity
-              style={[styles.selectorButton, { borderColor: theme.border, backgroundColor: theme.surface }]}
-              onPress={() => setShowPayeeBottomSheet(true)}
-            >
-              <Text style={[styles.selectorButtonText, { color: theme.textPrimary }]}>
-                {getPayeeName(formData.payee_id)}
-              </Text>
-              <Icon name="arrow-drop-down" size={24} color={theme.textSecondary} />
-            </TouchableOpacity>
-          </View>
 
           <View style={styles.inputGroup}>
             <Text style={[styles.label, { color: theme.textSecondary }]}>
@@ -442,6 +466,15 @@ export const QuickTransactionEntryScreen: React.FC = () => {
         payees={payees}
         selectedPayeeId={formData.payee_id}
         onPayeeCreated={handlePayeeCreated}
+      />
+
+      <IncomeSourcePickerBottomSheet
+        isVisible={showIncomeSourceBottomSheet}
+        onClose={() => setShowIncomeSourceBottomSheet(false)}
+        onSelect={handleIncomeSourceSelect}
+        incomeSources={incomeSources}
+        selectedIncomeSourceId={formData.payee_id}
+        onIncomeSourceCreated={handleIncomeSourceCreated}
       />
     </KeyboardAvoidingView>
   );
