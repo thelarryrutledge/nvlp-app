@@ -166,19 +166,23 @@ export const QuickTransactionEntryScreen: React.FC = () => {
     // For expenses, we need to reduce the envelope balance
     const edgeFunctionTransport = client.getEdgeFunctionTransport();
     
-    const response = await edgeFunctionTransport.callFunction('transactions', {
+    const transactionData = {
       budget_id: selectedBudget!.id,
       transaction_type: 'expense',
       amount: amount,
       description: formData.description.trim() || 'Expense transaction',
       transaction_date: formData.transaction_date,
       from_envelope_id: formData.envelope_id,
-      payee_id: formData.payee_id || null,
+      payee_id: formData.payee_id,
       is_cleared: true, // Quick transactions are marked as cleared by default
-    });
+    };
+    
+    console.log('Creating expense transaction with data:', transactionData);
+    const response = await edgeFunctionTransport.callFunction('transactions', transactionData);
 
     if (response.error) {
-      throw new Error(response.error.message || 'Failed to create expense transaction');
+      console.error('Expense transaction error:', response.error);
+      throw new Error(response.error.message || response.error.error || 'Failed to create expense transaction');
     }
 
     return response.data;
@@ -188,7 +192,7 @@ export const QuickTransactionEntryScreen: React.FC = () => {
     // For income, we add to available budget (no envelope specified)
     const edgeFunctionTransport = client.getEdgeFunctionTransport();
     
-    const response = await edgeFunctionTransport.callFunction('transactions', {
+    const transactionData = {
       budget_id: selectedBudget!.id,
       transaction_type: 'income',
       amount: amount,
@@ -196,10 +200,14 @@ export const QuickTransactionEntryScreen: React.FC = () => {
       transaction_date: formData.transaction_date,
       income_source_id: formData.payee_id || null, // Using payee_id to store income_source_id for now
       is_cleared: true,
-    });
+    };
+    
+    console.log('Creating income transaction with data:', transactionData);
+    const response = await edgeFunctionTransport.callFunction('transactions', transactionData);
 
     if (response.error) {
-      throw new Error(response.error.message || 'Failed to create income transaction');
+      console.error('Income transaction error:', response.error);
+      throw new Error(response.error.message || response.error.error || 'Failed to create income transaction');
     }
 
     return response.data;
@@ -222,6 +230,11 @@ export const QuickTransactionEntryScreen: React.FC = () => {
       return false;
     }
 
+    if (formData.transaction_type === 'expense' && !formData.payee_id) {
+      Alert.alert('Validation Error', 'Please select a payee for the expense.');
+      return false;
+    }
+
     if (formData.transaction_type === 'income' && !formData.payee_id) {
       Alert.alert('Validation Error', 'Please select an income source.');
       return false;
@@ -241,7 +254,7 @@ export const QuickTransactionEntryScreen: React.FC = () => {
       return incomeSource?.name || 'Select Income Source';
     }
     const payee = payees.find(p => p.id === payeeId);
-    return payee?.name || 'Select Payee (Optional)';
+    return payee?.name || 'Select Payee';
   };
 
   const handleEnvelopeSelect = (envelope: Envelope) => {
@@ -369,7 +382,7 @@ export const QuickTransactionEntryScreen: React.FC = () => {
 
           <View style={styles.inputGroup}>
             <Text style={[styles.label, { color: theme.textSecondary }]}>
-              {formData.transaction_type === 'income' ? 'Income Source *' : 'Payee (Optional)'}
+              {formData.transaction_type === 'income' ? 'Income Source *' : 'Payee *'}
             </Text>
             <TouchableOpacity
               style={[styles.selectorButton, { borderColor: theme.border, backgroundColor: theme.surface }]}
