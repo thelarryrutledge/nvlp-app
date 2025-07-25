@@ -188,7 +188,13 @@ export const QuickTransactionEntryScreen: React.FC = () => {
 
     if (response.error) {
       console.error('Expense transaction error:', response.error);
-      throw new Error(response.error.message || response.error.error || 'Failed to create expense transaction');
+      const errorMessage = response.error.message || response.error.error || 'Failed to create expense transaction';
+      const errorDetails = response.error.details;
+      if (errorDetails && errorDetails.errors) {
+        console.error('Validation errors:', errorDetails.errors);
+        throw new Error(`${errorMessage}: ${errorDetails.errors.join(', ')}`);
+      }
+      throw new Error(errorMessage);
     }
 
     return response.data;
@@ -213,7 +219,13 @@ export const QuickTransactionEntryScreen: React.FC = () => {
 
     if (response.error) {
       console.error('Income transaction error:', response.error);
-      throw new Error(response.error.message || response.error.error || 'Failed to create income transaction');
+      const errorMessage = response.error.message || response.error.error || 'Failed to create income transaction';
+      const errorDetails = response.error.details;
+      if (errorDetails && errorDetails.errors) {
+        console.error('Validation errors:', errorDetails.errors);
+        throw new Error(`${errorMessage}: ${errorDetails.errors.join(', ')}`);
+      }
+      throw new Error(errorMessage);
     }
 
     return response.data;
