@@ -156,7 +156,13 @@ export const QuickTransactionEntryScreen: React.FC = () => {
       ]);
     } catch (err) {
       console.error('Failed to create transaction:', err);
-      Alert.alert('Error', 'Failed to create transaction. Please try again.');
+      console.error('Error details:', {
+        message: (err as any)?.message,
+        code: (err as any)?.code,
+        details: (err as any)?.details,
+        stack: (err as any)?.stack
+      });
+      Alert.alert('Error', `Failed to create transaction: ${(err as any)?.message || 'Unknown error'}. Please try again.`);
     } finally {
       setSaving(false);
     }
