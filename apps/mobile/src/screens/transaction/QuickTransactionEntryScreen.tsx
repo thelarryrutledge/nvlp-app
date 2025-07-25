@@ -166,7 +166,7 @@ export const QuickTransactionEntryScreen: React.FC = () => {
     // For expenses, we need to reduce the envelope balance
     const edgeFunctionTransport = client.getEdgeFunctionTransport();
     
-    const response = await edgeFunctionTransport.post('transactions', {
+    const response = await edgeFunctionTransport.callFunction('transactions', {
       budget_id: selectedBudget!.id,
       transaction_type: 'expense',
       amount: amount,
@@ -177,8 +177,8 @@ export const QuickTransactionEntryScreen: React.FC = () => {
       is_cleared: true, // Quick transactions are marked as cleared by default
     });
 
-    if (!response.success) {
-      throw new Error(response.error?.message || 'Failed to create expense transaction');
+    if (response.error) {
+      throw new Error(response.error.message || 'Failed to create expense transaction');
     }
 
     return response.data;
@@ -188,7 +188,7 @@ export const QuickTransactionEntryScreen: React.FC = () => {
     // For income, we add to available budget (no envelope specified)
     const edgeFunctionTransport = client.getEdgeFunctionTransport();
     
-    const response = await edgeFunctionTransport.post('transactions', {
+    const response = await edgeFunctionTransport.callFunction('transactions', {
       budget_id: selectedBudget!.id,
       transaction_type: 'income',
       amount: amount,
@@ -198,8 +198,8 @@ export const QuickTransactionEntryScreen: React.FC = () => {
       is_cleared: true,
     });
 
-    if (!response.success) {
-      throw new Error(response.error?.message || 'Failed to create income transaction');
+    if (response.error) {
+      throw new Error(response.error.message || 'Failed to create income transaction');
     }
 
     return response.data;
