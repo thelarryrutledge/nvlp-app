@@ -49,10 +49,8 @@ interface TransactionFormData {
   transaction_date: Date;
   is_cleared: boolean;
   notes: string;
-  receipt_url: string;
-  location: string;
+  reference_number: string;
   category_id: string;
-  tags: string[];
 }
 
 interface Envelope {
@@ -137,10 +135,8 @@ export const TransactionFormScreen: React.FC = () => {
     transaction_date: new Date(),
     is_cleared: true,
     notes: '',
-    receipt_url: '',
-    location: '',
+    reference_number: '',
     category_id: '',
-    tags: [],
   });
 
   // UI state
@@ -219,7 +215,7 @@ export const TransactionFormScreen: React.FC = () => {
         transaction_date: formData.transaction_date.toISOString().split('T')[0],
         is_cleared: formData.is_cleared,
         notes: formData.notes.trim() || null,
-        location: formData.location.trim() || null,
+        reference_number: formData.reference_number.trim() || null,
         ...(formData.transaction_type === 'expense' && {
           from_envelope_id: formData.envelope_id,
           payee_id: formData.payee_id,
@@ -573,16 +569,16 @@ export const TransactionFormScreen: React.FC = () => {
               />
             </View>
 
-            {/* Location */}
+            {/* Reference Number */}
             <View style={styles.inputGroup}>
               <Text style={[styles.label, { color: theme.textSecondary }]}>
-                Location
+                Reference Number
               </Text>
               <TextInput
                 style={[styles.input, { color: theme.textPrimary, borderColor: theme.border }]}
-                value={formData.location}
-                onChangeText={(text) => updateFormData('location', text)}
-                placeholder="Where did this transaction occur?"
+                value={formData.reference_number}
+                onChangeText={(text) => updateFormData('reference_number', text)}
+                placeholder="Check number, transaction ID, etc."
                 placeholderTextColor={theme.textSecondary}
               />
             </View>
