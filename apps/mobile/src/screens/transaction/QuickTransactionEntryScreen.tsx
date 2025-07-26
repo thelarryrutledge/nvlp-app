@@ -234,6 +234,7 @@ export const QuickTransactionEntryScreen: React.FC = () => {
     };
     
     console.log('Creating expense transaction with data:', transactionData);
+    console.log('skipValidation:', skipValidation);
 
     // Validate first unless we're skipping validation
     if (!skipValidation) {
@@ -266,9 +267,11 @@ export const QuickTransactionEntryScreen: React.FC = () => {
                   text: 'Proceed',
                   onPress: async () => {
                     try {
+                      console.log('User clicked Proceed - creating transaction with skipValidation=true');
                       const result = await createExpenseTransaction(amount, true);
                       resolve(result);
                     } catch (error) {
+                      console.error('Error creating transaction after user confirmed:', error);
                       reject(error);
                     }
                   }
