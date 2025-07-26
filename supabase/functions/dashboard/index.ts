@@ -79,19 +79,23 @@ async function validateTokenAndGetUser(supabase: any, authHeader: string | null)
 const DashboardQueries = {
   // Get budget overview with available amount and totals
   async getBudgetOverview(supabase: any, budgetId: string) {
-    // Get budget with user state (available amount)
+    // Get budget data
     const { data: budgetData, error: budgetError } = await supabase
       .from('budgets')
-      .select(`
-        id,
-        name,
-        description,
-        user_state!inner(available_amount)
-      `)
+      .select('id, name, description')
       .eq('id', budgetId)
       .single()
 
     if (budgetError) throw budgetError
+
+    // Get user_state separately
+    const { data: userStateData, error: userStateError } = await supabase
+      .from('user_state')
+      .select('available_amount')
+      .eq('budget_id', budgetId)
+      .single()
+
+    if (userStateError) throw userStateError
 
     // Get envelope totals
     const { data: envelopeData, error: envelopeError } = await supabase
@@ -102,8 +106,8 @@ const DashboardQueries = {
 
     if (envelopeError) throw envelopeError
 
-    const totalAllocated = envelopeData?.reduce((sum, env) => sum + (env.current_balance || 0), 0) || 0
-    const availableAmount = budgetData.user_state[0]?.available_amount || 0
+    const totalAllocated = envelopeData?.reduce((sum: number, env: any) => sum + (env.current_balance || 0), 0) || 0
+    const availableAmount = userStateData?.available_amount || 0
 
     return {
       budget: {

@@ -251,71 +251,51 @@ export const EnvelopeSpendingChart: React.FC<EnvelopeSpendingChartProps> = ({
       );
     }
 
-    switch (selectedChartType) {
-      case 'line': {
-        const data = prepareLineChartData(transactions, selectedTimePeriod);
-        return (
-          <LineChart
-            data={data}
-            width={chartWidth}
-            height={height}
-            chartConfig={chartConfig}
-            bezier
-            style={styles.chart}
-            withVerticalLabels={true}
-            withHorizontalLabels={true}
-            withDots={false}
-            withShadow={false}
-            withInnerLines={false}
-            withOuterLines={false}
-          />
-        );
-      }
-      case 'bar': {
-        const data = prepareBarChartData(transactions, selectedTimePeriod);
-        return (
-          <BarChart
-            data={data}
-            width={chartWidth}
-            height={height}
-            chartConfig={chartConfig}
-            style={styles.chart}
-            withVerticalLabels={true}
-            withHorizontalLabels={true}
-            withInnerLines={false}
-            showValuesOnTopOfBars={false}
-            yAxisLabel=""
-            yAxisSuffix=""
-          />
-        );
-      }
-      case 'pie': {
-        const data = preparePieChartData(transactions, selectedTimePeriod);
-        if (data.length === 0) {
-          return (
-            <View style={styles.emptyState}>
-              <Icon name="pie-chart-outline" size={48} color={theme.textTertiary} />
-              <Text style={styles.emptyStateText}>No data for pie chart</Text>
-            </View>
-          );
-        }
-        return (
-          <PieChart
-            data={data}
-            width={chartWidth}
-            height={height}
-            chartConfig={chartConfig}
-            accessor="amount"
-            backgroundColor="transparent"
-            paddingLeft="15"
-            center={[10, 10]}
-            absolute
-          />
-        );
-      }
-      default:
-        return null;
-    }
+    // Temporary fallback: Show simple data instead of charts
+    const filteredTransactions = filterTransactionsByPeriod(transactions, selectedTimePeriod);
+    const totalSpending = filteredTransactions
+      .filter(transaction => transaction.from_envelope_id === envelopeId && transaction.transaction_type === 'expense')
+      .reduce((sum, transaction) => sum + transaction.amount, 0);
+    
+    const totalFunding = filteredTransactions
+      .filter(transaction => transaction.to_envelope_id === envelopeId)
+      .reduce((sum, transaction) => sum + transaction.amount, 0);
+
+    return (
+      <View style={styles.fallbackChart}>
+        <Text style={styles.fallbackTitle}>Spending Analysis</Text>
+        <Text style={styles.fallbackSubtitle}>({selectedTimePeriod.toUpperCase()} period)</Text>
+        
+        <View style={styles.fallbackStats}>
+          <View style={styles.fallbackStat}>
+            <Text style={styles.fallbackStatLabel}>Total Spending</Text>
+            <Text style={[styles.fallbackStatValue, { color: theme.error }]}>
+              {formatCurrency(Math.abs(totalSpending))}
+            </Text>
+          </View>
+          
+          <View style={styles.fallbackStat}>
+            <Text style={styles.fallbackStatLabel}>Total Funding</Text>
+            <Text style={[styles.fallbackStatValue, { color: theme.success }]}>
+              {formatCurrency(totalFunding)}
+            </Text>
+          </View>
+          
+          <View style={styles.fallbackStat}>
+            <Text style={styles.fallbackStatLabel}>Net Flow</Text>
+            <Text style={[styles.fallbackStatValue, { 
+              color: (totalFunding - Math.abs(totalSpending)) >= 0 ? theme.success : theme.error 
+            }]}>
+              {formatCurrency(totalFunding - Math.abs(totalSpending))}
+            </Text>
+          </View>
+        </View>
+        
+        <Text style={styles.fallbackNote}>
+          📊 Chart visualization coming soon - SVG support needed
+        </Text>
+      </View>
+    );
   };
 
   const renderControls = () => {
@@ -525,6 +505,47 @@ function createStyles(theme: Theme) {
       color: theme.textTertiary,
       marginTop: spacing.sm,
       textAlign: 'center',
+    },
+    fallbackChart: {
+      alignItems: 'center',
+      paddingVertical: spacing.lg,
+      width: chartWidth,
+    },
+    fallbackTitle: {
+      ...typography.h4,
+      color: theme.textPrimary,
+      fontWeight: '600',
+    },
+    fallbackSubtitle: {
+      ...typography.caption,
+      color: theme.textSecondary,
+      marginBottom: spacing.lg,
+    },
+    fallbackStats: {
+      width: '100%',
+      marginBottom: spacing.lg,
+    },
+    fallbackStat: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingVertical: spacing.sm,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.border,
+    },
+    fallbackStatLabel: {
+      ...typography.body,
+      color: theme.textSecondary,
+    },
+    fallbackStatValue: {
+      ...typography.h4,
+      fontWeight: '600',
+    },
+    fallbackNote: {
+      ...typography.caption,
+      color: theme.textTertiary,
+      textAlign: 'center',
+      fontStyle: 'italic',
     },
   });
 }

@@ -132,19 +132,31 @@ export async function withCache<T>(
  * Cache invalidation helper for budget-related data
  */
 export function invalidateBudgetCache(budgetId: string): void {
-  const patterns = [
+  // Get all cache keys to find matching patterns
+  const allKeys = Array.from(edgeCache['cache'].keys());
+  const patternsToInvalidate = [
     `dashboard:${budgetId}`,
+    `budget-overview:${budgetId}`,
+    `envelopes-summary:${budgetId}`,
     `transactions:${budgetId}`,
     `reports:${budgetId}`,
     `envelopes:${budgetId}`,
     `categories:${budgetId}`
   ];
 
-  patterns.forEach(pattern => {
-    edgeCache.delete(pattern);
+  let invalidatedCount = 0;
+  
+  // Delete exact matches and patterns
+  patternsToInvalidate.forEach(pattern => {
+    // Find all keys that start with this pattern
+    const matchingKeys = allKeys.filter(key => key.startsWith(pattern));
+    matchingKeys.forEach(key => {
+      edgeCache.delete(key);
+      invalidatedCount++;
+    });
   });
 
-  console.log(`[CACHE INVALIDATED] Budget ${budgetId} related cache cleared`);
+  console.log(`[CACHE INVALIDATED] Budget ${budgetId}: cleared ${invalidatedCount} cache entries`);
 }
 
 /**

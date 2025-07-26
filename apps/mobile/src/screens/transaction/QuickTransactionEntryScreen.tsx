@@ -350,6 +350,7 @@ export const QuickTransactionEntryScreen: React.FC = () => {
       throw new Error(responseData.error || responseData.message || 'Failed to create income transaction');
     }
 
+
     return responseData;
   };
 

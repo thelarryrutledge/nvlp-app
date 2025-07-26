@@ -49,7 +49,7 @@ class TransactionService {
         is_cleared: true,
       };
 
-      const response = await fetch('https://edge-api.nvlp.app/api/functions/v1/transactions', {
+      const response = await fetch('https://qnpatlosomopoimtsmsr.supabase.co/functions/v1/transactions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -88,7 +88,7 @@ class TransactionService {
         is_cleared: true,
       };
 
-      const response = await fetch('https://edge-api.nvlp.app/api/functions/v1/transactions', {
+      const response = await fetch('https://qnpatlosomopoimtsmsr.supabase.co/functions/v1/transactions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
