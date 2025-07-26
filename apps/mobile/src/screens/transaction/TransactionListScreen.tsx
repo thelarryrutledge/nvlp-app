@@ -19,6 +19,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useBudget } from '../../context/BudgetContext';
 import { useApiClient } from '../../hooks/useApiClient';
 import { LoadingState, EmptyState } from '../../components/ui';
+import { TransactionFilterBottomSheet, TransactionFilters } from '../../components/transaction';
 import { useTheme } from '../../theme';
 import type { Transaction } from '@nvlp/types';
 
@@ -48,18 +49,48 @@ export const TransactionListScreen: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [transactions, setTransactions] = useState<TransactionWithDetails[]>([]);
+  const [envelopes, setEnvelopes] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [showFilterSheet, setShowFilterSheet] = useState(false);
+  const [filters, setFilters] = useState<TransactionFilters>({
+    startDate: null,
+    endDate: null,
+    transactionTypes: [],
+    envelopeIds: [],
+  });
 
   const ITEMS_PER_PAGE = 20;
 
   useFocusEffect(
     useCallback(() => {
-      loadTransactions();
+      loadInitialData();
     }, [selectedBudget])
   );
+
+  // Reload transactions when filters change
+  useEffect(() => {
+    if (selectedBudget?.id) {
+      loadTransactions(false, 1);
+    }
+  }, [filters]);
+
+  const loadInitialData = async () => {
+    if (!selectedBudget?.id) return;
+
+    try {
+      // Load envelopes for filter
+      const envelopesData = await client.getEnvelopes(selectedBudget.id);
+      setEnvelopes(envelopesData || []);
+      
+      // Load transactions
+      await loadTransactions();
+    } catch (err) {
+      console.error('Failed to load initial data:', err);
+    }
+  };
 
   const loadTransactions = async (isRefresh = false, pageNum = 1) => {
     if (!selectedBudget?.id) return;
@@ -81,9 +112,36 @@ export const TransactionListScreen: React.FC = () => {
       // Calculate offset
       const offset = (pageNum - 1) * ITEMS_PER_PAGE;
 
-      // Fetch transactions with pagination
+      // Build filter query
+      let filterQuery = `budget_id=eq.${selectedBudget.id}`;
+      
+      // Add date filters
+      if (filters.startDate) {
+        const startDateStr = filters.startDate.toISOString().split('T')[0];
+        filterQuery += `&transaction_date=gte.${startDateStr}`;
+      }
+      if (filters.endDate) {
+        const endDateStr = filters.endDate.toISOString().split('T')[0];
+        filterQuery += `&transaction_date=lte.${endDateStr}`;
+      }
+      
+      // Add transaction type filter
+      if (filters.transactionTypes.length > 0) {
+        const typeFilter = filters.transactionTypes.map(t => `transaction_type.eq.${t}`).join(',');
+        filterQuery += `&or=(${typeFilter})`;
+      }
+      
+      // Add envelope filter
+      if (filters.envelopeIds.length > 0) {
+        const envelopeFilter = filters.envelopeIds.map(id => 
+          `from_envelope_id.eq.${id},to_envelope_id.eq.${id}`
+        ).join(',');
+        filterQuery += `&or=(${envelopeFilter})`;
+      }
+
+      // Fetch transactions with pagination and filters
       const response = await fetch(
-        `https://qnpatlosomopoimtsmsr.supabase.co/rest/v1/transactions?budget_id=eq.${selectedBudget.id}&order=transaction_date.desc,created_at.desc&limit=${ITEMS_PER_PAGE}&offset=${offset}&select=*,envelopes!from_envelope_id(name),to_envelopes:envelopes!to_envelope_id(name),payees(name),income_sources(name)`,
+        `https://qnpatlosomopoimtsmsr.supabase.co/rest/v1/transactions?${filterQuery}&order=transaction_date.desc,created_at.desc&limit=${ITEMS_PER_PAGE}&offset=${offset}&select=*,envelopes!from_envelope_id(name),to_envelopes:envelopes!to_envelope_id(name),payees(name),income_sources(name)`,
         {
           method: 'GET',
           headers: {
@@ -137,6 +195,20 @@ export const TransactionListScreen: React.FC = () => {
     if (!loadingMore && hasMore) {
       loadTransactions(false, page + 1);
     }
+  };
+
+  const handleApplyFilters = (newFilters: TransactionFilters) => {
+    setFilters(newFilters);
+    setPage(1);
+  };
+
+  const hasActiveFilters = () => {
+    return (
+      filters.startDate !== null ||
+      filters.endDate !== null ||
+      filters.transactionTypes.length > 0 ||
+      filters.envelopeIds.length > 0
+    );
   };
 
   // Filter transactions based on search query
@@ -264,22 +336,41 @@ export const TransactionListScreen: React.FC = () => {
   };
 
   const renderHeader = () => (
-    <View style={[styles.searchContainer, { backgroundColor: theme.surface }]}>
-      <Icon name="search" size={20} color={theme.textSecondary} />
-      <TextInput
-        style={[styles.searchInput, { color: theme.textPrimary }]}
-        placeholder="Search transactions..."
-        placeholderTextColor={theme.textSecondary}
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-        autoCapitalize="none"
-        autoCorrect={false}
-      />
-      {searchQuery.length > 0 && (
-        <TouchableOpacity onPress={() => setSearchQuery('')}>
-          <Icon name="close" size={20} color={theme.textSecondary} />
+    <View>
+      <View style={[styles.searchContainer, { backgroundColor: theme.surface }]}>
+        <Icon name="search" size={20} color={theme.textSecondary} />
+        <TextInput
+          style={[styles.searchInput, { color: theme.textPrimary }]}
+          placeholder="Search transactions..."
+          placeholderTextColor={theme.textSecondary}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+        {searchQuery.length > 0 && (
+          <TouchableOpacity onPress={() => setSearchQuery('')}>
+            <Icon name="close" size={20} color={theme.textSecondary} />
+          </TouchableOpacity>
+        )}
+        <TouchableOpacity 
+          style={[styles.filterButton, hasActiveFilters() && styles.filterButtonActive]}
+          onPress={() => setShowFilterSheet(true)}
+        >
+          <Icon 
+            name="filter-list" 
+            size={20} 
+            color={hasActiveFilters() ? '#10B981' : theme.textSecondary} 
+          />
+          {hasActiveFilters() && (
+            <View style={styles.filterBadge}>
+              <Text style={styles.filterBadgeText}>
+                {filters.transactionTypes.length + filters.envelopeIds.length + (filters.startDate ? 1 : 0)}
+              </Text>
+            </View>
+          )}
         </TouchableOpacity>
-      )}
+      </View>
     </View>
   );
 
@@ -352,6 +443,15 @@ export const TransactionListScreen: React.FC = () => {
       >
         <Icon name="add" size={24} color="white" />
       </TouchableOpacity>
+
+      {/* Filter Bottom Sheet */}
+      <TransactionFilterBottomSheet
+        isVisible={showFilterSheet}
+        onClose={() => setShowFilterSheet(false)}
+        onApply={handleApplyFilters}
+        currentFilters={filters}
+        envelopes={envelopes}
+      />
     </View>
   );
 };
@@ -372,6 +472,32 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     marginHorizontal: 12,
+  },
+  filterButton: {
+    padding: 8,
+    marginLeft: 8,
+    position: 'relative',
+  },
+  filterButtonActive: {
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    borderRadius: 8,
+  },
+  filterBadge: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+    backgroundColor: '#10B981',
+    borderRadius: 8,
+    minWidth: 16,
+    height: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  filterBadgeText: {
+    color: 'white',
+    fontSize: 10,
+    fontWeight: '600',
   },
   listContent: {
     paddingTop: 12,
