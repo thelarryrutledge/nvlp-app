@@ -163,7 +163,7 @@
 - [x] Implement transaction type switching
 
 ### 7.2 Transaction List & History
-- [ ] Build searchable transaction list
+- [x] Build searchable transaction list
 - [ ] Implement transaction filtering (date, type, envelope)
 - [ ] Create transaction detail view
 - [ ] Add transaction editing capability

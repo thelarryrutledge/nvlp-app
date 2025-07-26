@@ -6,32 +6,19 @@
 
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { View, Text, StyleSheet } from 'react-native';
+import { View } from 'react-native';
 import { useTheme } from '../theme';
 import { EnhancedProfileScreen } from '../screens/profile/EnhancedProfileScreen';
 import { BudgetListScreen } from '../screens/budgets/BudgetListScreen';
 import { DashboardScreen } from '../screens/dashboard/DashboardScreen';
 import { EnvelopeListScreen } from '../screens/envelope';
+import { TransactionListScreen } from '../screens/transaction';
 import { BudgetSwitcher } from '../components/budget';
 import type { MainTabParamList } from './types';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-// Placeholder screens - these will be replaced with actual screens later
-
-// BudgetsScreen is now implemented as BudgetListScreen
-
-
-const TransactionsScreen = () => {
-  const { theme } = useTheme();
-  return (
-    <View style={[styles.placeholder, { backgroundColor: theme.background }]}>
-      <Text style={[styles.placeholderText, { color: theme.textPrimary }]}>Transactions</Text>
-      <Text style={[styles.placeholderSubtext, { color: theme.textSecondary }]}>Coming soon...</Text>
-      <Text style={[styles.placeholderSubtext, { color: theme.textSecondary }]}>Use the budget switcher above to select an active budget.</Text>
-    </View>
-  );
-};
+// All main screens are now implemented
 
 export const MainTabs: React.FC = () => {
   const { theme } = useTheme();
@@ -93,7 +80,7 @@ export const MainTabs: React.FC = () => {
       />
       <Tab.Screen
         name="Transactions"
-        component={TransactionsScreen}
+        component={TransactionListScreen}
         options={{
           title: 'Transactions',
           tabBarLabel: 'Transactions',
@@ -115,25 +102,5 @@ export const MainTabs: React.FC = () => {
     </Tab.Navigator>
   );
 };
-
-const styles = StyleSheet.create({
-  placeholder: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    // backgroundColor removed - using theme
-  },
-  placeholderText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    // color removed - using theme
-    marginBottom: 8,
-  },
-  placeholderSubtext: {
-    fontSize: 16,
-    // color removed - using theme
-    marginBottom: 32,
-  },
-});
 
 export default MainTabs;
