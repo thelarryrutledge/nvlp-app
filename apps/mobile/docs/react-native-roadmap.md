@@ -166,7 +166,7 @@
 - [x] Build searchable transaction list
 - [x] Implement transaction filtering (date, type, envelope)
 - [x] Create transaction detail view
-- [ ] Add transaction editing capability
+- [x] Add transaction editing capability
 - [ ] Implement transaction deletion
 - [ ] Create transaction export functionality
 

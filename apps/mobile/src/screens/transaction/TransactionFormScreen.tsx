@@ -190,10 +190,53 @@ export const TransactionFormScreen: React.FC = () => {
 
   const loadTransactionData = async (id: string) => {
     try {
-      // TODO: Implement transaction loading from API
-      console.log('Loading transaction:', id);
-      // const transaction = await client.getTransaction(id);
-      // setFormData({ ...transaction, transaction_date: new Date(transaction.transaction_date) });
+      const authState = client.getAuthState();
+      if (!authState?.accessToken) {
+        throw new Error('Not authenticated');
+      }
+
+      const response = await fetch(
+        `https://qnpatlosomopoimtsmsr.supabase.co/rest/v1/transactions?id=eq.${id}&select=*`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authState.accessToken}`,
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFucGF0bG9zb21vcG9pbXRzbXNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE2NTg5MzcsImV4cCI6MjA2NzIzNDkzN30.__GhvGGWqhC_i1ztp1-A1VEsL3JVWrtdpQG_uJS8tB8',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch transaction: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.length === 0) {
+        throw new Error('Transaction not found');
+      }
+
+      const transaction = data[0];
+      
+      // Map transaction data to form data
+      setFormData({
+        amount: transaction.amount.toString(),
+        description: transaction.description || '',
+        transaction_type: transaction.transaction_type,
+        envelope_id: transaction.from_envelope_id || transaction.to_envelope_id || '',
+        payee_id: transaction.payee_id || transaction.income_source_id || '',
+        transaction_date: new Date(transaction.transaction_date),
+        is_cleared: transaction.is_cleared || false,
+        notes: transaction.notes || '',
+        reference_number: transaction.reference_number || '',
+        category_id: transaction.category_id || '',
+      });
+
+      // Show advanced fields if any advanced data exists
+      if (transaction.notes || transaction.reference_number || transaction.category_id) {
+        setShowAdvancedFields(true);
+      }
     } catch (err) {
       console.error('Failed to load transaction:', err);
       Alert.alert('Error', 'Failed to load transaction data.');
@@ -239,14 +282,13 @@ export const TransactionFormScreen: React.FC = () => {
       
       // Create or update transaction
       if (isEditing) {
-        // TODO: Implement transaction update
-        console.log('Updating transaction:', transactionData);
+        await updateTransaction(transactionId!, transactionData);
       } else {
         // Create new transaction using the same logic as QuickTransactionEntry
         await createTransaction(transactionData);
       }
 
-      Alert.alert('Success', 'Transaction saved successfully!', [
+      Alert.alert('Success', `Transaction ${isEditing ? 'updated' : 'created'} successfully!`, [
         { 
           text: 'OK', 
           onPress: () => {
@@ -282,6 +324,35 @@ export const TransactionFormScreen: React.FC = () => {
     if (!response.ok) {
       console.error('Transaction creation error:', responseData);
       throw new Error(responseData.error || responseData.message || 'Failed to create transaction');
+    }
+
+    return responseData;
+  };
+
+  const updateTransaction = async (transactionId: string, transactionData: any) => {
+    const authState = client.getAuthState();
+    if (!authState?.accessToken) {
+      throw new Error('Not authenticated');
+    }
+
+    const response = await fetch(
+      `https://qnpatlosomopoimtsmsr.supabase.co/rest/v1/transactions?id=eq.${transactionId}`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authState.accessToken}`,
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFucGF0bG9zb21vcG9pbXRzbXNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE2NTg5MzcsImV4cCI6MjA2NzIzNDkzN30.__GhvGGWqhC_i1ztp1-A1VEsL3JVWrtdpQG_uJS8tB8',
+        },
+        body: JSON.stringify(transactionData),
+      }
+    );
+
+    const responseData = await response.json();
+
+    if (!response.ok) {
+      console.error('Transaction update error:', responseData);
+      throw new Error(responseData.error || responseData.message || 'Failed to update transaction');
     }
 
     return responseData;
