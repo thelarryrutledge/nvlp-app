@@ -464,21 +464,36 @@ export const TransactionFormScreen: React.FC = () => {
           {/* Amount Input */}
           <View style={styles.inputGroup}>
             <Text style={[styles.label, { color: theme.textSecondary }]}>Amount *</Text>
-            <TouchableOpacity
-              style={[styles.amountInputContainer, { borderColor: theme.border }]}
-              onPress={() => setShowCalculator(true)}
-            >
+            <View style={[styles.amountInputContainer, { borderColor: theme.border }]}>
               <Text style={[styles.currencySymbol, { color: theme.textPrimary }]}>$</Text>
-              <Text 
-                style={[
-                  styles.amountInput, 
-                  { color: formData.amount ? theme.textPrimary : theme.textSecondary }
-                ]}
+              <TextInput
+                style={[styles.amountInput, { color: theme.textPrimary }]}
+                value={formData.amount}
+                onChangeText={(text) => {
+                  // Only allow numbers and one decimal point
+                  const cleanedText = text.replace(/[^0-9.]/g, '');
+                  const parts = cleanedText.split('.');
+                  if (parts.length <= 2) {
+                    // Limit to 2 decimal places
+                    const finalText = parts.length === 2 
+                      ? parts[0] + '.' + parts[1].slice(0, 2)
+                      : cleanedText;
+                    updateFormData('amount', finalText);
+                  }
+                }}
+                placeholder="0.00"
+                placeholderTextColor={theme.textSecondary}
+                keyboardType="decimal-pad"
+                returnKeyType="done"
+              />
+              <TouchableOpacity
+                onPress={() => setShowCalculator(true)}
+                style={styles.calculatorButton}
+                activeOpacity={0.7}
               >
-                {formData.amount || '0.00'}
-              </Text>
-              <Icon name="calculate" size={20} color={theme.textSecondary} />
-            </TouchableOpacity>
+                <Icon name="calculate" size={20} color={theme.textSecondary} />
+              </TouchableOpacity>
+            </View>
           </View>
 
           {/* Description Input */}
@@ -892,6 +907,9 @@ const styles = StyleSheet.create({
   availableAmountValue: {
     fontSize: 16,
     fontWeight: '600' as const,
+  },
+  calculatorButton: {
+    padding: 4,
   },
 });
 
