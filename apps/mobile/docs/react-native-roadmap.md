@@ -158,8 +158,8 @@
 - [x] Create quick transaction entry screen
 - [x] Build detailed transaction form
 - [x] Implement amount input with calculator
-- [ ] Add payee selection/creation
-- [ ] Create envelope selection interface
+- [x] Add payee selection/creation
+- [x] Create envelope selection interface
 - [x] Implement transaction type switching
 
 ### 7.2 Transaction List & History
