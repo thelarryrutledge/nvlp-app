@@ -57,6 +57,7 @@ export type MainStackParamList = {
   QuickTransactionEntry: undefined;
   TransactionForm: { transactionId?: string };
   TransactionList: undefined;
+  TransactionDetail: { transactionId: string };
 };
 
 export type MainTabParamList = {

@@ -165,7 +165,7 @@
 ### 7.2 Transaction List & History
 - [x] Build searchable transaction list
 - [x] Implement transaction filtering (date, type, envelope)
-- [ ] Create transaction detail view
+- [x] Create transaction detail view
 - [ ] Add transaction editing capability
 - [ ] Implement transaction deletion
 - [ ] Create transaction export functionality

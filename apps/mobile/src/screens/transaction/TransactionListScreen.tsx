@@ -26,6 +26,7 @@ import type { Transaction } from '@nvlp/types';
 type RootStackParamList = {
   TransactionList: undefined;
   TransactionForm: { transactionId?: string };
+  TransactionDetail: { transactionId: string };
   QuickTransactionEntry: undefined;
 };
 
@@ -312,7 +313,7 @@ export const TransactionListScreen: React.FC = () => {
     return (
       <TouchableOpacity
         style={[styles.transactionItem, { backgroundColor: theme.surface }]}
-        onPress={() => navigation.navigate('TransactionForm', { transactionId: item.id })}
+        onPress={() => navigation.navigate('TransactionDetail', { transactionId: item.id })}
         activeOpacity={0.7}
       >
         <View style={styles.transactionLeft}>
