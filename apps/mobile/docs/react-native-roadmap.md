@@ -167,7 +167,7 @@
 - [x] Implement transaction filtering (date, type, envelope)
 - [x] Create transaction detail view
 - [x] Add transaction editing capability
-- [ ] Implement transaction deletion
+- [x] Implement transaction deletion
 - [ ] Create transaction export functionality
 
 ### 7.3 Advanced Transaction Features

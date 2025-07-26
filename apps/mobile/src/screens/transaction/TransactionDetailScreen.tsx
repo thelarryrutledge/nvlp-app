@@ -51,6 +51,7 @@ export const TransactionDetailScreen: React.FC = () => {
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [transaction, setTransaction] = useState<TransactionWithDetails | null>(null);
 
   useFocusEffect(
@@ -124,6 +125,8 @@ export const TransactionDetailScreen: React.FC = () => {
   };
 
   const handleDelete = () => {
+    if (deleting) return; // Prevent multiple delete attempts
+    
     Alert.alert(
       'Delete Transaction',
       'Are you sure you want to delete this transaction? This action cannot be undone.',
@@ -136,6 +139,7 @@ export const TransactionDetailScreen: React.FC = () => {
 
   const confirmDelete = async () => {
     try {
+      setDeleting(true);
       const authState = client.getAuthState();
       if (!authState?.accessToken) {
         throw new Error('Not authenticated');
@@ -149,20 +153,39 @@ export const TransactionDetailScreen: React.FC = () => {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${authState.accessToken}`,
             'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFucGF0bG9zb21vcG9pbXRzbXNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE2NTg5MzcsImV4cCI6MjA2NzIzNDkzN30.__GhvGGWqhC_i1ztp1-A1VEsL3JVWrtdpQG_uJS8tB8',
+            'Prefer': 'return=minimal', // This tells Supabase to return minimal response
           },
         }
       );
 
       if (!response.ok) {
-        throw new Error('Failed to delete transaction');
+        let errorMessage = 'Failed to delete transaction';
+        try {
+          const responseText = await response.text();
+          if (responseText) {
+            const responseData = JSON.parse(responseText);
+            console.error('Transaction deletion error:', responseData);
+            errorMessage = responseData.error || responseData.message || errorMessage;
+          }
+        } catch (parseError) {
+          console.error('Failed to parse error response:', parseError);
+          errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
       }
 
+      // For successful DELETE with 'return=minimal', Supabase returns 204 No Content
+      console.log('Transaction deleted successfully');
+      
       Alert.alert('Success', 'Transaction deleted successfully.', [
         { text: 'OK', onPress: () => navigation.goBack() },
       ]);
     } catch (err) {
       console.error('Failed to delete transaction:', err);
-      Alert.alert('Error', 'Failed to delete transaction. Please try again.');
+      const errorMessage = (err as Error).message || 'Failed to delete transaction. Please try again.';
+      Alert.alert('Error', errorMessage);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -434,12 +457,23 @@ export const TransactionDetailScreen: React.FC = () => {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.actionButton, styles.deleteButton]}
+          style={[
+            styles.actionButton, 
+            styles.deleteButton,
+            deleting && styles.actionButtonDisabled
+          ]}
           onPress={handleDelete}
           activeOpacity={0.8}
+          disabled={deleting}
         >
-          <Icon name="delete" size={20} color="white" />
-          <Text style={styles.actionButtonText}>Delete</Text>
+          {deleting ? (
+            <ActivityIndicator size="small" color="white" />
+          ) : (
+            <Icon name="delete" size={20} color="white" />
+          )}
+          <Text style={styles.actionButtonText}>
+            {deleting ? 'Deleting...' : 'Delete'}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -557,5 +591,8 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: '600',
+  },
+  actionButtonDisabled: {
+    opacity: 0.6,
   },
 });
