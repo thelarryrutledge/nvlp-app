@@ -336,27 +336,29 @@ export const TransactionFormScreen: React.FC = () => {
       throw new Error('Not authenticated');
     }
 
-    // Use the same Supabase function endpoint for updates with the transaction ID
-    const updateData = {
-      ...transactionData,
-      id: transactionId,
-    };
-
-    const response = await fetch('https://qnpatlosomopoimtsmsr.supabase.co/functions/v1/transactions', {
-      method: 'PUT', // or PATCH, depending on what the function expects
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${authState.accessToken}`,
-      },
-      body: JSON.stringify(updateData),
-    });
+    const response = await fetch(
+      `https://qnpatlosomopoimtsmsr.supabase.co/rest/v1/transactions?id=eq.${transactionId}`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authState.accessToken}`,
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFucGF0bG9zb21vcG9pbXRzbXNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE2NTg5MzcsImV4cCI6MjA2NzIzNDkzN30.__GhvGGWqhC_i1ztp1-A1VEsL3JVWrtdpQG_uJS8tB8',
+          'Prefer': 'return=minimal', // This tells Supabase to return minimal response
+        },
+        body: JSON.stringify(transactionData),
+      }
+    );
 
     if (!response.ok) {
       let errorMessage = 'Failed to update transaction';
       try {
-        const responseData = await response.json();
-        console.error('Transaction update error:', responseData);
-        errorMessage = responseData.error || responseData.message || errorMessage;
+        const responseText = await response.text();
+        if (responseText) {
+          const responseData = JSON.parse(responseText);
+          console.error('Transaction update error:', responseData);
+          errorMessage = responseData.error || responseData.message || errorMessage;
+        }
       } catch (parseError) {
         console.error('Failed to parse error response:', parseError);
         errorMessage = `HTTP ${response.status}: ${response.statusText}`;
@@ -364,18 +366,10 @@ export const TransactionFormScreen: React.FC = () => {
       throw new Error(errorMessage);
     }
 
-    // Parse response
-    let responseData = null;
-    try {
-      const responseText = await response.text();
-      if (responseText) {
-        responseData = JSON.parse(responseText);
-      }
-    } catch (parseError) {
-      console.log('No JSON response body, which is normal for some operations');
-    }
-
-    return responseData;
+    // For successful PATCH with 'return=minimal', Supabase returns 204 No Content
+    // which means empty response body, so we don't need to parse JSON
+    console.log('Transaction updated successfully');
+    return { success: true };
   };
 
   const validateForm = (): boolean => {
