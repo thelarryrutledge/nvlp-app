@@ -55,6 +55,7 @@ export type MainStackParamList = {
   PayeeHistory: { payeeId: string };
   PayeeInsights: { payeeId: string };
   QuickTransactionEntry: undefined;
+  TransactionForm: { transactionId?: string };
 };
 
 export type MainTabParamList = {

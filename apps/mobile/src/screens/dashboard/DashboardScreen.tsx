@@ -173,16 +173,16 @@ export const DashboardScreen: React.FC = () => {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.quickActionsContent}
         >
-          <Tooltip content="Add a new transaction">
+          <Tooltip content="Create a detailed transaction">
             <TouchableOpacity 
               style={styles.quickActionButton} 
               activeOpacity={0.7}
-              onPress={() => (navigation as any).navigate('QuickTransactionEntry')}
+              onPress={() => (navigation as any).navigate('TransactionForm')}
             >
               <View style={styles.quickActionIcon}>
-                <Text style={styles.quickActionIconText}>➕</Text>
+                <Text style={styles.quickActionIconText}>📝</Text>
               </View>
-              <Text style={styles.quickActionLabel}>Add Transaction</Text>
+              <Text style={styles.quickActionLabel}>New Transaction</Text>
             </TouchableOpacity>
           </Tooltip>
           

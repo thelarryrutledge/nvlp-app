@@ -26,7 +26,7 @@ import { IncomeHistoryScreen } from '../screens/income/IncomeHistoryScreen';
 import { EnvelopeDetailScreen, EnvelopeFormScreen, EnvelopeFundingScreen, EnvelopeTransferScreen, EnvelopeNotificationsScreen, EnvelopeHistoryScreen } from '../screens/envelope';
 import { NotificationSettingsScreen } from '../screens/settings/NotificationSettingsScreen';
 import { PayeeListScreen, PayeeDetailScreen, PayeeFormScreen, PayeeMergeScreen, PayeeHistoryScreen, PayeeInsightsScreen } from '../screens/payees';
-import { QuickTransactionEntryScreen } from '../screens/transaction';
+import { QuickTransactionEntryScreen, TransactionFormScreen } from '../screens/transaction';
 import { useTheme } from '../theme';
 import type { MainStackParamList } from './types';
 
@@ -331,6 +331,16 @@ export const MainStack: React.FC = () => {
           headerBackTitle: 'Back',
           presentation: 'modal',
         }}
+      />
+      <Stack.Screen
+        name="TransactionForm"
+        component={TransactionFormScreen}
+        options={({ route }) => ({
+          headerShown: true,
+          title: (route.params as any)?.transactionId ? 'Edit Transaction' : 'New Transaction',
+          headerBackTitle: 'Back',
+          presentation: 'modal',
+        })}
       />
     </Stack.Navigator>
   );

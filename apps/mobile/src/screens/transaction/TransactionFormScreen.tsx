@@ -1,0 +1,795 @@
+/**
+ * Transaction Form Screen
+ * 
+ * Detailed transaction creation and editing interface
+ */
+
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  TextInput,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
+  Switch,
+} from 'react-native';
+import {
+  NavigationProp,
+  useNavigation,
+  useRoute,
+  RouteProp,
+  useFocusEffect,
+} from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import DateTimePicker from '@react-native-community/datetimepicker';
+
+import { useBudget } from '../../context/BudgetContext';
+import { useApiClient } from '../../hooks/useApiClient';
+import { LoadingState } from '../../components/ui';
+import { EnvelopePickerBottomSheet, PayeePickerBottomSheet, IncomeSourcePickerBottomSheet } from '../../components/transaction';
+import { TransactionType } from '@nvlp/types';
+import { useTheme } from '../../theme';
+import type { MainStackParamList } from '../../navigation/types';
+
+type TransactionFormRouteProp = RouteProp<MainStackParamList, 'TransactionForm'>;
+type TransactionFormNavigationProp = NavigationProp<MainStackParamList, 'TransactionForm'>;
+
+interface TransactionFormData {
+  amount: string;
+  description: string;
+  transaction_type: TransactionType;
+  envelope_id: string;
+  payee_id: string;
+  transaction_date: Date;
+  is_cleared: boolean;
+  notes: string;
+  receipt_url: string;
+  location: string;
+  category_id: string;
+  tags: string[];
+}
+
+interface Envelope {
+  id: string;
+  name: string;
+  current_balance: number;
+  color?: string;
+  category_id?: string;
+}
+
+interface Payee {
+  id: string;
+  name: string;
+  payee_type: string;
+}
+
+interface IncomeSource {
+  id: string;
+  name: string;
+  source_type: string;
+  color?: string;
+}
+
+interface Category {
+  id: string;
+  name: string;
+  color?: string;
+  icon?: string;
+}
+
+const transactionTypes: { value: TransactionType; label: string; icon: string; description: string }[] = [
+  { 
+    value: 'expense', 
+    label: 'Expense', 
+    icon: 'remove', 
+    description: 'Money spent from an envelope' 
+  },
+  { 
+    value: 'income', 
+    label: 'Income', 
+    icon: 'add', 
+    description: 'Money received' 
+  },
+  { 
+    value: 'allocation', 
+    label: 'Allocation', 
+    icon: 'account-balance', 
+    description: 'Money allocated to an envelope' 
+  },
+  { 
+    value: 'transfer', 
+    label: 'Transfer', 
+    icon: 'swap-horiz', 
+    description: 'Money moved between envelopes' 
+  },
+];
+
+export const TransactionFormScreen: React.FC = () => {
+  const navigation = useNavigation<TransactionFormNavigationProp>();
+  const route = useRoute<TransactionFormRouteProp>();
+  const insets = useSafeAreaInsets();
+  const { selectedBudget } = useBudget();
+  const { client } = useApiClient();
+  const { theme } = useTheme();
+
+  const { transactionId } = route.params || {};
+  const isEditing = Boolean(transactionId);
+
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [envelopes, setEnvelopes] = useState<Envelope[]>([]);
+  const [payees, setPayees] = useState<Payee[]>([]);
+  const [incomeSources, setIncomeSources] = useState<IncomeSource[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  
+  const [formData, setFormData] = useState<TransactionFormData>({
+    amount: '',
+    description: '',
+    transaction_type: 'expense',
+    envelope_id: '',
+    payee_id: '',
+    transaction_date: new Date(),
+    is_cleared: true,
+    notes: '',
+    receipt_url: '',
+    location: '',
+    category_id: '',
+    tags: [],
+  });
+
+  // UI state
+  const [showEnvelopeBottomSheet, setShowEnvelopeBottomSheet] = useState(false);
+  const [showPayeeBottomSheet, setShowPayeeBottomSheet] = useState(false);
+  const [showIncomeSourceBottomSheet, setShowIncomeSourceBottomSheet] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showAdvancedFields, setShowAdvancedFields] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadInitialData();
+    }, [selectedBudget, transactionId])
+  );
+
+  const loadInitialData = async () => {
+    if (!selectedBudget?.id) return;
+
+    try {
+      setLoading(true);
+      
+      // Load all required data in parallel
+      const [envelopesData, payeesData, incomeSourcesData, categoriesData] = await Promise.all([
+        client.getEnvelopes(selectedBudget.id),
+        client.getPayees(selectedBudget.id),
+        client.getIncomeSources(selectedBudget.id),
+        client.getCategories(selectedBudget.id),
+      ]);
+
+      setEnvelopes(envelopesData || []);
+      setPayees(payeesData || []);
+      setIncomeSources(incomeSourcesData || []);
+      setCategories(categoriesData || []);
+
+      // If editing, load transaction data
+      if (isEditing && transactionId) {
+        await loadTransactionData(transactionId);
+      }
+    } catch (err) {
+      console.error('Failed to load data:', err);
+      Alert.alert('Error', 'Failed to load data. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadTransactionData = async (id: string) => {
+    try {
+      // TODO: Implement transaction loading from API
+      console.log('Loading transaction:', id);
+      // const transaction = await client.getTransaction(id);
+      // setFormData({ ...transaction, transaction_date: new Date(transaction.transaction_date) });
+    } catch (err) {
+      console.error('Failed to load transaction:', err);
+      Alert.alert('Error', 'Failed to load transaction data.');
+    }
+  };
+
+  const handleSave = async () => {
+    if (!validateForm()) return;
+    if (!selectedBudget?.id) {
+      Alert.alert('Error', 'No budget selected.');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const amount = parseFloat(formData.amount);
+      
+      // Prepare transaction data
+      const transactionData = {
+        budget_id: selectedBudget.id,
+        transaction_type: formData.transaction_type,
+        amount: amount,
+        description: formData.description.trim() || `${formData.transaction_type} transaction`,
+        transaction_date: formData.transaction_date.toISOString().split('T')[0],
+        is_cleared: formData.is_cleared,
+        notes: formData.notes.trim() || null,
+        location: formData.location.trim() || null,
+        ...(formData.transaction_type === 'expense' && {
+          from_envelope_id: formData.envelope_id,
+          payee_id: formData.payee_id,
+        }),
+        ...(formData.transaction_type === 'income' && {
+          income_source_id: formData.payee_id,
+        }),
+        ...(formData.transaction_type === 'allocation' && {
+          to_envelope_id: formData.envelope_id,
+        }),
+        ...(formData.transaction_type === 'transfer' && {
+          from_envelope_id: formData.envelope_id,
+          // TODO: Add to_envelope_id selection for transfers
+        }),
+      };
+      
+      // Create or update transaction
+      if (isEditing) {
+        // TODO: Implement transaction update
+        console.log('Updating transaction:', transactionData);
+      } else {
+        // Create new transaction using the same logic as QuickTransactionEntry
+        await createTransaction(transactionData);
+      }
+
+      Alert.alert('Success', 'Transaction saved successfully!', [
+        { 
+          text: 'OK', 
+          onPress: () => {
+            navigation.goBack();
+          }
+        }
+      ]);
+    } catch (err) {
+      console.error('Failed to save transaction:', err);
+      Alert.alert('Error', `Failed to save transaction: ${(err as any)?.message || 'Unknown error'}. Please try again.`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const createTransaction = async (transactionData: any) => {
+    const authState = client.getAuthState();
+    if (!authState?.accessToken) {
+      throw new Error('Not authenticated');
+    }
+
+    const response = await fetch('https://qnpatlosomopoimtsmsr.supabase.co/functions/v1/transactions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authState.accessToken}`,
+      },
+      body: JSON.stringify(transactionData),
+    });
+
+    const responseData = await response.json();
+
+    if (!response.ok) {
+      console.error('Transaction creation error:', responseData);
+      throw new Error(responseData.error || responseData.message || 'Failed to create transaction');
+    }
+
+    return responseData;
+  };
+
+  const validateForm = (): boolean => {
+    if (!formData.amount.trim()) {
+      Alert.alert('Validation Error', 'Please enter an amount.');
+      return false;
+    }
+
+    const amount = parseFloat(formData.amount);
+    if (isNaN(amount) || amount <= 0) {
+      Alert.alert('Validation Error', 'Please enter a valid amount greater than 0.');
+      return false;
+    }
+
+    if (formData.transaction_type === 'expense') {
+      if (!formData.envelope_id) {
+        Alert.alert('Validation Error', 'Please select an envelope for the expense.');
+        return false;
+      }
+      if (!formData.payee_id) {
+        Alert.alert('Validation Error', 'Please select a payee for the expense.');
+        return false;
+      }
+    }
+
+    if (formData.transaction_type === 'income' && !formData.payee_id) {
+      Alert.alert('Validation Error', 'Please select an income source.');
+      return false;
+    }
+
+    if (formData.transaction_type === 'allocation' && !formData.envelope_id) {
+      Alert.alert('Validation Error', 'Please select an envelope for the allocation.');
+      return false;
+    }
+
+    return true;
+  };
+
+  const getEnvelopeName = (envelopeId: string): string => {
+    const envelope = envelopes.find(e => e.id === envelopeId);
+    return envelope?.name || 'Select Envelope';
+  };
+
+  const getPayeeName = (payeeId: string): string => {
+    if (formData.transaction_type === 'income') {
+      const incomeSource = incomeSources.find(s => s.id === payeeId);
+      return incomeSource?.name || 'Select Income Source';
+    }
+    const payee = payees.find(p => p.id === payeeId);
+    return payee?.name || 'Select Payee';
+  };
+
+  const handleEnvelopeSelect = (envelope: Envelope) => {
+    setFormData({ ...formData, envelope_id: envelope.id, category_id: envelope.category_id || '' });
+  };
+
+  const handlePayeeSelect = (payee: Payee | null) => {
+    setFormData({ ...formData, payee_id: payee?.id || '' });
+  };
+
+  const handlePayeeCreated = (newPayee: Payee) => {
+    setPayees(prev => [...prev, newPayee]);
+  };
+
+  const handleIncomeSourceSelect = (incomeSource: IncomeSource) => {
+    setFormData({ ...formData, payee_id: incomeSource.id });
+  };
+
+  const handleIncomeSourceCreated = (newIncomeSource: IncomeSource) => {
+    setIncomeSources(prev => [...prev, newIncomeSource]);
+  };
+
+  const updateFormData = (field: keyof TransactionFormData, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const formatDate = (date: Date): string => {
+    return date.toLocaleDateString('en-US', {
+      weekday: 'short',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
+  if (loading) {
+    return <LoadingState message="Loading..." />;
+  }
+
+  return (
+    <KeyboardAvoidingView
+      style={[styles.container, { backgroundColor: theme.background }]}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <ScrollView
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingBottom: insets.bottom + 20 },
+        ]}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* Transaction Type Selector */}
+        <View style={styles.selectorContainer}>
+          <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>Transaction Type</Text>
+          <View style={styles.typeButtons}>
+            {transactionTypes.map((type) => {
+              const isSelected = formData.transaction_type === type.value;
+              return (
+                <TouchableOpacity
+                  key={type.value}
+                  style={[
+                    styles.typeButton,
+                    {
+                      backgroundColor: isSelected ? '#D1FAE5' : theme.surface,
+                      borderColor: isSelected ? '#10B981' : theme.border,
+                    },
+                  ]}
+                  onPress={() => updateFormData('transaction_type', type.value)}
+                  activeOpacity={0.7}
+                >
+                  <Icon
+                    name={type.icon}
+                    size={20}
+                    color={isSelected ? '#059669' : theme.textSecondary}
+                  />
+                  <Text
+                    style={[
+                      styles.typeButtonText,
+                      {
+                        color: isSelected ? '#047857' : theme.textSecondary,
+                      },
+                    ]}
+                  >
+                    {type.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+
+        {/* Main Form Section */}
+        <View style={[styles.section, { backgroundColor: theme.surface }]}>
+          <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
+            Transaction Details
+          </Text>
+          
+          {/* Amount Input */}
+          <View style={styles.inputGroup}>
+            <Text style={[styles.label, { color: theme.textSecondary }]}>Amount *</Text>
+            <View style={styles.amountInputContainer}>
+              <Text style={[styles.currencySymbol, { color: theme.textPrimary }]}>$</Text>
+              <TextInput
+                style={[styles.amountInput, { color: theme.textPrimary, borderColor: theme.border }]}
+                value={formData.amount}
+                onChangeText={(text) => updateFormData('amount', text)}
+                placeholder="0.00"
+                placeholderTextColor={theme.textSecondary}
+                keyboardType="numeric"
+                autoFocus
+              />
+            </View>
+          </View>
+
+          {/* Description Input */}
+          <View style={styles.inputGroup}>
+            <Text style={[styles.label, { color: theme.textSecondary }]}>
+              Description
+            </Text>
+            <TextInput
+              style={[styles.input, { color: theme.textPrimary, borderColor: theme.border }]}
+              value={formData.description}
+              onChangeText={(text) => updateFormData('description', text)}
+              placeholder="What was this transaction for?"
+              placeholderTextColor={theme.textSecondary}
+              multiline
+              numberOfLines={2}
+            />
+          </View>
+
+          {/* Payee/Income Source Selection */}
+          <View style={styles.inputGroup}>
+            <Text style={[styles.label, { color: theme.textSecondary }]}>
+              {formData.transaction_type === 'income' ? 'Income Source *' : 'Payee *'}
+            </Text>
+            <TouchableOpacity
+              style={[styles.selectorButton, { borderColor: theme.border, backgroundColor: theme.surface }]}
+              onPress={() => formData.transaction_type === 'income' ? setShowIncomeSourceBottomSheet(true) : setShowPayeeBottomSheet(true)}
+            >
+              <Text style={[styles.selectorButtonText, { color: theme.textPrimary }]}>
+                {getPayeeName(formData.payee_id)}
+              </Text>
+              <Icon name="arrow-drop-down" size={24} color={theme.textSecondary} />
+            </TouchableOpacity>
+          </View>
+
+          {/* Envelope Selection (for expenses and allocations) */}
+          {(formData.transaction_type === 'expense' || formData.transaction_type === 'allocation') && (
+            <View style={styles.inputGroup}>
+              <Text style={[styles.label, { color: theme.textSecondary }]}>
+                Envelope *
+              </Text>
+              <TouchableOpacity
+                style={[styles.selectorButton, { borderColor: theme.border, backgroundColor: theme.surface }]}
+                onPress={() => setShowEnvelopeBottomSheet(true)}
+              >
+                <Text style={[styles.selectorButtonText, { color: theme.textPrimary }]}>
+                  {getEnvelopeName(formData.envelope_id)}
+                </Text>
+                <Icon name="arrow-drop-down" size={24} color={theme.textSecondary} />
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {/* Date Selection */}
+          <View style={styles.inputGroup}>
+            <Text style={[styles.label, { color: theme.textSecondary }]}>
+              Date
+            </Text>
+            <TouchableOpacity
+              style={[styles.selectorButton, { borderColor: theme.border, backgroundColor: theme.surface }]}
+              onPress={() => setShowDatePicker(true)}
+            >
+              <Text style={[styles.selectorButtonText, { color: theme.textPrimary }]}>
+                {formatDate(formData.transaction_date)}
+              </Text>
+              <Icon name="calendar-today" size={20} color={theme.textSecondary} />
+            </TouchableOpacity>
+          </View>
+
+          {/* Cleared Status */}
+          <View style={styles.inputGroup}>
+            <View style={styles.switchRow}>
+              <View>
+                <Text style={[styles.label, { color: theme.textSecondary }]}>
+                  Cleared
+                </Text>
+                <Text style={[styles.helperText, { color: theme.textTertiary }]}>
+                  Mark as cleared if transaction has been processed
+                </Text>
+              </View>
+              <Switch
+                value={formData.is_cleared}
+                onValueChange={(value) => updateFormData('is_cleared', value)}
+                trackColor={{ false: theme.border, true: '#10B981' }}
+                thumbColor={formData.is_cleared ? '#fff' : '#f4f3f4'}
+              />
+            </View>
+          </View>
+        </View>
+
+        {/* Advanced Fields Toggle */}
+        <TouchableOpacity
+          style={[styles.advancedToggle, { backgroundColor: theme.surface }]}
+          onPress={() => setShowAdvancedFields(!showAdvancedFields)}
+        >
+          <Text style={[styles.advancedToggleText, { color: theme.textPrimary }]}>
+            Advanced Fields
+          </Text>
+          <Icon 
+            name={showAdvancedFields ? "expand-less" : "expand-more"} 
+            size={24} 
+            color={theme.textSecondary} 
+          />
+        </TouchableOpacity>
+
+        {/* Advanced Fields Section */}
+        {showAdvancedFields && (
+          <View style={[styles.section, { backgroundColor: theme.surface }]}>
+            <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
+              Additional Details
+            </Text>
+
+            {/* Notes */}
+            <View style={styles.inputGroup}>
+              <Text style={[styles.label, { color: theme.textSecondary }]}>
+                Notes
+              </Text>
+              <TextInput
+                style={[styles.input, styles.notesInput, { color: theme.textPrimary, borderColor: theme.border }]}
+                value={formData.notes}
+                onChangeText={(text) => updateFormData('notes', text)}
+                placeholder="Additional notes or details..."
+                placeholderTextColor={theme.textSecondary}
+                multiline
+                numberOfLines={3}
+              />
+            </View>
+
+            {/* Location */}
+            <View style={styles.inputGroup}>
+              <Text style={[styles.label, { color: theme.textSecondary }]}>
+                Location
+              </Text>
+              <TextInput
+                style={[styles.input, { color: theme.textPrimary, borderColor: theme.border }]}
+                value={formData.location}
+                onChangeText={(text) => updateFormData('location', text)}
+                placeholder="Where did this transaction occur?"
+                placeholderTextColor={theme.textSecondary}
+              />
+            </View>
+          </View>
+        )}
+
+        {/* Save Button */}
+        <TouchableOpacity
+          style={[
+            styles.saveButton,
+            saving && styles.saveButtonDisabled,
+          ]}
+          onPress={handleSave}
+          activeOpacity={0.8}
+          disabled={saving}
+        >
+          {saving ? (
+            <ActivityIndicator size="small" color={'white'} />
+          ) : (
+            <Text style={styles.saveButtonText}>
+              {isEditing ? 'Update Transaction' : 'Create Transaction'}
+            </Text>
+          )}
+        </TouchableOpacity>
+      </ScrollView>
+
+      {/* Date Picker Modal */}
+      {showDatePicker && (
+        <DateTimePicker
+          value={formData.transaction_date}
+          mode="date"
+          display="default"
+          onChange={(event, selectedDate) => {
+            setShowDatePicker(false);
+            if (selectedDate) {
+              updateFormData('transaction_date', selectedDate);
+            }
+          }}
+        />
+      )}
+
+      {/* Bottom Sheets */}
+      <EnvelopePickerBottomSheet
+        isVisible={showEnvelopeBottomSheet}
+        onClose={() => setShowEnvelopeBottomSheet(false)}
+        onSelect={handleEnvelopeSelect}
+        envelopes={envelopes}
+        selectedEnvelopeId={formData.envelope_id}
+      />
+
+      <PayeePickerBottomSheet
+        isVisible={showPayeeBottomSheet}
+        onClose={() => setShowPayeeBottomSheet(false)}
+        onSelect={handlePayeeSelect}
+        payees={payees}
+        selectedPayeeId={formData.payee_id}
+        onPayeeCreated={handlePayeeCreated}
+      />
+
+      <IncomeSourcePickerBottomSheet
+        isVisible={showIncomeSourceBottomSheet}
+        onClose={() => setShowIncomeSourceBottomSheet(false)}
+        onSelect={handleIncomeSourceSelect}
+        incomeSources={incomeSources}
+        selectedIncomeSourceId={formData.payee_id}
+        onIncomeSourceCreated={handleIncomeSourceCreated}
+      />
+    </KeyboardAvoidingView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingTop: 20,
+    paddingHorizontal: 20,
+  },
+  section: {
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600' as const,
+    marginBottom: 16,
+  },
+  selectorContainer: {
+    marginBottom: 16,
+  },
+  typeButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    flexWrap: 'wrap',
+  },
+  typeButton: {
+    flex: 1,
+    minWidth: '45%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    gap: 8,
+  },
+  typeButtonText: {
+    fontSize: 16,
+    fontWeight: '500' as const,
+  },
+  inputGroup: {
+    marginBottom: 16,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '500' as const,
+    marginBottom: 8,
+  },
+  input: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 16,
+    fontWeight: '400' as const,
+    minHeight: 44,
+    textAlignVertical: 'top',
+  },
+  notesInput: {
+    minHeight: 80,
+  },
+  amountInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    minHeight: 44,
+  },
+  currencySymbol: {
+    fontSize: 18,
+    fontWeight: '600' as const,
+    marginRight: 8,
+  },
+  amountInput: {
+    flex: 1,
+    fontSize: 18,
+    fontWeight: '600' as const,
+    borderWidth: 0,
+    padding: 0,
+  },
+  selectorButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    minHeight: 44,
+  },
+  selectorButtonText: {
+    fontSize: 16,
+    fontWeight: '400' as const,
+  },
+  switchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  helperText: {
+    fontSize: 12,
+    marginTop: 2,
+  },
+  advancedToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  advancedToggleText: {
+    fontSize: 16,
+    fontWeight: '500' as const,
+  },
+  saveButton: {
+    backgroundColor: '#10B981',
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  saveButtonDisabled: {
+    opacity: 0.6,
+  },
+  saveButtonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: '600' as const,
+  },
+});
+
+export default TransactionFormScreen;
