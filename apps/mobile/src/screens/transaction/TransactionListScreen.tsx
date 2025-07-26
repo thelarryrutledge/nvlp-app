@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -70,8 +70,13 @@ export const TransactionListScreen: React.FC = () => {
     }, [selectedBudget])
   );
 
-  // Reload transactions when filters change
+  // Reload transactions when filters change (skip initial mount)
+  const isFirstRender = useRef(true);
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
     if (selectedBudget?.id) {
       loadTransactions(false, 1);
     }

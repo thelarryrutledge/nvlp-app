@@ -7,7 +7,7 @@ import {
   ScrollView,
   Platform,
 } from 'react-native';
-import { BottomSheet } from '../ui';
+import { SimpleBottomSheet } from '../ui';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useTheme } from '../../theme';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -123,7 +123,7 @@ export const TransactionFilterBottomSheet: React.FC<TransactionFilterBottomSheet
 
   return (
     <>
-      <BottomSheet
+      <SimpleBottomSheet
         isVisible={isVisible}
         onClose={onClose}
         snapPoints={['75%']}
@@ -329,7 +329,7 @@ export const TransactionFilterBottomSheet: React.FC<TransactionFilterBottomSheet
             </TouchableOpacity>
           </View>
         </ScrollView>
-      </BottomSheet>
+      </SimpleBottomSheet>
 
       {/* Date Pickers */}
       {showStartDatePicker && (
