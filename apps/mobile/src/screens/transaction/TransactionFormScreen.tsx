@@ -446,6 +446,20 @@ export const TransactionFormScreen: React.FC = () => {
           <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
             Transaction Details
           </Text>
+
+          {/* Available Amount Display (for allocation) */}
+          {formData.transaction_type === 'allocation' && (
+            <View style={styles.inputGroup}>
+              <View style={[styles.availableAmountContainer, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+                <Text style={[styles.availableAmountLabel, { color: theme.textSecondary }]}>
+                  Available to Allocate
+                </Text>
+                <Text style={[styles.availableAmountValue, { color: '#10B981' }]}>
+                  {formatCurrency(availableAmount)}
+                </Text>
+              </View>
+            </View>
+          )}
           
           {/* Amount Input */}
           <View style={styles.inputGroup}>
@@ -482,20 +496,6 @@ export const TransactionFormScreen: React.FC = () => {
               numberOfLines={2}
             />
           </View>
-
-          {/* Available Amount Display (for allocation) */}
-          {formData.transaction_type === 'allocation' && (
-            <View style={styles.inputGroup}>
-              <View style={[styles.availableAmountContainer, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-                <Text style={[styles.availableAmountLabel, { color: theme.textSecondary }]}>
-                  Available to Allocate
-                </Text>
-                <Text style={[styles.availableAmountValue, { color: '#10B981' }]}>
-                  {formatCurrency(availableAmount)}
-                </Text>
-              </View>
-            </View>
-          )}
 
           {/* Payee/Income Source Selection (only for expense and income) */}
           {(formData.transaction_type === 'expense' || formData.transaction_type === 'income') && (
