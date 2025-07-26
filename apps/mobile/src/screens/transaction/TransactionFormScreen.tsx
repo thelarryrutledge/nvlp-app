@@ -281,6 +281,7 @@ export const TransactionFormScreen: React.FC = () => {
       };
       
       // Create or update transaction
+      console.log('Transaction data being sent:', transactionData);
       if (isEditing) {
         await updateTransaction(transactionId!, transactionData);
       } else {
@@ -335,24 +336,43 @@ export const TransactionFormScreen: React.FC = () => {
       throw new Error('Not authenticated');
     }
 
-    const response = await fetch(
-      `https://qnpatlosomopoimtsmsr.supabase.co/rest/v1/transactions?id=eq.${transactionId}`,
-      {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authState.accessToken}`,
-          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFucGF0bG9zb21vcG9pbXRzbXNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE2NTg5MzcsImV4cCI6MjA2NzIzNDkzN30.__GhvGGWqhC_i1ztp1-A1VEsL3JVWrtdpQG_uJS8tB8',
-        },
-        body: JSON.stringify(transactionData),
-      }
-    );
+    // Use the same Supabase function endpoint for updates with the transaction ID
+    const updateData = {
+      ...transactionData,
+      id: transactionId,
+    };
 
-    const responseData = await response.json();
+    const response = await fetch('https://qnpatlosomopoimtsmsr.supabase.co/functions/v1/transactions', {
+      method: 'PUT', // or PATCH, depending on what the function expects
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authState.accessToken}`,
+      },
+      body: JSON.stringify(updateData),
+    });
 
     if (!response.ok) {
-      console.error('Transaction update error:', responseData);
-      throw new Error(responseData.error || responseData.message || 'Failed to update transaction');
+      let errorMessage = 'Failed to update transaction';
+      try {
+        const responseData = await response.json();
+        console.error('Transaction update error:', responseData);
+        errorMessage = responseData.error || responseData.message || errorMessage;
+      } catch (parseError) {
+        console.error('Failed to parse error response:', parseError);
+        errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+      }
+      throw new Error(errorMessage);
+    }
+
+    // Parse response
+    let responseData = null;
+    try {
+      const responseText = await response.text();
+      if (responseText) {
+        responseData = JSON.parse(responseText);
+      }
+    } catch (parseError) {
+      console.log('No JSON response body, which is normal for some operations');
     }
 
     return responseData;
