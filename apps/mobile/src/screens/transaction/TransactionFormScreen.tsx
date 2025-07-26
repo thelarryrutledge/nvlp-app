@@ -36,6 +36,7 @@ import { EnvelopePickerBottomSheet, PayeePickerBottomSheet, IncomeSourcePickerBo
 import { TransactionType } from '@nvlp/types';
 import { useTheme } from '../../theme';
 import type { MainStackParamList } from '../../navigation/types';
+import { dashboardService } from '../../services/api/dashboardService';
 
 type TransactionFormRouteProp = RouteProp<MainStackParamList, 'TransactionForm'>;
 type TransactionFormNavigationProp = NavigationProp<MainStackParamList, 'TransactionForm'>;
@@ -125,6 +126,7 @@ export const TransactionFormScreen: React.FC = () => {
   const [payees, setPayees] = useState<Payee[]>([]);
   const [incomeSources, setIncomeSources] = useState<IncomeSource[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [availableAmount, setAvailableAmount] = useState<number>(0);
   
   const [formData, setFormData] = useState<TransactionFormData>({
     amount: '',
@@ -160,17 +162,19 @@ export const TransactionFormScreen: React.FC = () => {
       setLoading(true);
       
       // Load all required data in parallel
-      const [envelopesData, payeesData, incomeSourcesData, categoriesData] = await Promise.all([
+      const [envelopesData, payeesData, incomeSourcesData, categoriesData, dashboardData] = await Promise.all([
         client.getEnvelopes(selectedBudget.id),
         client.getPayees(selectedBudget.id),
         client.getIncomeSources(selectedBudget.id),
         client.getCategories(selectedBudget.id),
+        dashboardService.getDashboardData(selectedBudget.id),
       ]);
 
       setEnvelopes(envelopesData || []);
       setPayees(payeesData || []);
       setIncomeSources(incomeSourcesData || []);
       setCategories(categoriesData || []);
+      setAvailableAmount(dashboardData?.budget_overview?.available_amount || 0);
 
       // If editing, load transaction data
       if (isEditing && transactionId) {
@@ -312,8 +316,16 @@ export const TransactionFormScreen: React.FC = () => {
     }
 
     if (formData.transaction_type === 'allocation' && !formData.envelope_id) {
-      Alert.alert('Validation Error', 'Please select an envelope for the allocation.');
+      Alert.alert('Validation Error', 'Please select a destination envelope for the allocation.');
       return false;
+    }
+
+    if (formData.transaction_type === 'transfer') {
+      if (!formData.envelope_id) {
+        Alert.alert('Validation Error', 'Please select a source envelope for the transfer.');
+        return false;
+      }
+      // TODO: Add validation for to_envelope_id when implemented
     }
 
     return true;
@@ -364,6 +376,13 @@ export const TransactionFormScreen: React.FC = () => {
       month: 'short',
       day: 'numeric',
     });
+  };
+
+  const formatCurrency = (amount: number): string => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    }).format(amount);
   };
 
   if (loading) {
@@ -464,27 +483,43 @@ export const TransactionFormScreen: React.FC = () => {
             />
           </View>
 
-          {/* Payee/Income Source Selection */}
-          <View style={styles.inputGroup}>
-            <Text style={[styles.label, { color: theme.textSecondary }]}>
-              {formData.transaction_type === 'income' ? 'Income Source *' : 'Payee *'}
-            </Text>
-            <TouchableOpacity
-              style={[styles.selectorButton, { borderColor: theme.border, backgroundColor: theme.surface }]}
-              onPress={() => formData.transaction_type === 'income' ? setShowIncomeSourceBottomSheet(true) : setShowPayeeBottomSheet(true)}
-            >
-              <Text style={[styles.selectorButtonText, { color: theme.textPrimary }]}>
-                {getPayeeName(formData.payee_id)}
+          {/* Available Amount Display (for allocation) */}
+          {formData.transaction_type === 'allocation' && (
+            <View style={styles.inputGroup}>
+              <View style={[styles.availableAmountContainer, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+                <Text style={[styles.availableAmountLabel, { color: theme.textSecondary }]}>
+                  Available to Allocate
+                </Text>
+                <Text style={[styles.availableAmountValue, { color: '#10B981' }]}>
+                  {formatCurrency(availableAmount)}
+                </Text>
+              </View>
+            </View>
+          )}
+
+          {/* Payee/Income Source Selection (only for expense and income) */}
+          {(formData.transaction_type === 'expense' || formData.transaction_type === 'income') && (
+            <View style={styles.inputGroup}>
+              <Text style={[styles.label, { color: theme.textSecondary }]}>
+                {formData.transaction_type === 'income' ? 'Income Source *' : 'Payee *'}
               </Text>
-              <Icon name="arrow-drop-down" size={24} color={theme.textSecondary} />
-            </TouchableOpacity>
-          </View>
+              <TouchableOpacity
+                style={[styles.selectorButton, { borderColor: theme.border, backgroundColor: theme.surface }]}
+                onPress={() => formData.transaction_type === 'income' ? setShowIncomeSourceBottomSheet(true) : setShowPayeeBottomSheet(true)}
+              >
+                <Text style={[styles.selectorButtonText, { color: theme.textPrimary }]}>
+                  {getPayeeName(formData.payee_id)}
+                </Text>
+                <Icon name="arrow-drop-down" size={24} color={theme.textSecondary} />
+              </TouchableOpacity>
+            </View>
+          )}
 
           {/* Envelope Selection (for expenses and allocations) */}
           {(formData.transaction_type === 'expense' || formData.transaction_type === 'allocation') && (
             <View style={styles.inputGroup}>
               <Text style={[styles.label, { color: theme.textSecondary }]}>
-                Envelope *
+                {formData.transaction_type === 'allocation' ? 'Destination Envelope *' : 'Envelope *'}
               </Text>
               <TouchableOpacity
                 style={[styles.selectorButton, { borderColor: theme.border, backgroundColor: theme.surface }]}
@@ -496,6 +531,44 @@ export const TransactionFormScreen: React.FC = () => {
                 <Icon name="arrow-drop-down" size={24} color={theme.textSecondary} />
               </TouchableOpacity>
             </View>
+          )}
+
+          {/* Transfer Envelope Selection (from and to) */}
+          {formData.transaction_type === 'transfer' && (
+            <>
+              <View style={styles.inputGroup}>
+                <Text style={[styles.label, { color: theme.textSecondary }]}>
+                  From Envelope *
+                </Text>
+                <TouchableOpacity
+                  style={[styles.selectorButton, { borderColor: theme.border, backgroundColor: theme.surface }]}
+                  onPress={() => setShowEnvelopeBottomSheet(true)}
+                >
+                  <Text style={[styles.selectorButtonText, { color: theme.textPrimary }]}>
+                    {getEnvelopeName(formData.envelope_id)}
+                  </Text>
+                  <Icon name="arrow-drop-down" size={24} color={theme.textSecondary} />
+                </TouchableOpacity>
+              </View>
+              
+              <View style={styles.inputGroup}>
+                <Text style={[styles.label, { color: theme.textSecondary }]}>
+                  To Envelope *
+                </Text>
+                <TouchableOpacity
+                  style={[styles.selectorButton, { borderColor: theme.border, backgroundColor: theme.surface }]}
+                  onPress={() => {
+                    // TODO: Add separate to_envelope_id selection for transfers
+                    Alert.alert('Coming Soon', 'Transfer to envelope selection will be implemented in the next phase.');
+                  }}
+                >
+                  <Text style={[styles.selectorButtonText, { color: theme.textSecondary }]}>
+                    Select Destination Envelope
+                  </Text>
+                  <Icon name="arrow-drop-down" size={24} color={theme.textSecondary} />
+                </TouchableOpacity>
+              </View>
+            </>
           )}
 
           {/* Date Selection */}
@@ -615,7 +688,7 @@ export const TransactionFormScreen: React.FC = () => {
           value={formData.transaction_date}
           mode="date"
           display="default"
-          onChange={(event, selectedDate) => {
+          onChange={(_, selectedDate) => {
             setShowDatePicker(false);
             if (selectedDate) {
               updateFormData('transaction_date', selectedDate);
@@ -800,6 +873,24 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: 'white',
     fontSize: 18,
+    fontWeight: '600' as const,
+  },
+  availableAmountContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    minHeight: 44,
+  },
+  availableAmountLabel: {
+    fontSize: 14,
+    fontWeight: '500' as const,
+  },
+  availableAmountValue: {
+    fontSize: 16,
     fontWeight: '600' as const,
   },
 });
