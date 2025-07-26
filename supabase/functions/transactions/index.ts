@@ -125,7 +125,8 @@ const TransactionValidations = {
     if (!data.budget_id) errors.push('budget_id is required')
     if (!data.transaction_type) errors.push('transaction_type is required')
     if (!data.amount) errors.push('amount is required')
-    if (!data.description) errors.push('description is required')
+    // Description is optional
+  // if (!data.description) errors.push('description is required')
     
     if (data.amount && (typeof data.amount !== 'number' || data.amount <= 0)) {
       errors.push('amount must be a positive number')

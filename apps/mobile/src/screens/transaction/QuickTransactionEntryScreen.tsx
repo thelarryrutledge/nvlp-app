@@ -145,10 +145,16 @@ export const QuickTransactionEntryScreen: React.FC = () => {
       const amount = parseFloat(formData.amount);
       
       // Create transaction based on type
+      let result;
       if (formData.transaction_type === 'expense') {
-        await createExpenseTransaction(amount);
+        result = await createExpenseTransaction(amount);
       } else if (formData.transaction_type === 'income') {
-        await createIncomeTransaction(amount);
+        result = await createIncomeTransaction(amount);
+      }
+
+      // If result is null, it means user cancelled the transaction
+      if (result === null) {
+        return;
       }
 
       Alert.alert('Success', 'Transaction created successfully!', [
@@ -251,7 +257,10 @@ export const QuickTransactionEntryScreen: React.FC = () => {
                 {
                   text: 'Cancel',
                   style: 'cancel',
-                  onPress: () => reject(new Error('Transaction cancelled by user'))
+                  onPress: () => {
+                    // Just resolve with null to indicate cancellation without error
+                    resolve(null);
+                  }
                 },
                 {
                   text: 'Proceed',
@@ -363,18 +372,8 @@ export const QuickTransactionEntryScreen: React.FC = () => {
       return false;
     }
 
-    if (formData.transaction_type === 'expense' && !formData.description.trim()) {
-      Alert.alert('Validation Error', 'Please enter a description for the expense.');
-      return false;
-    }
-
     if (formData.transaction_type === 'income' && !formData.payee_id) {
       Alert.alert('Validation Error', 'Please select an income source.');
-      return false;
-    }
-
-    if (formData.transaction_type === 'income' && !formData.description.trim()) {
-      Alert.alert('Validation Error', 'Please enter a description for the income.');
       return false;
     }
 
@@ -505,7 +504,7 @@ export const QuickTransactionEntryScreen: React.FC = () => {
 
           <View style={styles.inputGroup}>
             <Text style={[styles.label, { color: theme.textSecondary }]}>
-              Description *
+              Description (Optional)
             </Text>
             <TextInput
               style={[styles.input, { color: theme.textPrimary, borderColor: theme.border }]}
