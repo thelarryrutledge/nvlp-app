@@ -32,7 +32,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useBudget } from '../../context/BudgetContext';
 import { useApiClient } from '../../hooks/useApiClient';
 import { LoadingState } from '../../components/ui';
-import { EnvelopePickerBottomSheet, PayeePickerBottomSheet, IncomeSourcePickerBottomSheet } from '../../components/transaction';
+import { EnvelopePickerBottomSheet, PayeePickerBottomSheet, IncomeSourcePickerBottomSheet, AmountCalculator } from '../../components/transaction';
 import { TransactionType } from '@nvlp/types';
 import { useTheme } from '../../theme';
 import type { MainStackParamList } from '../../navigation/types';
@@ -145,6 +145,7 @@ export const TransactionFormScreen: React.FC = () => {
   const [showIncomeSourceBottomSheet, setShowIncomeSourceBottomSheet] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showAdvancedFields, setShowAdvancedFields] = useState(false);
+  const [showCalculator, setShowCalculator] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -430,18 +431,21 @@ export const TransactionFormScreen: React.FC = () => {
           {/* Amount Input */}
           <View style={styles.inputGroup}>
             <Text style={[styles.label, { color: theme.textSecondary }]}>Amount *</Text>
-            <View style={styles.amountInputContainer}>
+            <TouchableOpacity
+              style={[styles.amountInputContainer, { borderColor: theme.border }]}
+              onPress={() => setShowCalculator(true)}
+            >
               <Text style={[styles.currencySymbol, { color: theme.textPrimary }]}>$</Text>
-              <TextInput
-                style={[styles.amountInput, { color: theme.textPrimary, borderColor: theme.border }]}
-                value={formData.amount}
-                onChangeText={(text) => updateFormData('amount', text)}
-                placeholder="0.00"
-                placeholderTextColor={theme.textSecondary}
-                keyboardType="numeric"
-                autoFocus
-              />
-            </View>
+              <Text 
+                style={[
+                  styles.amountInput, 
+                  { color: formData.amount ? theme.textPrimary : theme.textSecondary }
+                ]}
+              >
+                {formData.amount || '0.00'}
+              </Text>
+              <Icon name="calculate" size={20} color={theme.textSecondary} />
+            </TouchableOpacity>
           </View>
 
           {/* Description Input */}
@@ -645,6 +649,18 @@ export const TransactionFormScreen: React.FC = () => {
         incomeSources={incomeSources}
         selectedIncomeSourceId={formData.payee_id}
         onIncomeSourceCreated={handleIncomeSourceCreated}
+      />
+
+      {/* Amount Calculator */}
+      <AmountCalculator
+        isVisible={showCalculator}
+        onClose={() => setShowCalculator(false)}
+        onConfirm={(amount) => {
+          updateFormData('amount', amount);
+          setShowCalculator(false);
+        }}
+        initialValue={formData.amount}
+        title="Enter Transaction Amount"
       />
     </KeyboardAvoidingView>
   );

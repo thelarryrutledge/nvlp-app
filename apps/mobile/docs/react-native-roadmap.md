@@ -157,7 +157,7 @@
 ### 7.1 Transaction Entry
 - [x] Create quick transaction entry screen
 - [x] Build detailed transaction form
-- [ ] Implement amount input with calculator
+- [x] Implement amount input with calculator
 - [ ] Add payee selection/creation
 - [ ] Create envelope selection interface
 - [ ] Implement transaction type switching
