@@ -21,9 +21,9 @@ This roadmap outlines the complete API development process for NVLP, from databa
   - [x] income_sources table
   - [x] payees table
   - [x] envelopes table with balance tracking
-- [ ] Create transaction tables
-  - [ ] transactions table with complex constraints
-  - [ ] transaction_events audit table
+- [x] Create transaction tables
+  - [x] transactions table with complex constraints
+  - [x] transaction_events audit table
 - [ ] Create database functions and triggers
   - [ ] Auto-update timestamps trigger
   - [ ] Transaction balance update triggers
