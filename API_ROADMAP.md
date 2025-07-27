@@ -24,11 +24,11 @@ This roadmap outlines the complete API development process for NVLP, from databa
 - [x] Create transaction tables
   - [x] transactions table with complex constraints
   - [x] transaction_events audit table
-- [ ] Create database functions and triggers
-  - [ ] Auto-update timestamps trigger
-  - [ ] Transaction balance update triggers
-  - [ ] Soft delete support functions
-  - [ ] Budget available_amount calculation
+- [x] Create database functions and triggers
+  - [x] Auto-update timestamps trigger
+  - [x] Transaction balance update triggers
+  - [x] Soft delete support functions
+  - [x] Budget available_amount calculation
 
 ### 2.2 Row Level Security (RLS) Setup
 - [ ] Enable RLS on all tables
