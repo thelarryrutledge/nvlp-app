@@ -15,12 +15,12 @@ This roadmap outlines the complete API development process for NVLP, from databa
 - [x] Create database migration for auth schema extensions
   - [x] user_profiles table with auth trigger
   - [x] Add display_name and avatar_url to auth.users metadata
-- [ ] Create core entity tables
-  - [ ] budgets table with RLS policies
-  - [ ] categories table with self-referential hierarchy
-  - [ ] income_sources table
-  - [ ] payees table
-  - [ ] envelopes table with balance tracking
+- [x] Create core entity tables
+  - [x] budgets table with RLS policies
+  - [x] categories table with self-referential hierarchy
+  - [x] income_sources table
+  - [x] payees table
+  - [x] envelopes table with balance tracking
 - [ ] Create transaction tables
   - [ ] transactions table with complex constraints
   - [ ] transaction_events audit table
