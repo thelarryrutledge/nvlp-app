@@ -1,13 +1,9 @@
+import { ApiError } from './errors';
+
 export interface ApiResponse<T = any> {
   data?: T;
   error?: ApiError;
   success: boolean;
-}
-
-export interface ApiError {
-  code: string;
-  message: string;
-  details?: any;
 }
 
 export interface PaginatedResponse<T> {
