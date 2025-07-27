@@ -1,0 +1,40 @@
+export enum ErrorCode {
+  // Authentication errors
+  UNAUTHORIZED = 'UNAUTHORIZED',
+  INVALID_TOKEN = 'INVALID_TOKEN',
+  TOKEN_EXPIRED = 'TOKEN_EXPIRED',
+  
+  // Validation errors
+  VALIDATION_ERROR = 'VALIDATION_ERROR',
+  INVALID_REQUEST = 'INVALID_REQUEST',
+  MISSING_FIELD = 'MISSING_FIELD',
+  INVALID_FIELD = 'INVALID_FIELD',
+  
+  // Resource errors
+  NOT_FOUND = 'NOT_FOUND',
+  ALREADY_EXISTS = 'ALREADY_EXISTS',
+  CONFLICT = 'CONFLICT',
+  
+  // Business logic errors
+  INSUFFICIENT_BALANCE = 'INSUFFICIENT_BALANCE',
+  INVALID_TRANSACTION_TYPE = 'INVALID_TRANSACTION_TYPE',
+  INVALID_ENVELOPE_TRANSFER = 'INVALID_ENVELOPE_TRANSFER',
+  BUDGET_LIMIT_EXCEEDED = 'BUDGET_LIMIT_EXCEEDED',
+  
+  // System errors
+  INTERNAL_ERROR = 'INTERNAL_ERROR',
+  DATABASE_ERROR = 'DATABASE_ERROR',
+  SERVICE_UNAVAILABLE = 'SERVICE_UNAVAILABLE',
+  RATE_LIMIT_EXCEEDED = 'RATE_LIMIT_EXCEEDED'
+}
+
+export class ApiError extends Error {
+  constructor(
+    public code: ErrorCode,
+    public message: string,
+    public details?: any
+  ) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}

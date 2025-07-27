@@ -1,0 +1,253 @@
+# NVLP API Development Roadmap
+
+## Overview
+This roadmap outlines the complete API development process for NVLP, from database setup through full API implementation with comprehensive testing.
+
+## Phase 1: Foundation Setup ✅ Completed
+- [x] Initialize monorepo structure
+- [x] Create types package with all entity interfaces
+- [x] Create API service layer architecture
+- [x] Set up TypeScript configuration
+
+## Phase 2: Supabase Database Setup
+### 2.1 Database Schema Creation
+- [ ] Create Supabase project and configure environment
+- [ ] Create database migration for auth schema extensions
+  - [ ] user_profiles table with auth trigger
+  - [ ] Add display_name and avatar_url to auth.users metadata
+- [ ] Create core entity tables
+  - [ ] budgets table with RLS policies
+  - [ ] categories table with self-referential hierarchy
+  - [ ] income_sources table
+  - [ ] payees table
+  - [ ] envelopes table with balance tracking
+- [ ] Create transaction tables
+  - [ ] transactions table with complex constraints
+  - [ ] transaction_events audit table
+- [ ] Create database functions and triggers
+  - [ ] Auto-update timestamps trigger
+  - [ ] Transaction balance update triggers
+  - [ ] Soft delete support functions
+  - [ ] Budget available_amount calculation
+
+### 2.2 Row Level Security (RLS) Setup
+- [ ] Enable RLS on all tables
+- [ ] Create user isolation policies
+- [ ] Create budget access policies
+- [ ] Test RLS with multiple users
+
+## Phase 3: Authentication Implementation
+### 3.1 Magic Link Authentication
+- [ ] Configure Supabase Auth for magic link only
+- [ ] Disable email/password authentication
+- [ ] Set up email templates for magic links
+- [ ] Configure redirect URLs for deep linking
+- [ ] Test magic link flow
+
+### 3.2 Auth API Endpoints
+- [ ] POST /auth/magic-link - Send magic link email
+- [ ] GET /auth/callback - Handle magic link callback
+- [ ] POST /auth/logout - Sign out user
+- [ ] GET /auth/user - Get current user profile
+- [ ] PATCH /auth/user - Update user profile
+
+### 3.3 Token Management
+- [ ] Implement automatic token refresh in API layer
+- [ ] Add token persistence for offline support
+- [ ] Handle token expiration gracefully
+- [ ] Test token refresh flow
+
+## Phase 4: Support Entity APIs
+### 4.1 Categories API
+- [ ] GET /budgets/{budgetId}/categories - List all categories
+- [ ] GET /categories/{id} - Get single category
+- [ ] POST /budgets/{budgetId}/categories - Create category
+- [ ] PATCH /categories/{id} - Update category
+- [ ] DELETE /categories/{id} - Delete category
+- [ ] GET /budgets/{budgetId}/categories/tree - Get hierarchical view
+
+### 4.2 Income Sources API
+- [ ] GET /budgets/{budgetId}/income-sources - List income sources
+- [ ] GET /income-sources/{id} - Get single income source
+- [ ] POST /budgets/{budgetId}/income-sources - Create income source
+- [ ] PATCH /income-sources/{id} - Update income source
+- [ ] DELETE /income-sources/{id} - Delete income source
+- [ ] GET /budgets/{budgetId}/income-sources/overdue - Get overdue sources
+- [ ] GET /budgets/{budgetId}/income-sources/upcoming - Get upcoming sources
+
+### 4.3 Payees API
+- [ ] GET /budgets/{budgetId}/payees - List payees
+- [ ] GET /payees/{id} - Get single payee
+- [ ] POST /budgets/{budgetId}/payees - Create payee
+- [ ] PATCH /payees/{id} - Update payee
+- [ ] DELETE /payees/{id} - Delete payee
+- [ ] GET /budgets/{budgetId}/payees/search?q={query} - Search payees
+- [ ] GET /budgets/{budgetId}/payees/recent - Get recent payees
+- [ ] GET /budgets/{budgetId}/payees/top - Get top payees by spending
+
+## Phase 5: Core Entity APIs
+### 5.1 Budgets API
+- [ ] GET /budgets - List user's budgets
+- [ ] GET /budgets/{id} - Get single budget
+- [ ] POST /budgets - Create budget (empty - no default objects)
+- [ ] PATCH /budgets/{id} - Update budget
+- [ ] DELETE /budgets/{id} - Delete budget
+- [ ] POST /budgets/{id}/set-default - Set as default budget
+- [ ] GET /budgets/default - Get user's default budget
+- [ ] POST /budgets/{id}/setup/defaults - Create default categories, envelopes, etc.
+- [ ] POST /budgets/{id}/setup/demo - Create demo data for testing/examples
+
+### 5.2 Envelopes API
+- [ ] GET /budgets/{budgetId}/envelopes - List envelopes
+- [ ] GET /envelopes/{id} - Get single envelope
+- [ ] POST /budgets/{budgetId}/envelopes - Create envelope
+- [ ] PATCH /envelopes/{id} - Update envelope
+- [ ] DELETE /envelopes/{id} - Delete envelope (if balance is zero)
+- [ ] GET /budgets/{budgetId}/envelopes/negative - Get negative balance envelopes
+- [ ] GET /budgets/{budgetId}/envelopes/low-balance - Get low balance envelopes
+
+## Phase 6: Transaction System
+### 6.1 Basic Transaction APIs
+- [ ] GET /budgets/{budgetId}/transactions - List transactions with filters
+- [ ] GET /transactions/{id} - Get single transaction with details
+- [ ] POST /budgets/{budgetId}/transactions - Create transaction
+- [ ] PATCH /transactions/{id} - Update transaction
+- [ ] DELETE /transactions/{id} - Soft delete transaction
+- [ ] POST /transactions/{id}/restore - Restore deleted transaction
+
+### 6.2 Transaction Business Logic
+- [ ] Implement income transaction flow (increases available)
+- [ ] Implement allocation flow (available → envelope)
+- [ ] Implement expense flow (envelope → payee)
+- [ ] Implement transfer flow (envelope → envelope)
+- [ ] Implement debt payment flow
+- [ ] Add transaction validation rules
+- [ ] Test balance updates and constraints
+
+### 6.3 Transaction Queries
+- [ ] GET /envelopes/{id}/transactions - Get envelope transactions
+- [ ] GET /payees/{id}/transactions - Get payee transactions
+- [ ] GET /budgets/{budgetId}/transactions/recent - Recent transactions
+- [ ] GET /budgets/{budgetId}/transactions/pending - Uncleared transactions
+
+## Phase 6.5: Budget Setup & Demo Data
+### 6.5.1 Default Budget Setup
+- [ ] Create common expense categories (Groceries, Gas, Entertainment, etc.)
+- [ ] Create common income categories (Salary, Side Income, etc.)
+- [ ] Create starter envelopes (Emergency Fund, Groceries, Gas, etc.)
+- [ ] Create common payees (Grocery Store, Gas Station, etc.)
+- [ ] Make setup idempotent (safe to call multiple times)
+
+### 6.5.2 Demo Data Creation
+- [ ] Create realistic demo transactions
+- [ ] Set up sample income and allocation patterns
+- [ ] Create negative balance scenarios for testing
+- [ ] Generate historical data for reporting tests
+
+## Phase 7: Dashboard & Reporting
+### 7.1 Dashboard API
+- [ ] GET /budgets/{budgetId}/dashboard - Get dashboard summary
+- [ ] GET /budgets/{budgetId}/stats/spending - Spending by category/time
+- [ ] GET /budgets/{budgetId}/stats/income - Income analysis
+- [ ] GET /budgets/{budgetId}/stats/trends - Spending trends
+
+### 7.2 Export APIs
+- [ ] GET /budgets/{budgetId}/export/transactions - Export transactions (CSV/JSON)
+- [ ] GET /budgets/{budgetId}/export/budget - Export budget snapshot
+
+## Phase 8: Edge Functions vs PostgREST Strategy
+### 8.1 PostgREST Direct Access (for simple CRUD)
+- [ ] Document PostgREST endpoints for all entities
+- [ ] Create PostgREST client configuration
+- [ ] Add proper auth headers for PostgREST
+- [ ] Test direct PostgREST performance
+
+### 8.2 Edge Functions (for complex logic)
+- [ ] Create edge function for transaction creation (complex validation)
+- [ ] Create edge function for bulk operations
+- [ ] Create edge function for dashboard calculations
+- [ ] Create edge function for notification triggers
+- [ ] Create edge function for budget setup (defaults/demo data)
+- [ ] Create edge function for bulk envelope operations
+
+## Phase 9: Client Library Implementation
+### 9.1 Core Client Setup
+- [ ] Implement base HTTP client with retry logic
+- [ ] Add automatic token refresh interceptor
+- [ ] Configure for both Supabase URL and custom domain
+- [ ] Add offline queue for failed requests
+
+### 9.2 Service Clients
+- [ ] Implement AuthClient with magic link support
+- [ ] Implement BudgetClient
+- [ ] Implement EnvelopeClient
+- [ ] Implement TransactionClient
+- [ ] Implement support entity clients
+
+## Phase 10: Testing Infrastructure
+### 10.1 API Test Suite
+- [ ] Set up Jest for API testing
+- [ ] Create test utilities and fixtures
+- [ ] Write integration tests for each service
+- [ ] Add performance benchmarks
+
+### 10.2 cURL Test Scripts
+- [ ] Create auth flow test scripts
+- [ ] Create CRUD test scripts for each entity
+- [ ] Create transaction flow test scripts
+- [ ] Create error scenario test scripts
+
+### 10.3 Shell Script Test Suite
+- [ ] Create test.sh master script
+- [ ] Add individual entity test scripts
+- [ ] Add end-to-end workflow tests
+- [ ] Add cleanup and reset scripts
+
+## Phase 11: Documentation
+### 11.1 API Documentation
+- [ ] Generate OpenAPI/Swagger specification
+- [ ] Document all endpoints with examples
+- [ ] Create authentication guide
+- [ ] Add error code reference
+
+### 11.2 Integration Guides
+- [ ] PostgREST integration guide
+- [ ] Edge function development guide
+- [ ] Client library usage guide
+- [ ] Mobile app integration guide
+
+## Phase 12: Performance & Security
+### 12.1 Performance Optimization
+- [ ] Add database indexes for common queries
+- [ ] Implement response caching where appropriate
+- [ ] Optimize N+1 query issues
+- [ ] Add connection pooling
+
+### 12.2 Security Hardening
+- [ ] Audit all RLS policies
+- [ ] Add rate limiting
+- [ ] Implement request validation
+- [ ] Add security headers
+
+## Completion Criteria
+- [ ] All API endpoints functional and tested
+- [ ] Authentication flow working with magic links
+- [ ] Automatic token refresh implemented
+- [ ] Complete test coverage with cURL examples
+- [ ] Shell script test suite passing
+- [ ] Performance benchmarks met
+- [ ] Security audit completed
+
+## Design Principles
+- **Clean Budget Creation**: New budgets are created completely empty
+- **Optional Setup**: Separate endpoints for adding default objects vs demo data
+- **No Auto-Population**: Users explicitly choose what to add to their budget
+- **Idempotent Setup**: Setup endpoints can be called multiple times safely
+- **Testing-Friendly**: Demo data endpoint creates realistic scenarios for development
+
+## Notes
+- Each completed phase should be tested before moving to the next
+- PostgREST will be used for all simple CRUD operations
+- Edge Functions only for complex business logic
+- All APIs must work with both Supabase URL and future custom domain
+- Focus on API completeness - mobile app comes after API is fully tested
