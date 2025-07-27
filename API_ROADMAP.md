@@ -12,9 +12,9 @@ This roadmap outlines the complete API development process for NVLP, from databa
 ## Phase 2: Supabase Database Setup
 ### 2.1 Database Schema Creation
 - [x] Create Supabase project and configure environment
-- [ ] Create database migration for auth schema extensions
-  - [ ] user_profiles table with auth trigger
-  - [ ] Add display_name and avatar_url to auth.users metadata
+- [x] Create database migration for auth schema extensions
+  - [x] user_profiles table with auth trigger
+  - [x] Add display_name and avatar_url to auth.users metadata
 - [ ] Create core entity tables
   - [ ] budgets table with RLS policies
   - [ ] categories table with self-referential hierarchy
