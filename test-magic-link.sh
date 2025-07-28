@@ -13,6 +13,5 @@ curl -X POST https://idmvyzmjcbxqusvjvzna.supabase.co/functions/v1/auth-magic-li
   -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
   -H "Content-Type: application/json" \
   -d '{
-    "email": "test@example.com",
-    "redirectTo": "https://nvlp.app/verify"
+    "email": "test@example.com"
   }' | jq .

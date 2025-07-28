@@ -37,7 +37,8 @@ serve(async (req) => {
     const { error } = await supabaseClient.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: redirectTo || 'https://idmvyzmjcbxqusvjvzna.supabase.co/functions/v1/verify-handler/verify',
+        emailRedirectTo: redirectTo,
+        // If no redirectTo is provided, Supabase will use its default success page
       }
     })
 
@@ -63,7 +64,7 @@ serve(async (req) => {
     )
   } catch (error) {
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'An unexpected error occurred' }),
       { 
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
