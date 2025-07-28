@@ -11,7 +11,7 @@ export class SupabaseService {
   private client: SupabaseClient<Database>;
   private adminClient?: SupabaseClient<Database>;
 
-  constructor(private config: SupabaseConfig) {
+  constructor(config: SupabaseConfig) {
     this.client = createClient<Database>(config.url, config.anonKey, {
       auth: {
         persistSession: true,

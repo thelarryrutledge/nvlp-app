@@ -38,11 +38,11 @@ This roadmap outlines the complete API development process for NVLP, from databa
 
 ## Phase 3: Authentication Implementation
 ### 3.1 Magic Link Authentication
-- [ ] Configure Supabase Auth for magic link only
-- [ ] Disable email/password authentication
-- [ ] Set up email templates for magic links
-- [ ] Configure redirect URLs for deep linking
-- [ ] Test magic link flow
+- [x] Configure Supabase Auth for magic link only
+- [x] Disable email/password authentication
+- [x] Set up email templates for magic links
+- [x] Configure redirect URLs for deep linking
+- [x] Test magic link flow
 
 ### 3.2 Auth API Endpoints
 - [ ] POST /auth/magic-link - Send magic link email

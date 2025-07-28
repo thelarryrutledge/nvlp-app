@@ -1,0 +1,17 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    {
+      "source": "/auth/callback",
+      "destination": "/auth/callback.html"
+    },
+    {
+      "source": "/auth/v1/verify",
+      "destination": "https://idmvyzmjcbxqusvjvzna.supabase.co/auth/v1/verify"
+    },
+    {
+      "source": "/auth/verify",
+      "destination": "https://idmvyzmjcbxqusvjvzna.supabase.co/auth/v1/verify"
+    }
+  ]
+}
