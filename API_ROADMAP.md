@@ -31,10 +31,10 @@ This roadmap outlines the complete API development process for NVLP, from databa
   - [x] Budget available_amount calculation
 
 ### 2.2 Row Level Security (RLS) Setup
-- [ ] Enable RLS on all tables
-- [ ] Create user isolation policies
-- [ ] Create budget access policies
-- [ ] Test RLS with multiple users
+- [x] Enable RLS on all tables
+- [x] Create user isolation policies
+- [x] Create budget access policies
+- [x] Test RLS with multiple users
 
 ## Phase 3: Authentication Implementation
 ### 3.1 Magic Link Authentication
