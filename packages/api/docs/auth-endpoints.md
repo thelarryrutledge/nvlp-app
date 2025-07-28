@@ -114,3 +114,56 @@ const { data, error } = await supabase.functions.invoke('auth-logout', {
 - Invalidates the refresh token on the server side
 - The current access token remains valid until expiration
 - Clears the user's session from Supabase's auth system
+
+## GET /auth/user
+
+Get the current user's profile information.
+
+### Headers
+
+```
+Authorization: Bearer <access_token>
+```
+
+### Response
+
+```json
+{
+  "user": {
+    "id": "user_uuid",
+    "email": "user@example.com",
+    "display_name": "User Name",
+    "avatar_url": null,
+    "default_budget_id": null,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+### Example Usage
+
+```bash
+# Using cURL with saved token
+curl -X GET https://idmvyzmjcbxqusvjvzna.supabase.co/functions/v1/auth-user \
+  -H "Authorization: Bearer [ACCESS_TOKEN]" \
+  -H "Content-Type: application/json"
+```
+
+### JavaScript Example
+
+```javascript
+// Using Supabase client to call Edge Function
+const { data, error } = await supabase.functions.invoke('auth-user', {
+  headers: {
+    Authorization: `Bearer ${accessToken}`
+  }
+})
+```
+
+### Notes
+
+- Requires a valid access token in the Authorization header
+- Returns the user's profile from the user_profiles table
+- Returns 404 if user profile is not found
+- Returns 401 if token is invalid or expired
