@@ -64,7 +64,7 @@ const { data, error } = await supabase.functions.invoke('auth-magic-link', {
 
 - The magic link will be sent to the provided email address
 - The link expires after 1 hour (configurable in Supabase)
-- The `redirectTo` parameter is optional and defaults to `https://nvlp.app/verify`
+- The `redirectTo` parameter is optional and defaults to the Supabase verify handler function
 - Make sure the redirect URL is whitelisted in your Supabase project settings
 - The function runs on Supabase Edge Functions (Deno runtime)
 - Supabase may reject certain test email addresses (like test@example.com) - use a real email for testing

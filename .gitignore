@@ -84,3 +84,6 @@ temp/
 # Turbo
 .turbo
 .vercel
+
+# Auth tokens
+.tokens.json

@@ -37,7 +37,7 @@ serve(async (req) => {
     const { error } = await supabaseClient.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: redirectTo,
+        emailRedirectTo: redirectTo || 'https://idmvyzmjcbxqusvjvzna.supabase.co/functions/v1/verify-handler/verify',
       }
     })
 
