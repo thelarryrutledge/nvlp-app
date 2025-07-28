@@ -46,7 +46,7 @@ This roadmap outlines the complete API development process for NVLP, from databa
 
 ### 3.2 Auth API Endpoints
 - [x] POST /auth/magic-link - Send magic link email
-- [ ] GET /auth/callback - Handle magic link callback
+- [x] ~~GET /auth/callback~~ - Not needed (Supabase handles automatically)
 - [ ] POST /auth/logout - Sign out user
 - [ ] GET /auth/user - Get current user profile
 - [ ] PATCH /auth/user - Update user profile
