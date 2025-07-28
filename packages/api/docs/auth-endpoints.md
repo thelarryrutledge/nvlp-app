@@ -167,3 +167,81 @@ const { data, error } = await supabase.functions.invoke('auth-user', {
 - Returns the user's profile from the user_profiles table
 - Returns 404 if user profile is not found
 - Returns 401 if token is invalid or expired
+
+## PATCH /auth/user
+
+Update the current user's profile information.
+
+### Headers
+
+```
+Authorization: Bearer <access_token>
+Content-Type: application/json
+```
+
+### Request Body
+
+```json
+{
+  "display_name": "Updated Name",
+  "avatar_url": "https://example.com/avatar.jpg",
+  "default_budget_id": "budget_uuid"
+}
+```
+
+**Allowed Fields:**
+- `display_name`: User's display name
+- `avatar_url`: URL to user's avatar image
+- `default_budget_id`: UUID of user's default budget
+
+### Response
+
+```json
+{
+  "user": {
+    "id": "user_uuid",
+    "email": "user@example.com",
+    "display_name": "Updated Name",
+    "avatar_url": "https://example.com/avatar.jpg",
+    "default_budget_id": "budget_uuid",
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T12:00:00Z"
+  }
+}
+```
+
+### Example Usage
+
+```bash
+# Using cURL with saved token
+curl -X PATCH https://idmvyzmjcbxqusvjvzna.supabase.co/functions/v1/auth-user-update \
+  -H "Authorization: Bearer [ACCESS_TOKEN]" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "display_name": "New Name",
+    "avatar_url": "https://example.com/avatar.jpg"
+  }'
+```
+
+### JavaScript Example
+
+```javascript
+// Using Supabase client to call Edge Function
+const { data, error } = await supabase.functions.invoke('auth-user-update', {
+  body: {
+    display_name: 'New Name',
+    avatar_url: 'https://example.com/avatar.jpg'
+  },
+  headers: {
+    Authorization: `Bearer ${accessToken}`
+  }
+})
+```
+
+### Notes
+
+- Requires a valid access token in the Authorization header
+- Only specified fields will be updated (partial updates supported)
+- Unknown fields are ignored
+- Updates the `updated_at` timestamp automatically
+- Returns the complete updated user profile

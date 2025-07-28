@@ -49,7 +49,7 @@ This roadmap outlines the complete API development process for NVLP, from databa
 - [x] ~~GET /auth/callback~~ - Not needed (Supabase handles automatically)
 - [x] POST /auth/logout - Sign out user (clears refresh token + session)
 - [x] GET /auth/user - Get current user profile
-- [ ] PATCH /auth/user - Update user profile
+- [x] PATCH /auth/user - Update user profile
 
 ### 3.3 Token Management
 - [ ] Implement automatic token refresh in API layer
