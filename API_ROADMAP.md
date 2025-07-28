@@ -45,7 +45,7 @@ This roadmap outlines the complete API development process for NVLP, from databa
 - [x] Test magic link flow
 
 ### 3.2 Auth API Endpoints
-- [ ] POST /auth/magic-link - Send magic link email
+- [x] POST /auth/magic-link - Send magic link email
 - [ ] GET /auth/callback - Handle magic link callback
 - [ ] POST /auth/logout - Sign out user
 - [ ] GET /auth/user - Get current user profile
