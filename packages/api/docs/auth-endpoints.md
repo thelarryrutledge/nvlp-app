@@ -68,3 +68,49 @@ const { data, error } = await supabase.functions.invoke('auth-magic-link', {
 - Make sure the redirect URL is whitelisted in your Supabase project settings
 - The function runs on Supabase Edge Functions (Deno runtime)
 - Supabase may reject certain test email addresses (like test@example.com) - use a real email for testing
+
+## POST /auth/logout
+
+Sign out the current user and invalidate their refresh token.
+
+### Headers
+
+```
+Authorization: Bearer <access_token>
+```
+
+### Response
+
+```json
+{
+  "success": true,
+  "message": "Successfully signed out"
+}
+```
+
+### Example Usage
+
+```bash
+# Using cURL with saved token
+curl -X POST https://idmvyzmjcbxqusvjvzna.supabase.co/functions/v1/auth-logout \
+  -H "Authorization: Bearer [ACCESS_TOKEN]" \
+  -H "Content-Type: application/json"
+```
+
+### JavaScript Example
+
+```javascript
+// Using Supabase client to call Edge Function
+const { data, error } = await supabase.functions.invoke('auth-logout', {
+  headers: {
+    Authorization: `Bearer ${accessToken}`
+  }
+})
+```
+
+### Notes
+
+- Requires a valid access token in the Authorization header
+- Invalidates the refresh token on the server side
+- The current access token remains valid until expiration
+- Clears the user's session from Supabase's auth system
