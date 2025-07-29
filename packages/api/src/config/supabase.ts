@@ -1,11 +1,14 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Database } from '@nvlp/types';
-import { AuthenticatedClient } from '../client/authenticated-client';
+import { AuthenticatedClient, AuthenticatedClientOptions } from '../client/authenticated-client';
+import { TokenStorage } from '../client/token-storage';
 
 export interface SupabaseConfig {
   url: string;
   anonKey: string;
   serviceRoleKey?: string;
+  tokenStorage?: TokenStorage;
+  persistSession?: boolean;
 }
 
 export class SupabaseService {
@@ -23,7 +26,12 @@ export class SupabaseService {
       },
     });
 
-    this.authenticatedClient = new AuthenticatedClient(this.client);
+    const authClientOptions: AuthenticatedClientOptions = {
+      tokenStorage: config.tokenStorage,
+      persistSession: config.persistSession,
+    };
+    
+    this.authenticatedClient = new AuthenticatedClient(this.client, authClientOptions);
 
     if (config.serviceRoleKey) {
       this.adminClient = createClient<Database>(config.url, config.serviceRoleKey, {
