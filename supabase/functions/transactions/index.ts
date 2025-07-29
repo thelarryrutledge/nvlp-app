@@ -156,6 +156,68 @@ serve(async (req) => {
       )
     }
 
+    // Handle GET /transactions/{id}
+    if (req.method === 'GET' && pathParts.length === 2 && pathParts[0] === 'transactions') {
+      const transactionId = pathParts[1]
+      
+      // Get the transaction with details
+      const { data: transaction, error: transactionError } = await supabaseClient
+        .from('transactions')
+        .select(`
+          *,
+          from_envelope:envelopes!from_envelope_id(*),
+          to_envelope:envelopes!to_envelope_id(*),
+          payee:payees!payee_id(*),
+          income_source:income_sources!income_source_id(*),
+          category:categories!category_id(*)
+        `)
+        .eq('id', transactionId)
+        .eq('is_deleted', false)
+        .single()
+
+      if (transactionError || !transaction) {
+        if (transactionError?.code === 'PGRST116') {
+          return new Response(
+            JSON.stringify({ error: 'Transaction not found' }),
+            { 
+              status: 404,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          )
+        }
+        throw transactionError
+      }
+
+      // Verify budget access
+      const { error: budgetError } = await supabaseClient
+        .from('budgets')
+        .select('id')
+        .eq('id', transaction.budget_id)
+        .eq('user_id', user.id)
+        .single()
+
+      if (budgetError) {
+        if (budgetError.code === 'PGRST116') {
+          return new Response(
+            JSON.stringify({ error: 'Budget not found or access denied' }),
+            { 
+              status: 404,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          )
+        }
+        throw budgetError
+      }
+
+      return new Response(
+        JSON.stringify({ transaction }),
+        { 
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
     // Method/path not found
     return new Response(
       JSON.stringify({ error: 'Not Found' }),
