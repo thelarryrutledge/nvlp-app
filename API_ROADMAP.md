@@ -62,7 +62,7 @@ This roadmap outlines the complete API development process for NVLP, from databa
 - [x] GET /budgets/{budgetId}/categories - List all categories
 - [x] GET /categories/{id} - Get single category
 - [x] POST /budgets/{budgetId}/categories - Create category
-- [ ] PATCH /categories/{id} - Update category
+- [x] PATCH /categories/{id} - Update category
 - [ ] DELETE /categories/{id} - Delete category
 - [ ] GET /budgets/{budgetId}/categories/tree - Get hierarchical view
 
