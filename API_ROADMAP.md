@@ -116,7 +116,7 @@ This roadmap outlines the complete API development process for NVLP, from databa
 - [x] POST /transactions/{id}/restore - Restore deleted transaction
 
 ### 6.2 Transaction Business Logic
-- [ ] Implement income transaction flow (increases available)
+- [x] Implement income transaction flow (increases available)
 - [ ] Implement allocation flow (available → envelope)
 - [ ] Implement expense flow (envelope → payee)
 - [ ] Implement transfer flow (envelope → envelope)
