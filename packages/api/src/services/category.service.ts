@@ -39,14 +39,36 @@ export class CategoryService extends BaseService {
   async createCategory(budgetId: string, request: CategoryCreateRequest): Promise<Category> {
     await this.verifyBudgetAccess(budgetId);
 
+    // Validate single-level nesting
+    if (request.parent_id) {
+      const { data: parentCategory, error: parentError } = await this.client
+        .from('categories')
+        .select('parent_id')
+        .eq('id', request.parent_id)
+        .single();
+
+      if (parentError) {
+        throw new ApiError(ErrorCode.NOT_FOUND, 'Parent category not found');
+      }
+
+      if (parentCategory.parent_id) {
+        throw new ApiError(
+          ErrorCode.VALIDATION_ERROR,
+          'Categories can only have one level of nesting. Parent category already has a parent.'
+        );
+      }
+    }
+
     const { data, error } = await this.client
       .from('categories')
       .insert({
         budget_id: budgetId,
         name: request.name,
         description: request.description,
-        category_type: request.category_type,
-        parent_category_id: request.parent_category_id,
+        is_income: request.is_income ?? false,
+        is_system: request.is_system ?? false,
+        display_order: request.display_order ?? 0,
+        parent_id: request.parent_id,
       })
       .select()
       .single();
@@ -59,7 +81,27 @@ export class CategoryService extends BaseService {
   }
 
   async updateCategory(id: string, updates: CategoryUpdateRequest): Promise<Category> {
-    const category = await this.getCategory(id);
+    await this.getCategory(id); // Verify category exists and access
+
+    // Validate single-level nesting if parent_id is being changed
+    if (updates.parent_id) {
+      const { data: parentCategory, error: parentError } = await this.client
+        .from('categories')
+        .select('parent_id')
+        .eq('id', updates.parent_id)
+        .single();
+
+      if (parentError) {
+        throw new ApiError(ErrorCode.NOT_FOUND, 'Parent category not found');
+      }
+
+      if (parentCategory.parent_id) {
+        throw new ApiError(
+          ErrorCode.VALIDATION_ERROR,
+          'Categories can only have one level of nesting. Parent category already has a parent.'
+        );
+      }
+    }
 
     const { data, error } = await this.client
       .from('categories')
@@ -141,8 +183,8 @@ export class CategoryService extends BaseService {
     // Second pass: build tree
     categories.forEach(cat => {
       const category = categoryMap.get(cat.id)!;
-      if (cat.parent_category_id) {
-        const parent = categoryMap.get(cat.parent_category_id);
+      if (cat.parent_id) {
+        const parent = categoryMap.get(cat.parent_id);
         if (parent) {
           parent.children = parent.children || [];
           parent.children.push(category);

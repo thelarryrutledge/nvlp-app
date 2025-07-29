@@ -384,6 +384,144 @@ END IF;
 
 ## Debt Payment Transaction Flow
 
-*To be implemented in next phase*
+Debt payment transactions are similar to expenses but with a key difference: they update both the envelope balance AND the debt's outstanding amount. This enables proper debt payoff tracking.
 
-Debt payment transactions are similar to expenses but tracked separately for reporting.
+### How It Works
+
+1. **Transaction Creation**: When a transaction with `transaction_type = 'debt_payment'` is created:
+   - Must include `from_envelope_id` (debt envelope)
+   - Must include `payee_id` (debt payee with tracking info)
+   - Must NOT include `to_envelope_id` or `income_source_id`
+   - Amount must be positive
+   - Envelope should be of type 'debt' for dual balance logic
+
+2. **Dual Balance Updates**: Database trigger automatically:
+   - **Decrease** `envelope.current_balance` by payment amount (money spent)
+   - **Decrease** `envelope.target_amount` by payment amount (debt paid down)
+   - Money leaves the system (paid to creditor)
+   - Category totals update automatically
+
+3. **Soft Delete Handling**: If a debt payment is soft deleted:
+   - Both balance changes are reversed
+   - `current_balance` increases by payment amount
+   - `target_amount` increases by payment amount (debt restored)
+   - Restoring the transaction re-applies both updates
+
+### Example Flow
+
+```typescript
+// 1. Initial state (debt envelope with allocated money)
+debt_envelope = {
+  envelope_type: 'debt',
+  current_balance: 400.00,  // Money allocated for payments
+  target_amount: 2500.00    // Outstanding debt amount
+}
+
+// 2. Create debt payment transaction
+transaction = {
+  transaction_type: 'debt_payment',
+  amount: 200.00,
+  from_envelope_id: 'chase-credit-card-envelope',
+  payee_id: 'chase-credit-card-payee',
+  transaction_date: '2025-01-29',
+  description: 'Monthly credit card payment'
+}
+
+// 3. After insert (automatic via trigger)
+debt_envelope = {
+  current_balance: 200.00,  // 400 - 200 (money spent)
+  target_amount: 2300.00    // 2500 - 200 (debt paid down)
+}
+
+// Progress: $200 less debt, $200 less money allocated
+
+// 4. If soft deleted
+transaction.is_deleted = true
+debt_envelope = {
+  current_balance: 400.00,  // Restored
+  target_amount: 2500.00    // Debt restored
+}
+
+// 5. If restored
+transaction.is_deleted = false
+debt_envelope = {
+  current_balance: 200.00,  // Re-applied
+  target_amount: 2300.00    // Re-applied
+}
+```
+
+### Envelope Types
+
+The system supports three envelope types with different behaviors:
+
+#### Regular Envelopes (Spending)
+- `current_balance` - Money available for spending
+- `target_amount` - Optional spending goal/limit
+- Used for categories like groceries, gas, entertainment
+
+#### Savings Envelopes (Building Up)  
+- `current_balance` - Money saved so far
+- `target_amount` - Savings goal amount
+- Used for emergency funds, vacation savings, etc.
+
+#### Debt Envelopes (Paying Down)
+- `current_balance` - Money allocated for debt payments
+- `target_amount` - Outstanding debt amount owed
+- **Dual updates**: Both decrease with debt payments
+
+### Category Totals
+
+Categories automatically maintain totals of all contained envelope balances:
+
+```typescript
+// Parent category: "Debt Payments" 
+// Child category: "Credit Cards" (contains debt envelope)
+
+credit_cards_category.total = sum of all credit card envelopes
+debt_payments_category.total = direct envelopes + child category totals
+
+// After debt payment, both totals update automatically
+```
+
+### Debt Payee Tracking
+
+Debt payees include additional tracking fields:
+
+```typescript
+debt_payee = {
+  payee_type: 'debt',
+  interest_rate: 18.99,      // APR for reference
+  minimum_payment: 75.00,    // Monthly minimum
+  due_date: 15               // 15th of each month
+}
+```
+
+These fields are for tracking/reference only and don't affect calculations.
+
+### Database Implementation
+
+The debt payment flow extends the envelope balance trigger:
+
+```sql
+-- For debt payments, also decrease target_amount (debt paydown)
+IF NEW.transaction_type = 'debt_payment' THEN
+  SELECT envelope_type INTO envelope_type_from 
+  FROM public.envelopes 
+  WHERE id = NEW.from_envelope_id;
+  
+  IF envelope_type_from = 'debt' THEN
+    UPDATE public.envelopes 
+    SET target_amount = GREATEST(0, target_amount - NEW.amount)
+    WHERE id = NEW.from_envelope_id;
+  END IF;
+END IF;
+```
+
+### Money Flow Summary
+
+**Debt Envelope → Creditor (Dual Balance Update)**
+- Envelope balance decreases (money spent)
+- Debt amount decreases (debt paid down)  
+- Category totals update automatically
+- Money leaves system (paid to creditor)
+- Progress toward debt freedom tracked via target_amount
