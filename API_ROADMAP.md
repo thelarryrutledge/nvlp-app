@@ -91,7 +91,7 @@ This roadmap outlines the complete API development process for NVLP, from databa
 - [x] GET /budgets/{id} - Get single budget
 - [x] POST /budgets - Create budget (empty - no default objects)
 - [x] PATCH /budgets/{id} - Update budget
-- [ ] DELETE /budgets/{id} - Delete budget
+- [x] DELETE /budgets/{id} - Delete budget
 - [ ] POST /budgets/{id}/set-default - Set as default budget
 - [ ] GET /budgets/default - Get user's default budget
 - [ ] POST /budgets/{id}/setup/defaults - Create default categories, envelopes, etc.
