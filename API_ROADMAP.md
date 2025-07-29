@@ -67,7 +67,7 @@ This roadmap outlines the complete API development process for NVLP, from databa
 - [x] GET /budgets/{budgetId}/categories/tree - Get hierarchical view
 
 ### 4.2 Income Sources API
-- [ ] GET /budgets/{budgetId}/income-sources - List income sources
+- [x] GET /budgets/{budgetId}/income-sources - List income sources
 - [ ] GET /income-sources/{id} - Get single income source
 - [ ] POST /budgets/{budgetId}/income-sources - Create income source
 - [ ] PATCH /income-sources/{id} - Update income source
