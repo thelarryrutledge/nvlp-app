@@ -76,7 +76,7 @@ This roadmap outlines the complete API development process for NVLP, from databa
 - [x] GET /budgets/{budgetId}/income-sources/upcoming - Get upcoming sources
 
 ### 4.3 Payees API
-- [ ] GET /budgets/{budgetId}/payees - List payees
+- [x] GET /budgets/{budgetId}/payees - List payees
 - [ ] GET /payees/{id} - Get single payee
 - [ ] POST /budgets/{budgetId}/payees - Create payee
 - [ ] PATCH /payees/{id} - Update payee
