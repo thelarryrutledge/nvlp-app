@@ -223,6 +223,100 @@ serve(async (req) => {
       )
     }
 
+    // Handle PATCH /envelopes/{id}
+    if (req.method === 'PATCH' && pathParts.length === 2 && pathParts[0] === 'envelopes') {
+      const envelopeId = pathParts[1]
+      
+      // Get the envelope first to verify it exists and we have access
+      const { data: envelope, error: envelopeError } = await supabaseClient
+        .from('envelopes')
+        .select('*')
+        .eq('id', envelopeId)
+        .single()
+
+      if (envelopeError || !envelope) {
+        if (envelopeError?.code === 'PGRST116') {
+          return new Response(
+            JSON.stringify({ error: 'Envelope not found' }),
+            { 
+              status: 404,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          )
+        }
+        throw envelopeError
+      }
+
+      // Verify budget access
+      const { error: budgetError } = await supabaseClient
+        .from('budgets')
+        .select('id')
+        .eq('id', envelope.budget_id)
+        .eq('user_id', user.id)
+        .single()
+
+      if (budgetError) {
+        if (budgetError.code === 'PGRST116') {
+          return new Response(
+            JSON.stringify({ error: 'Budget not found or access denied' }),
+            { 
+              status: 404,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          )
+        }
+        throw budgetError
+      }
+
+      // Parse request body
+      const body = await req.json()
+      
+      // Validate name if provided
+      if (body.name !== undefined && (typeof body.name !== 'string' || body.name.trim() === '')) {
+        return new Response(
+          JSON.stringify({ error: 'Name must be a non-empty string' }),
+          { 
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        )
+      }
+
+      // Build update object with only provided fields
+      const updates: any = {
+        updated_at: new Date().toISOString()
+      }
+
+      if (body.name !== undefined) updates.name = body.name
+      if (body.description !== undefined) updates.description = body.description || null
+      if (body.target_amount !== undefined) updates.target_amount = body.target_amount || null
+      if (body.envelope_type !== undefined) updates.envelope_type = body.envelope_type
+      if (body.category_id !== undefined) updates.category_id = body.category_id || null
+      if (body.notify_on_low_balance !== undefined) updates.notify_on_low_balance = body.notify_on_low_balance
+      if (body.low_balance_threshold !== undefined) updates.low_balance_threshold = body.low_balance_threshold || null
+      if (body.is_active !== undefined) updates.is_active = body.is_active
+
+      // Update envelope
+      const { data: updatedEnvelope, error: updateError } = await supabaseClient
+        .from('envelopes')
+        .update(updates)
+        .eq('id', envelopeId)
+        .select()
+        .single()
+
+      if (updateError) {
+        throw updateError
+      }
+
+      return new Response(
+        JSON.stringify({ envelope: updatedEnvelope }),
+        { 
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
     // Method/path not found
     return new Response(
       JSON.stringify({ error: 'Not Found' }),
