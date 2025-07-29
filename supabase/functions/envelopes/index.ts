@@ -101,6 +101,52 @@ serve(async (req) => {
       )
     }
 
+    // Handle GET /budgets/{budgetId}/envelopes/negative
+    if (req.method === 'GET' && pathParts.length === 4 && pathParts[0] === 'budgets' && pathParts[2] === 'envelopes' && pathParts[3] === 'negative') {
+      const budgetId = pathParts[1]
+      
+      // Verify budget access
+      const { error: budgetError } = await supabaseClient
+        .from('budgets')
+        .select('id')
+        .eq('id', budgetId)
+        .eq('user_id', user.id)
+        .single()
+
+      if (budgetError) {
+        if (budgetError.code === 'PGRST116') {
+          return new Response(
+            JSON.stringify({ error: 'Budget not found or access denied' }),
+            { 
+              status: 404,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          )
+        }
+        throw budgetError
+      }
+
+      // Get envelopes with negative balance
+      const { data: envelopes, error: envelopesError } = await supabaseClient
+        .from('envelopes')
+        .select('*')
+        .eq('budget_id', budgetId)
+        .lt('current_balance', 0)
+        .order('current_balance', { ascending: true })
+
+      if (envelopesError) {
+        throw envelopesError
+      }
+
+      return new Response(
+        JSON.stringify({ envelopes }),
+        { 
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
     // Handle GET /envelopes/{id}
     if (req.method === 'GET' && pathParts.length === 2 && pathParts[0] === 'envelopes') {
       const envelopeId = pathParts[1]
