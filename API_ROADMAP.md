@@ -98,7 +98,7 @@ This roadmap outlines the complete API development process for NVLP, from databa
 - [x] POST /budgets/{id}/setup/demo - Create demo data for testing/examples
 
 ### 5.2 Envelopes API
-- [ ] GET /budgets/{budgetId}/envelopes - List envelopes
+- [x] GET /budgets/{budgetId}/envelopes - List envelopes
 - [ ] GET /envelopes/{id} - Get single envelope
 - [ ] POST /budgets/{budgetId}/envelopes - Create envelope
 - [ ] PATCH /envelopes/{id} - Update envelope
