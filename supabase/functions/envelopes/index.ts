@@ -101,6 +101,60 @@ serve(async (req) => {
       )
     }
 
+    // Handle GET /envelopes/{id}
+    if (req.method === 'GET' && pathParts.length === 2 && pathParts[0] === 'envelopes') {
+      const envelopeId = pathParts[1]
+      
+      // Get the envelope
+      const { data: envelope, error: envelopeError } = await supabaseClient
+        .from('envelopes')
+        .select('*')
+        .eq('id', envelopeId)
+        .single()
+
+      if (envelopeError || !envelope) {
+        if (envelopeError?.code === 'PGRST116') {
+          return new Response(
+            JSON.stringify({ error: 'Envelope not found' }),
+            { 
+              status: 404,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          )
+        }
+        throw envelopeError
+      }
+
+      // Verify budget access
+      const { error: budgetError } = await supabaseClient
+        .from('budgets')
+        .select('id')
+        .eq('id', envelope.budget_id)
+        .eq('user_id', user.id)
+        .single()
+
+      if (budgetError) {
+        if (budgetError.code === 'PGRST116') {
+          return new Response(
+            JSON.stringify({ error: 'Budget not found or access denied' }),
+            { 
+              status: 404,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          )
+        }
+        throw budgetError
+      }
+
+      return new Response(
+        JSON.stringify({ envelope }),
+        { 
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
     // Method/path not found
     return new Response(
       JSON.stringify({ error: 'Not Found' }),
