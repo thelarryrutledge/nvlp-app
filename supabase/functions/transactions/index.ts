@@ -555,6 +555,76 @@ serve(async (req) => {
       )
     }
 
+    // Handle DELETE /transactions/{id}
+    if (req.method === 'DELETE' && pathParts.length === 2 && pathParts[0] === 'transactions') {
+      const transactionId = pathParts[1]
+      
+      // Get the transaction first to verify it exists and we have access
+      const { data: transaction, error: transactionError } = await supabaseClient
+        .from('transactions')
+        .select('*')
+        .eq('id', transactionId)
+        .eq('is_deleted', false)
+        .single()
+
+      if (transactionError || !transaction) {
+        if (transactionError?.code === 'PGRST116') {
+          return new Response(
+            JSON.stringify({ error: 'Transaction not found' }),
+            { 
+              status: 404,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          )
+        }
+        throw transactionError
+      }
+
+      // Verify budget access
+      const { error: budgetError } = await supabaseClient
+        .from('budgets')
+        .select('id')
+        .eq('id', transaction.budget_id)
+        .eq('user_id', user.id)
+        .single()
+
+      if (budgetError) {
+        if (budgetError.code === 'PGRST116') {
+          return new Response(
+            JSON.stringify({ error: 'Budget not found or access denied' }),
+            { 
+              status: 404,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          )
+        }
+        throw budgetError
+      }
+
+      // Soft delete the transaction
+      const { error: deleteError } = await supabaseClient
+        .from('transactions')
+        .update({
+          is_deleted: true,
+          deleted_at: new Date().toISOString(),
+          deleted_by: user.id,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', transactionId)
+
+      if (deleteError) {
+        throw deleteError
+      }
+
+      return new Response(
+        JSON.stringify({ success: true }),
+        { 
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
     // Method/path not found
     return new Response(
       JSON.stringify({ error: 'Not Found' }),
