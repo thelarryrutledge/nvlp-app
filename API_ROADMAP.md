@@ -60,7 +60,7 @@ This roadmap outlines the complete API development process for NVLP, from databa
 ## Phase 4: Support Entity APIs
 ### 4.1 Categories API
 - [x] GET /budgets/{budgetId}/categories - List all categories
-- [ ] GET /categories/{id} - Get single category
+- [x] GET /categories/{id} - Get single category
 - [ ] POST /budgets/{budgetId}/categories - Create category
 - [ ] PATCH /categories/{id} - Update category
 - [ ] DELETE /categories/{id} - Delete category
