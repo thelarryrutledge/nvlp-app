@@ -104,7 +104,7 @@ This roadmap outlines the complete API development process for NVLP, from databa
 - [x] PATCH /envelopes/{id} - Update envelope
 - [x] DELETE /envelopes/{id} - Delete envelope (if balance is zero)
 - [x] GET /budgets/{budgetId}/envelopes/negative - Get negative balance envelopes
-- [ ] GET /budgets/{budgetId}/envelopes/low-balance - Get low balance envelopes
+- [x] GET /budgets/{budgetId}/envelopes/low-balance - Get low balance envelopes
 
 ## Phase 6: Transaction System
 ### 6.1 Basic Transaction APIs

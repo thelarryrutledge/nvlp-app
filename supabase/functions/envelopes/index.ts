@@ -147,6 +147,58 @@ serve(async (req) => {
       )
     }
 
+    // Handle GET /budgets/{budgetId}/envelopes/low-balance
+    if (req.method === 'GET' && pathParts.length === 4 && pathParts[0] === 'budgets' && pathParts[2] === 'envelopes' && pathParts[3] === 'low-balance') {
+      const budgetId = pathParts[1]
+      
+      // Verify budget access
+      const { error: budgetError } = await supabaseClient
+        .from('budgets')
+        .select('id')
+        .eq('id', budgetId)
+        .eq('user_id', user.id)
+        .single()
+
+      if (budgetError) {
+        if (budgetError.code === 'PGRST116') {
+          return new Response(
+            JSON.stringify({ error: 'Budget not found or access denied' }),
+            { 
+              status: 404,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          )
+        }
+        throw budgetError
+      }
+
+      // Get envelopes that have low balance notification enabled and a threshold set
+      const { data: envelopes, error: envelopesError } = await supabaseClient
+        .from('envelopes')
+        .select('*')
+        .eq('budget_id', budgetId)
+        .eq('notify_on_low_balance', true)
+        .not('low_balance_threshold', 'is', null)
+        .order('current_balance', { ascending: true })
+
+      if (envelopesError) {
+        throw envelopesError
+      }
+
+      // Filter envelopes where current_balance <= low_balance_threshold
+      const lowBalanceEnvelopes = (envelopes || []).filter((envelope: any) => 
+        envelope.current_balance <= (envelope.low_balance_threshold || 0)
+      )
+
+      return new Response(
+        JSON.stringify({ envelopes: lowBalanceEnvelopes }),
+        { 
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
     // Handle GET /envelopes/{id}
     if (req.method === 'GET' && pathParts.length === 2 && pathParts[0] === 'envelopes') {
       const envelopeId = pathParts[1]
