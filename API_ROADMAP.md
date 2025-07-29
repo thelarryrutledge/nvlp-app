@@ -88,7 +88,7 @@ This roadmap outlines the complete API development process for NVLP, from databa
 ## Phase 5: Core Entity APIs
 ### 5.1 Budgets API
 - [x] GET /budgets - List user's budgets
-- [ ] GET /budgets/{id} - Get single budget
+- [x] GET /budgets/{id} - Get single budget
 - [ ] POST /budgets - Create budget (empty - no default objects)
 - [ ] PATCH /budgets/{id} - Update budget
 - [ ] DELETE /budgets/{id} - Delete budget
