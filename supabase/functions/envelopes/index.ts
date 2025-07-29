@@ -317,6 +317,81 @@ serve(async (req) => {
       )
     }
 
+    // Handle DELETE /envelopes/{id}
+    if (req.method === 'DELETE' && pathParts.length === 2 && pathParts[0] === 'envelopes') {
+      const envelopeId = pathParts[1]
+      
+      // Get the envelope first to verify it exists and we have access
+      const { data: envelope, error: envelopeError } = await supabaseClient
+        .from('envelopes')
+        .select('*')
+        .eq('id', envelopeId)
+        .single()
+
+      if (envelopeError || !envelope) {
+        if (envelopeError?.code === 'PGRST116') {
+          return new Response(
+            JSON.stringify({ error: 'Envelope not found' }),
+            { 
+              status: 404,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          )
+        }
+        throw envelopeError
+      }
+
+      // Verify budget access
+      const { error: budgetError } = await supabaseClient
+        .from('budgets')
+        .select('id')
+        .eq('id', envelope.budget_id)
+        .eq('user_id', user.id)
+        .single()
+
+      if (budgetError) {
+        if (budgetError.code === 'PGRST116') {
+          return new Response(
+            JSON.stringify({ error: 'Budget not found or access denied' }),
+            { 
+              status: 404,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          )
+        }
+        throw budgetError
+      }
+
+      // Check if envelope has zero balance
+      if (envelope.current_balance !== 0) {
+        return new Response(
+          JSON.stringify({ error: 'Cannot delete envelope with non-zero balance' }),
+          { 
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        )
+      }
+
+      // Delete envelope
+      const { error: deleteError } = await supabaseClient
+        .from('envelopes')
+        .delete()
+        .eq('id', envelopeId)
+
+      if (deleteError) {
+        throw deleteError
+      }
+
+      return new Response(
+        JSON.stringify({ success: true }),
+        { 
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
     // Method/path not found
     return new Response(
       JSON.stringify({ error: 'Not Found' }),
