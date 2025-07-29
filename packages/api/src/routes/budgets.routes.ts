@@ -10,6 +10,7 @@ export interface BudgetRouteHandlers {
   deleteBudget: (id: string) => Promise<void>;
   setDefaultBudget: (budgetId: string) => Promise<void>;
   getDefaultBudget: () => Promise<Budget | null>;
+  setupDefaults: (budgetId: string) => Promise<void>;
 }
 
 export function createBudgetRoutes(client: SupabaseClient<Database>): BudgetRouteHandlers {
@@ -42,6 +43,10 @@ export function createBudgetRoutes(client: SupabaseClient<Database>): BudgetRout
 
     getDefaultBudget: async () => {
       return await budgetService.getDefaultBudget();
+    },
+
+    setupDefaults: async (budgetId: string) => {
+      await budgetService.setupDefaults(budgetId);
     }
   };
 }
