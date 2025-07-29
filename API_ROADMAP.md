@@ -69,7 +69,7 @@ This roadmap outlines the complete API development process for NVLP, from databa
 ### 4.2 Income Sources API
 - [x] GET /budgets/{budgetId}/income-sources - List income sources
 - [x] GET /income-sources/{id} - Get single income source
-- [ ] POST /budgets/{budgetId}/income-sources - Create income source
+- [x] POST /budgets/{budgetId}/income-sources - Create income source
 - [ ] PATCH /income-sources/{id} - Update income source
 - [ ] DELETE /income-sources/{id} - Delete income source
 - [ ] GET /budgets/{budgetId}/income-sources/overdue - Get overdue sources
