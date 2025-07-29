@@ -155,6 +155,74 @@ serve(async (req) => {
       )
     }
 
+    // Handle POST /budgets/{budgetId}/envelopes
+    if (req.method === 'POST' && pathParts.length === 3 && pathParts[0] === 'budgets' && pathParts[2] === 'envelopes') {
+      const budgetId = pathParts[1]
+      
+      // Verify budget access
+      const { error: budgetError } = await supabaseClient
+        .from('budgets')
+        .select('id')
+        .eq('id', budgetId)
+        .eq('user_id', user.id)
+        .single()
+
+      if (budgetError) {
+        if (budgetError.code === 'PGRST116') {
+          return new Response(
+            JSON.stringify({ error: 'Budget not found or access denied' }),
+            { 
+              status: 404,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          )
+        }
+        throw budgetError
+      }
+
+      // Parse request body
+      const body = await req.json()
+      
+      // Validate required fields
+      if (!body.name || typeof body.name !== 'string' || body.name.trim() === '') {
+        return new Response(
+          JSON.stringify({ error: 'Name is required and must be a non-empty string' }),
+          { 
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        )
+      }
+
+      // Create envelope
+      const { data: envelope, error: envelopeError } = await supabaseClient
+        .from('envelopes')
+        .insert({
+          budget_id: budgetId,
+          name: body.name,
+          description: body.description || null,
+          target_amount: body.target_amount || null,
+          envelope_type: body.envelope_type || 'regular',
+          category_id: body.category_id || null,
+          notify_on_low_balance: body.notify_on_low_balance ?? false,
+          low_balance_threshold: body.low_balance_threshold || null,
+        })
+        .select()
+        .single()
+
+      if (envelopeError) {
+        throw envelopeError
+      }
+
+      return new Response(
+        JSON.stringify({ envelope }),
+        { 
+          status: 201,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
     // Method/path not found
     return new Response(
       JSON.stringify({ error: 'Not Found' }),
