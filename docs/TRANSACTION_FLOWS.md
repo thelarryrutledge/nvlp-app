@@ -151,9 +151,98 @@ IF NEW.to_envelope_id IS NOT NULL THEN
 
 ## Expense Transaction Flow
 
-*To be implemented in next phase*
+Expense transactions move money from envelopes to payees, representing actual spending. This is where money leaves the budget system entirely.
 
-Expense transactions move money from envelopes to payees (money leaves the system).
+### How It Works
+
+1. **Transaction Creation**: When a transaction with `transaction_type = 'expense'` is created:
+   - Must include `from_envelope_id` (source envelope)
+   - Must include `payee_id` (who receives the money)
+   - Must NOT include `to_envelope_id` or `income_source_id`
+   - Amount must be positive
+   - Envelope can go negative (overdraft allowed)
+
+2. **Automatic Balance Updates**: Database trigger automatically:
+   - **Decrease** `envelopes.current_balance` by the transaction amount
+   - Money leaves the system (paid to payee)
+   - Budget available_amount is NOT affected (money already allocated)
+
+3. **Soft Delete Handling**: If an expense transaction is soft deleted:
+   - The trigger reverses the balance change
+   - `envelope.current_balance` increases by the transaction amount
+   - Money is "returned" to the envelope
+   - Restoring the transaction re-applies the expense
+
+### Example Flow
+
+```typescript
+// 1. Initial state (after allocation)
+budget.available_amount = 600.00
+envelope.current_balance = 400.00  // Groceries envelope
+
+// 2. Create expense transaction
+transaction = {
+  transaction_type: 'expense',
+  amount: 125.50,
+  from_envelope_id: 'groceries-envelope-id',
+  payee_id: 'grocery-store-payee-id',
+  transaction_date: '2025-01-29',
+  description: 'Weekly grocery shopping'
+}
+
+// 3. After insert (automatic via trigger)
+budget.available_amount = 600.00   // Unchanged
+envelope.current_balance = 274.50  // 400 - 125.50
+
+// Money has left the system → paid to grocery store
+
+// 4. If soft deleted
+transaction.is_deleted = true
+envelope.current_balance = 400.00  // Money "returned"
+
+// 5. If restored
+transaction.is_deleted = false
+envelope.current_balance = 274.50  // Expense re-applied
+```
+
+### Overdraft Handling
+
+Unlike budgets (which cannot go negative), envelopes CAN have negative balances:
+
+```typescript
+// Envelope with low balance
+envelope.current_balance = 50.00
+
+// Large expense
+expense.amount = 200.00
+
+// Result: Negative balance allowed
+envelope.current_balance = -150.00  // Overdraft of $150
+```
+
+This allows for real-world scenarios where you overspend an envelope category.
+
+### Database Implementation
+
+The expense flow is implemented via PostgreSQL trigger:
+
+```sql
+-- Envelope trigger (update_envelope_balance)
+-- For transfers and expenses, decrease from_envelope balance
+IF NEW.from_envelope_id IS NOT NULL THEN
+  UPDATE public.envelopes 
+  SET current_balance = current_balance - NEW.amount
+  WHERE id = NEW.from_envelope_id;
+END IF;
+```
+
+### Money Flow Summary
+
+**Envelope → Payee (Money Leaves System)**
+- Envelope balance decreases by expense amount
+- Budget available_amount unchanged (already allocated)
+- Total money in system decreases (money spent)
+- Overdrafts allowed (negative envelope balances)
 
 ## Transfer Transaction Flow
 

@@ -118,7 +118,7 @@ This roadmap outlines the complete API development process for NVLP, from databa
 ### 6.2 Transaction Business Logic
 - [x] Implement income transaction flow (increases available)
 - [x] Implement allocation flow (available → envelope)
-- [ ] Implement expense flow (envelope → payee)
+- [x] Implement expense flow (envelope → payee)
 - [ ] Implement transfer flow (envelope → envelope)
 - [ ] Implement debt payment flow
 - [ ] Add transaction validation rules
