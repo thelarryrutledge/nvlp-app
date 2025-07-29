@@ -108,7 +108,7 @@ This roadmap outlines the complete API development process for NVLP, from databa
 
 ## Phase 6: Transaction System
 ### 6.1 Basic Transaction APIs
-- [ ] GET /budgets/{budgetId}/transactions - List transactions with filters
+- [x] GET /budgets/{budgetId}/transactions - List transactions with filters
 - [ ] GET /transactions/{id} - Get single transaction with details
 - [ ] POST /budgets/{budgetId}/transactions - Create transaction
 - [ ] PATCH /transactions/{id} - Update transaction
