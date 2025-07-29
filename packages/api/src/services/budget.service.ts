@@ -1,5 +1,5 @@
 import { BaseService } from './base.service';
-import { Budget, BudgetCreateRequest, BudgetUpdateRequest, ApiError, ErrorCode } from '@nvlp/types';
+import { Budget, BudgetCreateRequest, BudgetUpdateRequest, ApiError, ErrorCode, DEFAULT_CURRENCY } from '@nvlp/types';
 
 export class BudgetService extends BaseService {
   async listBudgets(): Promise<Budget[]> {
@@ -41,12 +41,25 @@ export class BudgetService extends BaseService {
   async createBudget(request: BudgetCreateRequest): Promise<Budget> {
     const userId = await this.getCurrentUserId();
 
+    // Get user's default currency if not provided
+    let currency = request.currency;
+    if (!currency) {
+      const { data: profile } = await this.client
+        .from('user_profiles')
+        .select('default_currency')
+        .eq('user_id', userId)
+        .single();
+      
+      currency = profile?.default_currency || DEFAULT_CURRENCY;
+    }
+
     const { data, error } = await this.client
       .from('budgets')
       .insert({
         user_id: userId,
         name: request.name,
         description: request.description,
+        currency: currency,
         is_active: request.is_active ?? true,
       })
       .select()

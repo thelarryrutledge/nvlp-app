@@ -1,5 +1,5 @@
 import { BaseService } from './base.service';
-import { User, ApiError, ErrorCode } from '@nvlp/types';
+import { User, UserUpdateRequest, ApiError, ErrorCode } from '@nvlp/types';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { Database } from '@nvlp/types';
 
@@ -128,7 +128,7 @@ export class AuthService extends BaseService {
     const { data, error } = await this.client
       .from('user_profiles')
       .select('*')
-      .eq('id', userId)
+      .eq('user_id', userId)
       .single();
 
     if (error || !data) {
@@ -142,7 +142,7 @@ export class AuthService extends BaseService {
     return data as User;
   }
 
-  async updateUserProfile(updates: Partial<User>): Promise<User> {
+  async updateUserProfile(updates: UserUpdateRequest): Promise<User> {
     const userId = await this.getCurrentUserId();
 
     const { data, error } = await this.client
@@ -150,10 +150,11 @@ export class AuthService extends BaseService {
       .update({
         display_name: updates.display_name,
         avatar_url: updates.avatar_url,
+        default_currency: updates.default_currency,
         default_budget_id: updates.default_budget_id,
         updated_at: new Date().toISOString(),
       })
-      .eq('id', userId)
+      .eq('user_id', userId)
       .select()
       .single();
 

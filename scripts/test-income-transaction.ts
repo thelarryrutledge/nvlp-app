@@ -7,9 +7,12 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { config } from 'dotenv';
-import { resolve } from 'path';
+import { fileURLToPath } from 'url';
+import { dirname, resolve } from 'path';
 
 // Load environment variables
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 config({ path: resolve(__dirname, '../.env') });
 
 const supabaseUrl = process.env.SUPABASE_URL;

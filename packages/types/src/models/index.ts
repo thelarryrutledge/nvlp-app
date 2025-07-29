@@ -5,3 +5,4 @@ export * from './transaction';
 export * from './income';
 export * from './payee';
 export * from './category';
+export * from './currency';
