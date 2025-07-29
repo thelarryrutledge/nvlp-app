@@ -218,6 +218,162 @@ serve(async (req) => {
       )
     }
 
+    // Handle POST /budgets/{budgetId}/transactions
+    if (req.method === 'POST' && pathParts.length === 3 && pathParts[0] === 'budgets' && pathParts[2] === 'transactions') {
+      const budgetId = pathParts[1]
+      
+      // Verify budget access
+      const { error: budgetError } = await supabaseClient
+        .from('budgets')
+        .select('id')
+        .eq('id', budgetId)
+        .eq('user_id', user.id)
+        .single()
+
+      if (budgetError) {
+        if (budgetError.code === 'PGRST116') {
+          return new Response(
+            JSON.stringify({ error: 'Budget not found or access denied' }),
+            { 
+              status: 404,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          )
+        }
+        throw budgetError
+      }
+
+      // Parse request body
+      const body = await req.json()
+      
+      // Validate required fields
+      if (!body.transaction_type || !body.amount || !body.transaction_date) {
+        return new Response(
+          JSON.stringify({ error: 'transaction_type, amount, and transaction_date are required' }),
+          { 
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        )
+      }
+
+      // Validate amount is positive
+      if (body.amount <= 0) {
+        return new Response(
+          JSON.stringify({ error: 'Transaction amount must be positive' }),
+          { 
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        )
+      }
+
+      // Validate transaction type specific requirements
+      const { transaction_type, from_envelope_id, to_envelope_id, payee_id, income_source_id } = body
+
+      switch (transaction_type) {
+        case 'income':
+          if (!income_source_id || from_envelope_id || to_envelope_id || payee_id) {
+            return new Response(
+              JSON.stringify({ error: 'Income transactions require income_source_id and no envelope or payee references' }),
+              { 
+                status: 400,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+              }
+            )
+          }
+          break
+
+        case 'allocation':
+          if (!to_envelope_id || from_envelope_id || payee_id || income_source_id) {
+            return new Response(
+              JSON.stringify({ error: 'Allocation transactions require to_envelope_id only' }),
+              { 
+                status: 400,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+              }
+            )
+          }
+          break
+
+        case 'expense':
+        case 'debt_payment':
+          if (!from_envelope_id || !payee_id || to_envelope_id || income_source_id) {
+            return new Response(
+              JSON.stringify({ error: `${transaction_type} transactions require from_envelope_id and payee_id` }),
+              { 
+                status: 400,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+              }
+            )
+          }
+          break
+
+        case 'transfer':
+          if (!from_envelope_id || !to_envelope_id || payee_id || income_source_id) {
+            return new Response(
+              JSON.stringify({ error: 'Transfer transactions require from_envelope_id and to_envelope_id' }),
+              { 
+                status: 400,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+              }
+            )
+          }
+          if (from_envelope_id === to_envelope_id) {
+            return new Response(
+              JSON.stringify({ error: 'Cannot transfer to the same envelope' }),
+              { 
+                status: 400,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+              }
+            )
+          }
+          break
+
+        default:
+          return new Response(
+            JSON.stringify({ error: 'Invalid transaction type' }),
+            { 
+              status: 400,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          )
+      }
+
+      // Create transaction
+      const { data: transaction, error: transactionError } = await supabaseClient
+        .from('transactions')
+        .insert({
+          budget_id: budgetId,
+          transaction_type: body.transaction_type,
+          amount: body.amount,
+          transaction_date: body.transaction_date,
+          description: body.description || null,
+          from_envelope_id: body.from_envelope_id || null,
+          to_envelope_id: body.to_envelope_id || null,
+          payee_id: body.payee_id || null,
+          income_source_id: body.income_source_id || null,
+          category_id: body.category_id || null,
+          is_cleared: body.is_cleared ?? false,
+          is_reconciled: body.is_reconciled ?? false,
+          notes: body.notes || null,
+        })
+        .select()
+        .single()
+
+      if (transactionError) {
+        throw transactionError
+      }
+
+      return new Response(
+        JSON.stringify({ transaction }),
+        { 
+          status: 201,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
     // Method/path not found
     return new Response(
       JSON.stringify({ error: 'Not Found' }),

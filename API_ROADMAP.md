@@ -110,7 +110,7 @@ This roadmap outlines the complete API development process for NVLP, from databa
 ### 6.1 Basic Transaction APIs
 - [x] GET /budgets/{budgetId}/transactions - List transactions with filters
 - [x] GET /transactions/{id} - Get single transaction with details
-- [ ] POST /budgets/{budgetId}/transactions - Create transaction
+- [x] POST /budgets/{budgetId}/transactions - Create transaction
 - [ ] PATCH /transactions/{id} - Update transaction
 - [ ] DELETE /transactions/{id} - Soft delete transaction
 - [ ] POST /transactions/{id}/restore - Restore deleted transaction
