@@ -63,7 +63,7 @@ This roadmap outlines the complete API development process for NVLP, from databa
 - [x] GET /categories/{id} - Get single category
 - [x] POST /budgets/{budgetId}/categories - Create category
 - [x] PATCH /categories/{id} - Update category
-- [ ] DELETE /categories/{id} - Delete category
+- [x] DELETE /categories/{id} - Delete category
 - [ ] GET /budgets/{budgetId}/categories/tree - Get hierarchical view
 
 ### 4.2 Income Sources API
