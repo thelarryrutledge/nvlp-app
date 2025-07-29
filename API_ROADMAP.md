@@ -83,7 +83,7 @@ This roadmap outlines the complete API development process for NVLP, from databa
 - [x] DELETE /payees/{id} - Delete payee
 - [x] GET /budgets/{budgetId}/payees/search?q={query} - Search payees
 - [x] GET /budgets/{budgetId}/payees/recent - Get recent payees
-- [ ] GET /budgets/{budgetId}/payees/top - Get top payees by spending
+- [x] GET /budgets/{budgetId}/payees/top - Get top payees by spending
 
 ## Phase 5: Core Entity APIs
 ### 5.1 Budgets API
