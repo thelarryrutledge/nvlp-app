@@ -1,6 +1,7 @@
 import { SupabaseClient, Session } from '@supabase/supabase-js';
 import { Database, ApiError, ErrorCode } from '@nvlp/types';
 import { TokenStorage, InMemoryTokenStorage } from './token-storage';
+import { SessionMonitor } from './session-monitor';
 
 export interface SessionChangeHandler {
   (session: Session | null): void;
@@ -10,6 +11,9 @@ export interface AuthenticatedClientOptions {
   tokenStorage?: TokenStorage;
   storageKey?: string;
   persistSession?: boolean;
+  enableSessionMonitor?: boolean;
+  sessionCheckInterval?: number;
+  sessionRefreshThreshold?: number;
 }
 
 export class AuthenticatedClient {
@@ -18,6 +22,7 @@ export class AuthenticatedClient {
   private tokenStorage: TokenStorage;
   private storageKey: string;
   private persistSession: boolean;
+  private sessionMonitor?: SessionMonitor;
 
   constructor(
     client: SupabaseClient<Database>, 
@@ -30,6 +35,24 @@ export class AuthenticatedClient {
     
     this.setupAuthStateListener();
     this.restoreSession();
+    
+    // Set up session monitor if enabled
+    if (options.enableSessionMonitor) {
+      this.sessionMonitor = new SessionMonitor(client, {
+        checkInterval: options.sessionCheckInterval,
+        refreshThreshold: options.sessionRefreshThreshold,
+        onRefreshError: (error) => {
+          console.error('Session refresh error:', error);
+        },
+        onSessionRefreshed: (session) => {
+          // Persist the refreshed session
+          if (this.persistSession) {
+            this.tokenStorage.setSession(this.storageKey, session);
+          }
+        },
+      });
+      this.sessionMonitor.start();
+    }
   }
 
   private setupAuthStateListener(): void {
@@ -116,6 +139,14 @@ export class AuthenticatedClient {
   async ensureValidSession(): Promise<Session> {
     let { data: { session }, error } = await this.client.auth.getSession();
     
+    // If no session exists, try to restore from storage
+    if (!session && this.persistSession) {
+      await this.restoreSession();
+      const restored = await this.client.auth.getSession();
+      session = restored.data.session;
+      error = restored.error;
+    }
+    
     if (error || !session) {
       throw new ApiError(
         ErrorCode.UNAUTHORIZED,
@@ -124,28 +155,58 @@ export class AuthenticatedClient {
       );
     }
 
-    // Check if token is about to expire (within 60 seconds)
+    // Check if token is expired or about to expire
     const expiresAt = session.expires_at;
     if (expiresAt) {
-      const expiresIn = expiresAt * 1000 - Date.now();
-      if (expiresIn < 60000) {
-        // Proactively refresh the token
+      const now = Date.now();
+      const expirationTime = expiresAt * 1000;
+      const timeUntilExpiry = expirationTime - now;
+      
+      // Token is expired
+      if (timeUntilExpiry <= 0) {
         const refreshResult = await this.client.auth.refreshSession();
         if (refreshResult.error || !refreshResult.data.session) {
+          // Clear invalid session
+          await this.clearSession();
           throw new ApiError(
-            ErrorCode.UNAUTHORIZED,
-            'Failed to refresh expiring session',
+            ErrorCode.TOKEN_EXPIRED,
+            'Session expired and could not be refreshed',
             refreshResult.error
           );
         }
         session = refreshResult.data.session;
+      }
+      // Token expires within 5 minutes - proactively refresh
+      else if (timeUntilExpiry < 300000) {
+        // Attempt refresh but don't fail if it doesn't work yet
+        const refreshResult = await this.client.auth.refreshSession();
+        if (refreshResult.data.session) {
+          session = refreshResult.data.session;
+        }
       }
     }
 
     return session;
   }
 
+  async clearSession(): Promise<void> {
+    await this.client.auth.signOut();
+    if (this.persistSession) {
+      await this.tokenStorage.removeSession(this.storageKey);
+    }
+  }
+
   getSupabaseClient(): SupabaseClient<Database> {
     return this.client;
+  }
+
+  /**
+   * Clean up resources (e.g., stop session monitor)
+   */
+  dispose(): void {
+    if (this.sessionMonitor) {
+      this.sessionMonitor.stop();
+      this.sessionMonitor = undefined;
+    }
   }
 }

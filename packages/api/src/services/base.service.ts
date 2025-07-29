@@ -28,26 +28,51 @@ export abstract class BaseService {
     try {
       return await operation();
     } catch (error: any) {
-      // Check if error is due to expired token
-      if (
+      // Check if error is due to expired or invalid token
+      const isTokenError = 
         error?.status === 401 || 
         error?.code === 'PGRST301' ||
+        error?.code === 'PGRST401' ||
         error?.message?.toLowerCase().includes('jwt expired') ||
-        error?.message?.toLowerCase().includes('invalid token')
-      ) {
+        error?.message?.toLowerCase().includes('invalid token') ||
+        error?.message?.toLowerCase().includes('malformed') ||
+        error?.message?.toLowerCase().includes('unauthorized');
+      
+      if (isTokenError) {
         // Try to refresh the session
         const { data, error: refreshError } = await this.client.auth.refreshSession();
         
         if (refreshError || !data.session) {
+          // Check if it's a network error
+          if (refreshError?.message?.includes('network') || refreshError?.message?.includes('fetch')) {
+            throw new ApiError(
+              ErrorCode.SERVICE_UNAVAILABLE,
+              'Unable to refresh token due to network error',
+              refreshError
+            );
+          }
+          
           throw new ApiError(
-            ErrorCode.UNAUTHORIZED,
+            ErrorCode.TOKEN_EXPIRED,
             'Session expired and could not be refreshed',
             refreshError
           );
         }
 
         // Retry the operation with the new token
-        return await operation();
+        try {
+          return await operation();
+        } catch (retryError: any) {
+          // If it still fails with auth error, the refresh didn't help
+          if (retryError?.status === 401) {
+            throw new ApiError(
+              ErrorCode.UNAUTHORIZED,
+              'Authentication failed after token refresh',
+              retryError
+            );
+          }
+          throw retryError;
+        }
       }
       
       throw error;

@@ -54,7 +54,7 @@ This roadmap outlines the complete API development process for NVLP, from databa
 ### 3.3 Token Management
 - [x] Implement automatic token refresh in API layer
 - [x] Add token persistence for offline support
-- [ ] Handle token expiration gracefully
+- [x] Handle token expiration gracefully
 - [ ] Test token refresh flow
 
 ## Phase 4: Support Entity APIs
