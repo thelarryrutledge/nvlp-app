@@ -374,6 +374,187 @@ serve(async (req) => {
       )
     }
 
+    // Handle PATCH /transactions/{id}
+    if (req.method === 'PATCH' && pathParts.length === 2 && pathParts[0] === 'transactions') {
+      const transactionId = pathParts[1]
+      
+      // Get the existing transaction first
+      const { data: existingTransaction, error: fetchError } = await supabaseClient
+        .from('transactions')
+        .select('*')
+        .eq('id', transactionId)
+        .eq('is_deleted', false)
+        .single()
+
+      if (fetchError || !existingTransaction) {
+        if (fetchError?.code === 'PGRST116') {
+          return new Response(
+            JSON.stringify({ error: 'Transaction not found' }),
+            { 
+              status: 404,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          )
+        }
+        throw fetchError
+      }
+
+      // Verify budget access
+      const { error: budgetError } = await supabaseClient
+        .from('budgets')
+        .select('id')
+        .eq('id', existingTransaction.budget_id)
+        .eq('user_id', user.id)
+        .single()
+
+      if (budgetError) {
+        if (budgetError.code === 'PGRST116') {
+          return new Response(
+            JSON.stringify({ error: 'Budget not found or access denied' }),
+            { 
+              status: 404,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          )
+        }
+        throw budgetError
+      }
+
+      // Parse request body
+      const body = await req.json()
+      
+      // If updating amount, validate it's positive
+      if (body.amount !== undefined && body.amount <= 0) {
+        return new Response(
+          JSON.stringify({ error: 'Transaction amount must be positive' }),
+          { 
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        )
+      }
+
+      // If updating any field that affects transaction type requirements, validate
+      if (body.from_envelope_id !== undefined || 
+          body.to_envelope_id !== undefined ||
+          body.payee_id !== undefined ||
+          body.income_source_id !== undefined) {
+        
+        // Construct the full transaction object with updates
+        const updatedTransaction = {
+          transaction_type: existingTransaction.transaction_type,
+          amount: body.amount ?? existingTransaction.amount,
+          transaction_date: body.transaction_date ?? existingTransaction.transaction_date,
+          from_envelope_id: body.from_envelope_id ?? existingTransaction.from_envelope_id,
+          to_envelope_id: body.to_envelope_id ?? existingTransaction.to_envelope_id,
+          payee_id: body.payee_id ?? existingTransaction.payee_id,
+          income_source_id: body.income_source_id ?? existingTransaction.income_source_id,
+        }
+
+        // Validate based on transaction type
+        switch (updatedTransaction.transaction_type) {
+          case 'income':
+            if (!updatedTransaction.income_source_id || updatedTransaction.from_envelope_id || 
+                updatedTransaction.to_envelope_id || updatedTransaction.payee_id) {
+              return new Response(
+                JSON.stringify({ error: 'Income transactions require income_source_id and no envelope or payee references' }),
+                { 
+                  status: 400,
+                  headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+                }
+              )
+            }
+            break
+
+          case 'allocation':
+            if (!updatedTransaction.to_envelope_id || updatedTransaction.from_envelope_id || 
+                updatedTransaction.payee_id || updatedTransaction.income_source_id) {
+              return new Response(
+                JSON.stringify({ error: 'Allocation transactions require to_envelope_id only' }),
+                { 
+                  status: 400,
+                  headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+                }
+              )
+            }
+            break
+
+          case 'expense':
+          case 'debt_payment':
+            if (!updatedTransaction.from_envelope_id || !updatedTransaction.payee_id || 
+                updatedTransaction.to_envelope_id || updatedTransaction.income_source_id) {
+              return new Response(
+                JSON.stringify({ error: `${updatedTransaction.transaction_type} transactions require from_envelope_id and payee_id` }),
+                { 
+                  status: 400,
+                  headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+                }
+              )
+            }
+            break
+
+          case 'transfer':
+            if (!updatedTransaction.from_envelope_id || !updatedTransaction.to_envelope_id || 
+                updatedTransaction.payee_id || updatedTransaction.income_source_id) {
+              return new Response(
+                JSON.stringify({ error: 'Transfer transactions require from_envelope_id and to_envelope_id' }),
+                { 
+                  status: 400,
+                  headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+                }
+              )
+            }
+            if (updatedTransaction.from_envelope_id === updatedTransaction.to_envelope_id) {
+              return new Response(
+                JSON.stringify({ error: 'Cannot transfer to the same envelope' }),
+                { 
+                  status: 400,
+                  headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+                }
+              )
+            }
+            break
+        }
+      }
+
+      // Build update object with only provided fields
+      const updates: any = {
+        updated_at: new Date().toISOString()
+      }
+
+      if (body.amount !== undefined) updates.amount = body.amount
+      if (body.transaction_date !== undefined) updates.transaction_date = body.transaction_date
+      if (body.description !== undefined) updates.description = body.description || null
+      if (body.from_envelope_id !== undefined) updates.from_envelope_id = body.from_envelope_id || null
+      if (body.to_envelope_id !== undefined) updates.to_envelope_id = body.to_envelope_id || null
+      if (body.payee_id !== undefined) updates.payee_id = body.payee_id || null
+      if (body.income_source_id !== undefined) updates.income_source_id = body.income_source_id || null
+      if (body.category_id !== undefined) updates.category_id = body.category_id || null
+      if (body.is_cleared !== undefined) updates.is_cleared = body.is_cleared
+      if (body.is_reconciled !== undefined) updates.is_reconciled = body.is_reconciled
+      if (body.notes !== undefined) updates.notes = body.notes || null
+
+      // Update transaction
+      const { data: updatedTransaction, error: updateError } = await supabaseClient
+        .from('transactions')
+        .update(updates)
+        .eq('id', transactionId)
+        .select()
+        .single()
+
+      if (updateError) {
+        throw updateError
+      }
+
+      return new Response(
+        JSON.stringify({ transaction: updatedTransaction }),
+        { 
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
     // Method/path not found
     return new Response(
       JSON.stringify({ error: 'Not Found' }),
