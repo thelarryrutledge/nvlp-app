@@ -625,6 +625,79 @@ serve(async (req) => {
       )
     }
 
+    // Handle POST /transactions/{id}/restore
+    if (req.method === 'POST' && pathParts.length === 3 && pathParts[0] === 'transactions' && pathParts[2] === 'restore') {
+      const transactionId = pathParts[1]
+      
+      // Check if user can restore (must be the one who deleted)
+      const { data: transaction, error: fetchError } = await supabaseClient
+        .from('transactions')
+        .select('*')
+        .eq('id', transactionId)
+        .eq('is_deleted', true)
+        .eq('deleted_by', user.id)
+        .single()
+
+      if (fetchError || !transaction) {
+        if (fetchError?.code === 'PGRST116') {
+          return new Response(
+            JSON.stringify({ error: 'Deleted transaction not found or you cannot restore it' }),
+            { 
+              status: 404,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          )
+        }
+        throw fetchError
+      }
+
+      // Verify budget access
+      const { error: budgetError } = await supabaseClient
+        .from('budgets')
+        .select('id')
+        .eq('id', transaction.budget_id)
+        .eq('user_id', user.id)
+        .single()
+
+      if (budgetError) {
+        if (budgetError.code === 'PGRST116') {
+          return new Response(
+            JSON.stringify({ error: 'Budget not found or access denied' }),
+            { 
+              status: 404,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          )
+        }
+        throw budgetError
+      }
+
+      // Restore the transaction
+      const { data: restoredTransaction, error: restoreError } = await supabaseClient
+        .from('transactions')
+        .update({
+          is_deleted: false,
+          deleted_at: null,
+          deleted_by: null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', transactionId)
+        .select()
+        .single()
+
+      if (restoreError) {
+        throw restoreError
+      }
+
+      return new Response(
+        JSON.stringify({ transaction: restoredTransaction }),
+        { 
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
     // Method/path not found
     return new Response(
       JSON.stringify({ error: 'Not Found' }),
