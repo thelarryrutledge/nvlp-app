@@ -157,7 +157,7 @@ This roadmap outlines the complete API development process for NVLP, from databa
 
 ## Phase 8: Edge Functions vs PostgREST Strategy
 ### 8.1 PostgREST Direct Access (for simple CRUD)
-- [ ] Document PostgREST endpoints for all entities
+- [x] Document PostgREST endpoints for all entities
 - [ ] Create PostgREST client configuration
 - [ ] Add proper auth headers for PostgREST
 - [ ] Test direct PostgREST performance
