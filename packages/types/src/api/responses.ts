@@ -98,5 +98,27 @@ export interface SpendingTrends {
   top_declining_categories: CategoryTrend[];
 }
 
+export interface TransactionExportData {
+  id: string;
+  date: string;
+  type: string;
+  amount: number;
+  description?: string;
+  category?: string;
+  from_envelope?: string;
+  to_envelope?: string;
+  payee?: string;
+  income_source?: string;
+  is_cleared: boolean;
+  is_reconciled: boolean;
+}
+
+export interface ExportResponse {
+  format: 'json' | 'csv';
+  data: TransactionExportData[] | string;
+  total_records: number;
+  exported_at: string;
+}
+
 import { Transaction } from '../models/transaction';
 import { Envelope } from '../models/envelope';
