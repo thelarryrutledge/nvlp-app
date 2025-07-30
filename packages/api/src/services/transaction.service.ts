@@ -6,7 +6,8 @@ import {
   TransactionType,
   TransactionWithDetails,
   ApiError, 
-  ErrorCode 
+  ErrorCode,
+  EnvelopeType 
 } from '@nvlp/types';
 
 export interface TransactionFilters {
@@ -98,14 +99,13 @@ export class TransactionService extends BaseService {
       .from('transactions')
       .select(`
         *,
-        from_envelope:envelopes!from_envelope_id(*),
-        to_envelope:envelopes!to_envelope_id(*),
-        payee:payees!payee_id(*),
-        income_source:income_sources!income_source_id(*),
-        category:categories!category_id(*)
+        from_envelope:from_envelope_id(id, name),
+        to_envelope:to_envelope_id(id, name),
+        payee:payee_id(id, name),
+        income_source:income_source_id(id, name),
+        category:category_id(id, name)
       `)
       .eq('id', id)
-      .eq('is_deleted', false)
       .single();
 
     if (error || !data) {
@@ -121,14 +121,13 @@ export class TransactionService extends BaseService {
 
   async createTransaction(budgetId: string, request: TransactionCreateRequest): Promise<Transaction> {
     await this.verifyBudgetAccess(budgetId);
-    this.validateTransactionRequest(request);
+    await this.validateTransactionRequest(request, budgetId);
 
     const { data, error } = await this.client
       .from('transactions')
       .insert({
         budget_id: budgetId,
         ...request,
-        is_cleared: request.is_cleared ?? false,
       })
       .select()
       .single();
@@ -143,12 +142,12 @@ export class TransactionService extends BaseService {
   async updateTransaction(id: string, updates: TransactionUpdateRequest): Promise<Transaction> {
     const transaction = await this.getTransaction(id);
 
-    // Validate updates don't change transaction type requirements
+    // If changing core transaction fields, validate
     if (updates.from_envelope_id !== undefined || 
         updates.to_envelope_id !== undefined ||
         updates.payee_id !== undefined ||
         updates.income_source_id !== undefined) {
-      this.validateTransactionRequest({
+      await this.validateTransactionRequest({
         transaction_type: transaction.transaction_type,
         amount: updates.amount || transaction.amount,
         transaction_date: updates.transaction_date || transaction.transaction_date,
@@ -156,7 +155,7 @@ export class TransactionService extends BaseService {
         to_envelope_id: updates.to_envelope_id ?? transaction.to_envelope_id,
         payee_id: updates.payee_id ?? transaction.payee_id,
         income_source_id: updates.income_source_id ?? transaction.income_source_id,
-      });
+      }, transaction.budget_id);
     }
 
     const { data, error } = await this.client
@@ -177,7 +176,7 @@ export class TransactionService extends BaseService {
   }
 
   async softDeleteTransaction(id: string): Promise<void> {
-    const transaction = await this.getTransaction(id);
+    await this.getTransaction(id); // Verify access
     const userId = await this.getCurrentUserId();
 
     const { error } = await this.client
@@ -254,9 +253,44 @@ export class TransactionService extends BaseService {
     return this.listTransactions(envelope.budget_id, { envelopeId }, limit);
   }
 
-  private validateTransactionRequest(request: TransactionCreateRequest): void {
+  private async validateTransactionRequest(request: TransactionCreateRequest, budgetId?: string): Promise<void> {
     const { transaction_type, from_envelope_id, to_envelope_id, payee_id, income_source_id } = request;
 
+    // Basic amount validation
+    if (request.amount <= 0) {
+      throw new ApiError(
+        ErrorCode.VALIDATION_ERROR,
+        'Transaction amount must be positive'
+      );
+    }
+
+    // Validate amount has at most 2 decimal places (cents)
+    if (Math.round(request.amount * 100) !== request.amount * 100) {
+      throw new ApiError(
+        ErrorCode.VALIDATION_ERROR,
+        'Transaction amount can have at most 2 decimal places'
+      );
+    }
+
+    // Validate transaction date is not in the future
+    const transactionDate = new Date(request.transaction_date);
+    if (transactionDate > new Date()) {
+      throw new ApiError(
+        ErrorCode.VALIDATION_ERROR,
+        'Transaction date cannot be in the future'
+      );
+    }
+
+    // Validate description length if provided
+    if (request.description && request.description.length > 500) {
+      throw new ApiError(
+        ErrorCode.VALIDATION_ERROR,
+        'Transaction description must be 500 characters or less'
+      );
+    }
+
+
+    // Type-specific validation
     switch (transaction_type) {
       case TransactionType.INCOME:
         if (!income_source_id || from_envelope_id || to_envelope_id || payee_id) {
@@ -264,6 +298,19 @@ export class TransactionService extends BaseService {
             ErrorCode.VALIDATION_ERROR,
             'Income transactions require income_source_id and no envelope or payee references'
           );
+        }
+        // Verify income source exists and belongs to the budget
+        if (budgetId) {
+          const { data: incomeSource } = await this.client
+            .from('income_sources')
+            .select('id')
+            .eq('id', income_source_id)
+            .eq('budget_id', budgetId)
+            .single();
+          
+          if (!incomeSource) {
+            throw new ApiError(ErrorCode.NOT_FOUND, 'Income source not found or does not belong to this budget');
+          }
         }
         break;
 
@@ -274,6 +321,22 @@ export class TransactionService extends BaseService {
             'Allocation transactions require to_envelope_id only'
           );
         }
+        // Verify envelope exists and belongs to the budget
+        if (budgetId) {
+          const { data: envelope } = await this.client
+            .from('envelopes')
+            .select('id, is_active')
+            .eq('id', to_envelope_id)
+            .eq('budget_id', budgetId)
+            .single();
+          
+          if (!envelope) {
+            throw new ApiError(ErrorCode.NOT_FOUND, 'Envelope not found or does not belong to this budget');
+          }
+          if (!envelope.is_active) {
+            throw new ApiError(ErrorCode.VALIDATION_ERROR, 'Cannot allocate to inactive envelope');
+          }
+        }
         break;
 
       case TransactionType.EXPENSE:
@@ -283,6 +346,46 @@ export class TransactionService extends BaseService {
             ErrorCode.VALIDATION_ERROR,
             `${transaction_type} transactions require from_envelope_id and payee_id`
           );
+        }
+        // Verify entities exist and belong to the budget
+        if (budgetId) {
+          const { data: envelope } = await this.client
+            .from('envelopes')
+            .select('id, is_active, envelope_type')
+            .eq('id', from_envelope_id)
+            .eq('budget_id', budgetId)
+            .single();
+          
+          if (!envelope) {
+            throw new ApiError(ErrorCode.NOT_FOUND, 'Envelope not found or does not belong to this budget');
+          }
+          if (!envelope.is_active) {
+            throw new ApiError(ErrorCode.VALIDATION_ERROR, 'Cannot spend from inactive envelope');
+          }
+
+          const { data: payee } = await this.client
+            .from('payees')
+            .select('id, is_active')
+            .eq('id', payee_id)
+            .eq('budget_id', budgetId)
+            .single();
+          
+          if (!payee) {
+            throw new ApiError(ErrorCode.NOT_FOUND, 'Payee not found or does not belong to this budget');
+          }
+          if (!payee.is_active) {
+            throw new ApiError(ErrorCode.VALIDATION_ERROR, 'Cannot make payment to inactive payee');
+          }
+
+          // Additional validation for debt payments
+          if (transaction_type === TransactionType.DEBT_PAYMENT) {
+            if (envelope.envelope_type !== EnvelopeType.DEBT) {
+              throw new ApiError(
+                ErrorCode.VALIDATION_ERROR,
+                'Debt payments must be made from debt envelopes'
+              );
+            }
+          }
         }
         break;
 
@@ -299,6 +402,36 @@ export class TransactionService extends BaseService {
             'Cannot transfer to the same envelope'
           );
         }
+        // Verify both envelopes exist and belong to the budget
+        if (budgetId) {
+          const { data: fromEnvelope } = await this.client
+            .from('envelopes')
+            .select('id, is_active')
+            .eq('id', from_envelope_id)
+            .eq('budget_id', budgetId)
+            .single();
+          
+          if (!fromEnvelope) {
+            throw new ApiError(ErrorCode.NOT_FOUND, 'Source envelope not found or does not belong to this budget');
+          }
+          if (!fromEnvelope.is_active) {
+            throw new ApiError(ErrorCode.VALIDATION_ERROR, 'Cannot transfer from inactive envelope');
+          }
+
+          const { data: toEnvelope } = await this.client
+            .from('envelopes')
+            .select('id, is_active')
+            .eq('id', to_envelope_id)
+            .eq('budget_id', budgetId)
+            .single();
+          
+          if (!toEnvelope) {
+            throw new ApiError(ErrorCode.NOT_FOUND, 'Destination envelope not found or does not belong to this budget');
+          }
+          if (!toEnvelope.is_active) {
+            throw new ApiError(ErrorCode.VALIDATION_ERROR, 'Cannot transfer to inactive envelope');
+          }
+        }
         break;
 
       default:
@@ -306,13 +439,6 @@ export class TransactionService extends BaseService {
           ErrorCode.INVALID_TRANSACTION_TYPE,
           'Invalid transaction type'
         );
-    }
-
-    if (request.amount <= 0) {
-      throw new ApiError(
-        ErrorCode.VALIDATION_ERROR,
-        'Transaction amount must be positive'
-      );
     }
   }
 
