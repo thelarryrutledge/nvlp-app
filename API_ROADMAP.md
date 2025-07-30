@@ -122,7 +122,7 @@ This roadmap outlines the complete API development process for NVLP, from databa
 - [x] Implement transfer flow (envelope → envelope)
 - [x] Implement debt payment flow
 - [x] Add transaction validation rules
-- [ ] Test balance updates and constraints
+- [x] Test balance updates and constraints
 
 ### 6.3 Transaction Queries
 - [ ] GET /envelopes/{id}/transactions - Get envelope transactions
