@@ -139,10 +139,10 @@ This roadmap outlines the complete API development process for NVLP, from databa
 - [x] Make setup idempotent (safe to call multiple times)
 
 ### 6.5.2 Demo Data Creation
-- [ ] Create realistic demo transactions
-- [ ] Set up sample income and allocation patterns
-- [ ] Create negative balance scenarios for testing
-- [ ] Generate historical data for reporting tests
+- [x] Create realistic demo transactions
+- [x] Set up sample income and allocation patterns
+- [x] Create negative balance scenarios for testing
+- [x] Generate historical data for reporting tests
 
 ## Phase 7: Dashboard & Reporting
 ### 7.1 Dashboard API
