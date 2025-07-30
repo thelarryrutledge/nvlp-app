@@ -13,6 +13,7 @@ export interface Envelope {
   target_amount?: number;
   envelope_type: EnvelopeType;
   category_id?: string;
+  display_order: number;
   notify_on_low_balance: boolean;
   low_balance_threshold?: number;
   is_active: boolean;
@@ -26,6 +27,7 @@ export interface EnvelopeCreateRequest {
   target_amount?: number;
   envelope_type?: EnvelopeType;
   category_id?: string;
+  display_order?: number; // Optional - will auto-assign if not provided
   notify_on_low_balance?: boolean;
   low_balance_threshold?: number;
 }
@@ -36,7 +38,13 @@ export interface EnvelopeUpdateRequest {
   target_amount?: number;
   envelope_type?: EnvelopeType;
   category_id?: string;
+  display_order?: number;
   notify_on_low_balance?: boolean;
   low_balance_threshold?: number;
   is_active?: boolean;
+}
+
+export interface EnvelopeReorderRequest {
+  id: string;
+  display_order: number;
 }

@@ -36,3 +36,8 @@ export interface CategoryUpdateRequest {
   display_order?: number;
   parent_id?: string;
 }
+
+export interface CategoryReorderRequest {
+  id: string;
+  display_order: number;
+}

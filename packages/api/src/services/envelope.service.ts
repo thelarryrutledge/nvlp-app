@@ -1,5 +1,5 @@
 import { BaseService } from './base.service';
-import { Envelope, EnvelopeCreateRequest, EnvelopeUpdateRequest, EnvelopeType, ApiError, ErrorCode } from '@nvlp/types';
+import { Envelope, EnvelopeCreateRequest, EnvelopeUpdateRequest, EnvelopeReorderRequest, EnvelopeType, ApiError, ErrorCode } from '@nvlp/types';
 
 export class EnvelopeService extends BaseService {
   async listEnvelopes(budgetId: string): Promise<Envelope[]> {
@@ -39,6 +39,14 @@ export class EnvelopeService extends BaseService {
   async createEnvelope(budgetId: string, request: EnvelopeCreateRequest): Promise<Envelope> {
     await this.verifyBudgetAccess(budgetId);
 
+    // Get next display_order if not provided
+    let displayOrder = request.display_order;
+    if (displayOrder === undefined && request.category_id) {
+      const { data: nextOrder } = await this.client
+        .rpc('get_next_envelope_display_order', { category_id_param: request.category_id });
+      displayOrder = nextOrder || 0;
+    }
+
     const { data, error } = await this.client
       .from('envelopes')
       .insert({
@@ -48,6 +56,7 @@ export class EnvelopeService extends BaseService {
         target_amount: request.target_amount,
         envelope_type: request.envelope_type || EnvelopeType.REGULAR,
         category_id: request.category_id,
+        display_order: displayOrder || 0,
         notify_on_low_balance: request.notify_on_low_balance ?? false,
         low_balance_threshold: request.low_balance_threshold,
       })
@@ -168,6 +177,48 @@ export class EnvelopeService extends BaseService {
         throw new ApiError(ErrorCode.NOT_FOUND, 'Budget not found or access denied');
       }
       this.handleError(error);
+    }
+  }
+
+  async reorderEnvelopes(budgetId: string, reorders: EnvelopeReorderRequest[]): Promise<void> {
+    await this.verifyBudgetAccess(budgetId);
+
+    // Update each envelope's display_order
+    for (const reorder of reorders) {
+      const { error } = await this.client
+        .from('envelopes')
+        .update({ 
+          display_order: reorder.display_order,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', reorder.id)
+        .eq('budget_id', budgetId); // Extra security check
+
+      if (error) {
+        this.handleError(error);
+      }
+    }
+
+    // Clean up ordering within affected categories
+    const affectedCategories = new Set<string>();
+    
+    for (const reorder of reorders) {
+      const { data: envelope } = await this.client
+        .from('envelopes')
+        .select('category_id')
+        .eq('id', reorder.id)
+        .single();
+      
+      if (envelope?.category_id) {
+        affectedCategories.add(envelope.category_id);
+      }
+    }
+
+    // Reorder each affected category to eliminate gaps
+    for (const categoryId of affectedCategories) {
+      await this.client.rpc('reorder_envelopes_in_category', { 
+        category_id_param: categoryId 
+      });
     }
   }
 }

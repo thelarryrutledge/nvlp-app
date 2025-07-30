@@ -1,5 +1,5 @@
 import { BaseService } from './base.service';
-import { Category, CategoryCreateRequest, CategoryUpdateRequest, CategoryType, ApiError, ErrorCode } from '@nvlp/types';
+import { Category, CategoryCreateRequest, CategoryUpdateRequest, CategoryReorderRequest, CategoryType, ApiError, ErrorCode } from '@nvlp/types';
 
 export class CategoryService extends BaseService {
   async listCategories(budgetId: string): Promise<Category[]> {
@@ -59,6 +59,17 @@ export class CategoryService extends BaseService {
       }
     }
 
+    // Get next display_order if not provided
+    let displayOrder = request.display_order;
+    if (displayOrder === undefined) {
+      const { data: nextOrder } = await this.client
+        .rpc('get_next_category_display_order', { 
+          budget_id_param: budgetId, 
+          parent_id_param: request.parent_id || null 
+        });
+      displayOrder = nextOrder || 0;
+    }
+
     const { data, error } = await this.client
       .from('categories')
       .insert({
@@ -67,7 +78,7 @@ export class CategoryService extends BaseService {
         description: request.description,
         is_income: request.is_income ?? false,
         is_system: request.is_system ?? false,
-        display_order: request.display_order ?? 0,
+        display_order: displayOrder,
         parent_id: request.parent_id,
       })
       .select()
@@ -212,6 +223,51 @@ export class CategoryService extends BaseService {
         throw new ApiError(ErrorCode.NOT_FOUND, 'Budget not found or access denied');
       }
       this.handleError(error);
+    }
+  }
+
+  async reorderCategories(budgetId: string, reorders: CategoryReorderRequest[]): Promise<void> {
+    await this.verifyBudgetAccess(budgetId);
+
+    // Update each category's display_order
+    for (const reorder of reorders) {
+      const { error } = await this.client
+        .from('categories')
+        .update({ 
+          display_order: reorder.display_order,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', reorder.id)
+        .eq('budget_id', budgetId); // Extra security check
+
+      if (error) {
+        this.handleError(error);
+      }
+    }
+
+    // Clean up ordering within affected scopes (budget + parent combinations)
+    const affectedScopes = new Set<string>();
+    
+    for (const reorder of reorders) {
+      const { data: category } = await this.client
+        .from('categories')
+        .select('parent_id')
+        .eq('id', reorder.id)
+        .single();
+      
+      const scopeKey = `${budgetId}:${category?.parent_id || 'null'}`;
+      affectedScopes.add(scopeKey);
+    }
+
+    // Reorder each affected scope to eliminate gaps
+    for (const scopeKey of affectedScopes) {
+      const [_, parentIdStr] = scopeKey.split(':');
+      const parentId = parentIdStr === 'null' ? null : parentIdStr;
+      
+      await this.client.rpc('reorder_categories_in_scope', { 
+        budget_id_param: budgetId,
+        parent_id_param: parentId
+      });
     }
   }
 }
