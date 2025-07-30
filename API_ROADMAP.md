@@ -159,7 +159,7 @@ This roadmap outlines the complete API development process for NVLP, from databa
 ### 8.1 PostgREST Direct Access (for simple CRUD)
 - [x] Document PostgREST endpoints for all entities
 - [x] Create PostgREST client configuration
-- [ ] Add proper auth headers for PostgREST
+- [x] Add proper auth headers for PostgREST
 - [ ] Test direct PostgREST performance
 
 ### 8.2 Edge Functions (for complex logic)
