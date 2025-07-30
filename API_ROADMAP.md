@@ -125,7 +125,7 @@ This roadmap outlines the complete API development process for NVLP, from databa
 - [x] Test balance updates and constraints
 
 ### 6.3 Transaction Queries
-- [ ] GET /envelopes/{id}/transactions - Get envelope transactions
+- [x] GET /envelopes/{id}/transactions - Get envelope transactions
 - [ ] GET /payees/{id}/transactions - Get payee transactions
 - [ ] GET /budgets/{budgetId}/transactions/recent - Recent transactions
 - [ ] GET /budgets/{budgetId}/transactions/pending - Uncleared transactions
