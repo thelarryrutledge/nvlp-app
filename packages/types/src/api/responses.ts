@@ -71,5 +71,32 @@ export interface IncomeStats {
   by_time: IncomeByTime[];
 }
 
+export interface TrendData {
+  period: string;
+  spending: number;
+  income: number;
+  net_flow: number;
+  transaction_count: number;
+}
+
+export interface CategoryTrend {
+  category_id: string;
+  category_name: string;
+  trend_data: TrendData[];
+  total_spending: number;
+  average_spending: number;
+  trend_direction: 'increasing' | 'decreasing' | 'stable';
+  trend_percentage: number;
+}
+
+export interface SpendingTrends {
+  period_start: string;
+  period_end: string;
+  overall_trend: TrendData[];
+  category_trends: CategoryTrend[];
+  top_growing_categories: CategoryTrend[];
+  top_declining_categories: CategoryTrend[];
+}
+
 import { Transaction } from '../models/transaction';
 import { Envelope } from '../models/envelope';

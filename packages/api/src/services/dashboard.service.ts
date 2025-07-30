@@ -1,5 +1,5 @@
 import { SupabaseClient } from '@supabase/supabase-js';
-import { Database, DashboardSummary, SpendingStats, SpendingByCategory, SpendingByTime, IncomeStats, IncomeBySource, IncomeByTime, ApiError, ErrorCode, Envelope, Transaction } from '@nvlp/types';
+import { Database, DashboardSummary, SpendingStats, SpendingByCategory, SpendingByTime, IncomeStats, IncomeBySource, IncomeByTime, SpendingTrends, TrendData, CategoryTrend, ApiError, ErrorCode, Envelope, Transaction } from '@nvlp/types';
 import { BaseService } from './base.service';
 
 export class DashboardService extends BaseService {
@@ -380,6 +380,197 @@ export class DashboardService extends BaseService {
         period_end: endDate,
         by_source: bySource,
         by_time: byTime
+      };
+    });
+  }
+
+  async getSpendingTrends(
+    budgetId: string, 
+    startDate: string, 
+    endDate: string, 
+    groupBy: 'month' | 'year' = 'month'
+  ): Promise<SpendingTrends> {
+    return this.withRetry(async () => {
+      const userId = await this.getCurrentUserId();
+
+      const { error: budgetError } = await this.client
+        .from('budgets')
+        .select('id')
+        .eq('id', budgetId)
+        .eq('user_id', userId)
+        .single();
+
+      if (budgetError) {
+        this.handleError(budgetError);
+      }
+
+      const [spendingResult, incomeResult] = await Promise.all([
+        this.client
+          .from('transactions')
+          .select(`
+            amount,
+            transaction_date,
+            category_id,
+            categories!category_id(name)
+          `)
+          .eq('budget_id', budgetId)
+          .eq('is_deleted', false)
+          .in('transaction_type', ['expense', 'debt_payment'])
+          .gte('transaction_date', startDate)
+          .lte('transaction_date', endDate)
+          .order('transaction_date', { ascending: true }),
+
+        this.client
+          .from('transactions')
+          .select('amount, transaction_date')
+          .eq('budget_id', budgetId)
+          .eq('is_deleted', false)
+          .eq('transaction_type', 'income')
+          .gte('transaction_date', startDate)
+          .lte('transaction_date', endDate)
+          .order('transaction_date', { ascending: true })
+      ]);
+
+      if (spendingResult.error) this.handleError(spendingResult.error);
+      if (incomeResult.error) this.handleError(incomeResult.error);
+
+      const overallTrendMap = new Map<string, { spending: number; income: number; transactionCount: number }>();
+      const categoryTrendMap = new Map<string, { 
+        name: string; 
+        periodData: Map<string, number>; 
+        total: number; 
+        transactionCount: number;
+      }>();
+
+      spendingResult.data?.forEach(transaction => {
+        const date = new Date(transaction.transaction_date);
+        const period = groupBy === 'month' 
+          ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+          : String(date.getFullYear());
+
+        const existing = overallTrendMap.get(period);
+        if (existing) {
+          existing.spending += transaction.amount;
+          existing.transactionCount += 1;
+        } else {
+          overallTrendMap.set(period, {
+            spending: transaction.amount,
+            income: 0,
+            transactionCount: 1
+          });
+        }
+
+        const categoryId = transaction.category_id || 'uncategorized';
+        const categoryName = (transaction.categories as any)?.name || 'Uncategorized';
+        
+        const categoryData = categoryTrendMap.get(categoryId);
+        if (categoryData) {
+          const periodSpending = categoryData.periodData.get(period) || 0;
+          categoryData.periodData.set(period, periodSpending + transaction.amount);
+          categoryData.total += transaction.amount;
+          categoryData.transactionCount += 1;
+        } else {
+          const periodData = new Map<string, number>();
+          periodData.set(period, transaction.amount);
+          categoryTrendMap.set(categoryId, {
+            name: categoryName,
+            periodData,
+            total: transaction.amount,
+            transactionCount: 1
+          });
+        }
+      });
+
+      incomeResult.data?.forEach(transaction => {
+        const date = new Date(transaction.transaction_date);
+        const period = groupBy === 'month' 
+          ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+          : String(date.getFullYear());
+
+        const existing = overallTrendMap.get(period);
+        if (existing) {
+          existing.income += transaction.amount;
+        } else {
+          overallTrendMap.set(period, {
+            spending: 0,
+            income: transaction.amount,
+            transactionCount: 0
+          });
+        }
+      });
+
+      const overallTrend: TrendData[] = Array.from(overallTrendMap.entries())
+        .map(([period, data]) => ({
+          period,
+          spending: data.spending,
+          income: data.income,
+          net_flow: data.income - data.spending,
+          transaction_count: data.transactionCount
+        }))
+        .sort((a, b) => a.period.localeCompare(b.period));
+
+      const calculateTrend = (periodData: Map<string, number>): { direction: 'increasing' | 'decreasing' | 'stable'; percentage: number } => {
+        const periods = Array.from(periodData.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+        if (periods.length < 2) return { direction: 'stable', percentage: 0 };
+
+        const firstHalf = periods.slice(0, Math.ceil(periods.length / 2));
+        const secondHalf = periods.slice(Math.floor(periods.length / 2));
+
+        const firstAvg = firstHalf.reduce((sum, [, amount]) => sum + amount, 0) / firstHalf.length;
+        const secondAvg = secondHalf.reduce((sum, [, amount]) => sum + amount, 0) / secondHalf.length;
+
+        if (firstAvg === 0) return { direction: 'stable', percentage: 0 };
+
+        const percentage = ((secondAvg - firstAvg) / firstAvg) * 100;
+        
+        if (Math.abs(percentage) < 5) return { direction: 'stable', percentage };
+        return { direction: percentage > 0 ? 'increasing' : 'decreasing', percentage };
+      };
+
+      const categoryTrends: CategoryTrend[] = Array.from(categoryTrendMap.entries())
+        .map(([categoryId, data]) => {
+          const trendData: TrendData[] = Array.from(overallTrendMap.keys())
+            .sort()
+            .map(period => ({
+              period,
+              spending: data.periodData.get(period) || 0,
+              income: 0,
+              net_flow: -(data.periodData.get(period) || 0),
+              transaction_count: 0
+            }));
+
+          const trend = calculateTrend(data.periodData);
+          const averageSpending = data.total / Math.max(data.periodData.size, 1);
+
+          return {
+            category_id: categoryId,
+            category_name: data.name,
+            trend_data: trendData,
+            total_spending: data.total,
+            average_spending: averageSpending,
+            trend_direction: trend.direction,
+            trend_percentage: trend.percentage
+          };
+        })
+        .sort((a, b) => b.total_spending - a.total_spending);
+
+      const topGrowing = categoryTrends
+        .filter(cat => cat.trend_direction === 'increasing')
+        .sort((a, b) => b.trend_percentage - a.trend_percentage)
+        .slice(0, 5);
+
+      const topDeclining = categoryTrends
+        .filter(cat => cat.trend_direction === 'decreasing')
+        .sort((a, b) => a.trend_percentage - b.trend_percentage)
+        .slice(0, 5);
+
+      return {
+        period_start: startDate,
+        period_end: endDate,
+        overall_trend: overallTrend,
+        category_trends: categoryTrends,
+        top_growing_categories: topGrowing,
+        top_declining_categories: topDeclining
       };
     });
   }
