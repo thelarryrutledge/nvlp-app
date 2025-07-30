@@ -146,7 +146,7 @@ This roadmap outlines the complete API development process for NVLP, from databa
 
 ## Phase 7: Dashboard & Reporting
 ### 7.1 Dashboard API
-- [ ] GET /budgets/{budgetId}/dashboard - Get dashboard summary
+- [x] GET /budgets/{budgetId}/dashboard - Get dashboard summary
 - [ ] GET /budgets/{budgetId}/stats/spending - Spending by category/time
 - [ ] GET /budgets/{budgetId}/stats/income - Income analysis
 - [ ] GET /budgets/{budgetId}/stats/trends - Spending trends

@@ -15,15 +15,17 @@ export interface PaginatedResponse<T> {
 }
 
 export interface DashboardSummary {
-  budget_id: string;
   available_amount: number;
-  total_income: number;
-  total_allocated: number;
-  total_spent: number;
+  total_envelope_balance: number;
   envelope_count: number;
-  active_envelopes: number;
-  negative_envelopes: number;
+  negative_envelope_count: number;
+  recent_transactions_count: number;
+  uncleared_transactions_count: number;
+  month_to_date_spending: number;
+  month_to_date_income: number;
+  negative_envelopes: Envelope[];
   recent_transactions: Transaction[];
 }
 
 import { Transaction } from '../models/transaction';
+import { Envelope } from '../models/envelope';
