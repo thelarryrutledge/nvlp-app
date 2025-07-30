@@ -1,5 +1,5 @@
 import { SupabaseClient } from '@supabase/supabase-js';
-import { Database, DashboardSummary, ApiError, ErrorCode, Envelope, Transaction } from '@nvlp/types';
+import { Database, DashboardSummary, SpendingStats, SpendingByCategory, SpendingByTime, ApiError, ErrorCode, Envelope, Transaction } from '@nvlp/types';
 import { BaseService } from './base.service';
 
 export class DashboardService extends BaseService {
@@ -116,6 +116,130 @@ export class DashboardService extends BaseService {
         month_to_date_income: monthToDateIncome,
         negative_envelopes: negativeEnvelopesResult.data as Envelope[] || [],
         recent_transactions: recentTransactionsResult.data as Transaction[] || []
+      };
+    });
+  }
+
+  async getSpendingStats(
+    budgetId: string, 
+    startDate: string, 
+    endDate: string, 
+    groupBy: 'day' | 'month' | 'year' = 'month'
+  ): Promise<SpendingStats> {
+    return this.withRetry(async () => {
+      const userId = await this.getCurrentUserId();
+
+      const { error: budgetError } = await this.client
+        .from('budgets')
+        .select('id')
+        .eq('id', budgetId)
+        .eq('user_id', userId)
+        .single();
+
+      if (budgetError) {
+        this.handleError(budgetError);
+      }
+
+      const spendingTransactionTypes = ['expense', 'debt_payment'];
+
+      const [categorySpendingResult, timeSpendingResult] = await Promise.all([
+        this.client
+          .from('transactions')
+          .select(`
+            amount,
+            category_id,
+            categories!category_id(name)
+          `)
+          .eq('budget_id', budgetId)
+          .eq('is_deleted', false)
+          .in('transaction_type', spendingTransactionTypes)
+          .gte('transaction_date', startDate)
+          .lte('transaction_date', endDate),
+
+        this.client
+          .from('transactions')
+          .select('amount, transaction_date')
+          .eq('budget_id', budgetId)
+          .eq('is_deleted', false)
+          .in('transaction_type', spendingTransactionTypes)
+          .gte('transaction_date', startDate)
+          .lte('transaction_date', endDate)
+          .order('transaction_date', { ascending: true })
+      ]);
+
+      if (categorySpendingResult.error) this.handleError(categorySpendingResult.error);
+      if (timeSpendingResult.error) this.handleError(timeSpendingResult.error);
+
+      const categoryMap = new Map<string, { name: string; total: number; count: number }>();
+      let totalSpending = 0;
+
+      categorySpendingResult.data?.forEach(transaction => {
+        totalSpending += transaction.amount;
+        const categoryId = transaction.category_id || 'uncategorized';
+        const categoryName = (transaction.categories as any)?.name || 'Uncategorized';
+        
+        const existing = categoryMap.get(categoryId);
+        if (existing) {
+          existing.total += transaction.amount;
+          existing.count += 1;
+        } else {
+          categoryMap.set(categoryId, {
+            name: categoryName,
+            total: transaction.amount,
+            count: 1
+          });
+        }
+      });
+
+      const byCategory: SpendingByCategory[] = Array.from(categoryMap.entries()).map(([id, data]) => ({
+        category_id: id,
+        category_name: data.name,
+        total_amount: data.total,
+        transaction_count: data.count
+      })).sort((a, b) => b.total_amount - a.total_amount);
+
+      const timeMap = new Map<string, { total: number; count: number }>();
+      
+      timeSpendingResult.data?.forEach(transaction => {
+        const date = new Date(transaction.transaction_date);
+        let period: string;
+        
+        switch (groupBy) {
+          case 'day':
+            period = transaction.transaction_date.substring(0, 10); // YYYY-MM-DD
+            break;
+          case 'month':
+            period = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`; // YYYY-MM
+            break;
+          case 'year':
+            period = String(date.getFullYear()); // YYYY
+            break;
+        }
+        
+        const existing = timeMap.get(period);
+        if (existing) {
+          existing.total += transaction.amount;
+          existing.count += 1;
+        } else {
+          timeMap.set(period, {
+            total: transaction.amount,
+            count: 1
+          });
+        }
+      });
+
+      const byTime: SpendingByTime[] = Array.from(timeMap.entries()).map(([period, data]) => ({
+        period,
+        total_amount: data.total,
+        transaction_count: data.count
+      })).sort((a, b) => a.period.localeCompare(b.period));
+
+      return {
+        total_spending: totalSpending,
+        period_start: startDate,
+        period_end: endDate,
+        by_category: byCategory,
+        by_time: byTime
       };
     });
   }

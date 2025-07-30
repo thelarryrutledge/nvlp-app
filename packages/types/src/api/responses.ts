@@ -27,5 +27,26 @@ export interface DashboardSummary {
   recent_transactions: Transaction[];
 }
 
+export interface SpendingByCategory {
+  category_id: string;
+  category_name: string;
+  total_amount: number;
+  transaction_count: number;
+}
+
+export interface SpendingByTime {
+  period: string; // YYYY-MM-DD for daily, YYYY-MM for monthly, YYYY for yearly
+  total_amount: number;
+  transaction_count: number;
+}
+
+export interface SpendingStats {
+  total_spending: number;
+  period_start: string;
+  period_end: string;
+  by_category: SpendingByCategory[];
+  by_time: SpendingByTime[];
+}
+
 import { Transaction } from '../models/transaction';
 import { Envelope } from '../models/envelope';
