@@ -148,7 +148,7 @@ This roadmap outlines the complete API development process for NVLP, from databa
 ### 7.1 Dashboard API
 - [x] GET /budgets/{budgetId}/dashboard - Get dashboard summary
 - [x] GET /budgets/{budgetId}/stats/spending - Spending by category/time
-- [ ] GET /budgets/{budgetId}/stats/income - Income analysis
+- [x] GET /budgets/{budgetId}/stats/income - Income analysis
 - [ ] GET /budgets/{budgetId}/stats/trends - Spending trends
 
 ### 7.2 Export APIs

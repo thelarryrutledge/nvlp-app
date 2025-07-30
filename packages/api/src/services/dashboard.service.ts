@@ -1,5 +1,5 @@
 import { SupabaseClient } from '@supabase/supabase-js';
-import { Database, DashboardSummary, SpendingStats, SpendingByCategory, SpendingByTime, ApiError, ErrorCode, Envelope, Transaction } from '@nvlp/types';
+import { Database, DashboardSummary, SpendingStats, SpendingByCategory, SpendingByTime, IncomeStats, IncomeBySource, IncomeByTime, ApiError, ErrorCode, Envelope, Transaction } from '@nvlp/types';
 import { BaseService } from './base.service';
 
 export class DashboardService extends BaseService {
@@ -239,6 +239,146 @@ export class DashboardService extends BaseService {
         period_start: startDate,
         period_end: endDate,
         by_category: byCategory,
+        by_time: byTime
+      };
+    });
+  }
+
+  async getIncomeStats(
+    budgetId: string, 
+    startDate: string, 
+    endDate: string, 
+    groupBy: 'day' | 'month' | 'year' = 'month'
+  ): Promise<IncomeStats> {
+    return this.withRetry(async () => {
+      const userId = await this.getCurrentUserId();
+
+      const { error: budgetError } = await this.client
+        .from('budgets')
+        .select('id')
+        .eq('id', budgetId)
+        .eq('user_id', userId)
+        .single();
+
+      if (budgetError) {
+        this.handleError(budgetError);
+      }
+
+      const [sourceIncomeResult, timeIncomeResult, incomeSourcesResult] = await Promise.all([
+        this.client
+          .from('transactions')
+          .select(`
+            amount,
+            income_source_id,
+            income_sources!income_source_id(name, expected_amount)
+          `)
+          .eq('budget_id', budgetId)
+          .eq('is_deleted', false)
+          .eq('transaction_type', 'income')
+          .gte('transaction_date', startDate)
+          .lte('transaction_date', endDate),
+
+        this.client
+          .from('transactions')
+          .select('amount, transaction_date')
+          .eq('budget_id', budgetId)
+          .eq('is_deleted', false)
+          .eq('transaction_type', 'income')
+          .gte('transaction_date', startDate)
+          .lte('transaction_date', endDate)
+          .order('transaction_date', { ascending: true }),
+
+        this.client
+          .from('income_sources')
+          .select('id, name, expected_amount')
+          .eq('budget_id', budgetId)
+          .eq('is_active', true)
+      ]);
+
+      if (sourceIncomeResult.error) this.handleError(sourceIncomeResult.error);
+      if (timeIncomeResult.error) this.handleError(timeIncomeResult.error);
+      if (incomeSourcesResult.error) this.handleError(incomeSourcesResult.error);
+
+      const sourceMap = new Map<string, { name: string; total: number; count: number; expected?: number }>();
+      let totalIncome = 0;
+
+      sourceIncomeResult.data?.forEach(transaction => {
+        totalIncome += transaction.amount;
+        const sourceId = transaction.income_source_id || 'unknown';
+        const sourceName = (transaction.income_sources as any)?.name || 'Unknown Source';
+        const expectedAmount = (transaction.income_sources as any)?.expected_amount;
+        
+        const existing = sourceMap.get(sourceId);
+        if (existing) {
+          existing.total += transaction.amount;
+          existing.count += 1;
+        } else {
+          sourceMap.set(sourceId, {
+            name: sourceName,
+            total: transaction.amount,
+            count: 1,
+            expected: expectedAmount
+          });
+        }
+      });
+
+      const bySource: IncomeBySource[] = Array.from(sourceMap.entries()).map(([id, data]) => {
+        const result: IncomeBySource = {
+          income_source_id: id,
+          income_source_name: data.name,
+          total_amount: data.total,
+          transaction_count: data.count
+        };
+        
+        if (data.expected !== undefined) {
+          result.expected_amount = data.expected;
+          result.variance = data.total - data.expected;
+        }
+        
+        return result;
+      }).sort((a, b) => b.total_amount - a.total_amount);
+
+      const timeMap = new Map<string, { total: number; count: number }>();
+      
+      timeIncomeResult.data?.forEach(transaction => {
+        const date = new Date(transaction.transaction_date);
+        let period: string;
+        
+        switch (groupBy) {
+          case 'day':
+            period = transaction.transaction_date.substring(0, 10); // YYYY-MM-DD
+            break;
+          case 'month':
+            period = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`; // YYYY-MM
+            break;
+          case 'year':
+            period = String(date.getFullYear()); // YYYY
+            break;
+        }
+        
+        const existing = timeMap.get(period);
+        if (existing) {
+          existing.total += transaction.amount;
+          existing.count += 1;
+        } else {
+          timeMap.set(period, {
+            total: transaction.amount,
+            count: 1
+          });
+        }
+      });
+
+      const byTime: IncomeByTime[] = Array.from(timeMap.entries()).map(([period, data]) => ({
+        period,
+        total_amount: data.total,
+        transaction_count: data.count
+      })).sort((a, b) => a.period.localeCompare(b.period));
+
+      return {
+        total_income: totalIncome,
+        period_start: startDate,
+        period_end: endDate,
+        by_source: bySource,
         by_time: byTime
       };
     });

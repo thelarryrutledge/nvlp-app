@@ -48,5 +48,28 @@ export interface SpendingStats {
   by_time: SpendingByTime[];
 }
 
+export interface IncomeBySource {
+  income_source_id: string;
+  income_source_name: string;
+  total_amount: number;
+  transaction_count: number;
+  expected_amount?: number;
+  variance?: number;
+}
+
+export interface IncomeByTime {
+  period: string; // YYYY-MM-DD for daily, YYYY-MM for monthly, YYYY for yearly
+  total_amount: number;
+  transaction_count: number;
+}
+
+export interface IncomeStats {
+  total_income: number;
+  period_start: string;
+  period_end: string;
+  by_source: IncomeBySource[];
+  by_time: IncomeByTime[];
+}
+
 import { Transaction } from '../models/transaction';
 import { Envelope } from '../models/envelope';
