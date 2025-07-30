@@ -153,7 +153,7 @@ This roadmap outlines the complete API development process for NVLP, from databa
 
 ### 7.2 Export APIs
 - [x] GET /budgets/{budgetId}/export/transactions - Export transactions (CSV/JSON)
-- [ ] GET /budgets/{budgetId}/export/budget - Export budget snapshot
+- [x] GET /budgets/{budgetId}/export/budget - Export budget snapshot
 
 ## Phase 8: Edge Functions vs PostgREST Strategy
 ### 8.1 PostgREST Direct Access (for simple CRUD)

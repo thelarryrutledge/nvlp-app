@@ -120,5 +120,68 @@ export interface ExportResponse {
   exported_at: string;
 }
 
+export interface BudgetSnapshotData {
+  budget: {
+    id: string;
+    name: string;
+    description?: string;
+    currency: string;
+    available_amount: number;
+    is_active: boolean;
+    created_at: string;
+  };
+  envelopes: {
+    id: string;
+    name: string;
+    description?: string;
+    current_balance: number;
+    target_amount?: number;
+    envelope_type: string;
+    category?: string;
+    display_order: number;
+    notify_on_low_balance: boolean;
+    low_balance_threshold?: number;
+    is_active: boolean;
+  }[];
+  categories: {
+    id: string;
+    name: string;
+    description?: string;
+    parent_category?: string;
+    is_income_category: boolean;
+    display_order: number;
+    is_active: boolean;
+  }[];
+  income_sources: {
+    id: string;
+    name: string;
+    description?: string;
+    expected_amount?: number;
+    frequency?: string;
+    next_expected_date?: string;
+    is_active: boolean;
+  }[];
+  payees: {
+    id: string;
+    name: string;
+    description?: string;
+    default_category?: string;
+    is_active: boolean;
+  }[];
+  summary: {
+    total_envelope_balance: number;
+    envelope_count: number;
+    category_count: number;
+    income_source_count: number;
+    payee_count: number;
+  };
+}
+
+export interface BudgetExportResponse {
+  format: 'json' | 'csv';
+  data: BudgetSnapshotData | string;
+  exported_at: string;
+}
+
 import { Transaction } from '../models/transaction';
 import { Envelope } from '../models/envelope';
