@@ -132,11 +132,11 @@ This roadmap outlines the complete API development process for NVLP, from databa
 
 ## Phase 6.5: Budget Setup & Demo Data
 ### 6.5.1 Default Budget Setup
-- [ ] Create common expense categories (Groceries, Gas, Entertainment, etc.)
-- [ ] Create common income categories (Salary, Side Income, etc.)
-- [ ] Create starter envelopes (Emergency Fund, Groceries, Gas, etc.)
-- [ ] Create common payees (Grocery Store, Gas Station, etc.)
-- [ ] Make setup idempotent (safe to call multiple times)
+- [x] Create common expense categories (Groceries, Gas, Entertainment, etc.)
+- [x] Create common income categories (Salary, Side Income, etc.)
+- [x] Create starter envelopes (Emergency Fund, Groceries, Gas, etc.)
+- [x] Create common payees (Grocery Store, Gas Station, etc.)
+- [x] Make setup idempotent (safe to call multiple times)
 
 ### 6.5.2 Demo Data Creation
 - [ ] Create realistic demo transactions
