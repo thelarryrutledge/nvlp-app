@@ -268,6 +268,10 @@ export class TransactionService extends BaseService {
     return this.listTransactions(payee.budget_id, { payeeId }, limit);
   }
 
+  async getPendingTransactions(budgetId: string, limit?: number): Promise<Transaction[]> {
+    return this.listTransactions(budgetId, { isCleared: false }, limit);
+  }
+
   private async validateTransactionRequest(request: TransactionCreateRequest, budgetId?: string): Promise<void> {
     const { transaction_type, from_envelope_id, to_envelope_id, payee_id, income_source_id } = request;
 

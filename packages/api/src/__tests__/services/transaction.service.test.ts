@@ -131,4 +131,68 @@ describe('TransactionService', () => {
         .toThrow('Payee not found');
     });
   });
+
+  describe('getRecentTransactions', () => {
+    it('should return recent transactions with default limit', async () => {
+      const budgetId = 'budget-123';
+      const mockTransactions = [
+        { id: 'tx-1', transaction_date: '2023-12-01', amount: 100 },
+        { id: 'tx-2', transaction_date: '2023-11-30', amount: 50 }
+      ];
+
+      // Mock budget verification
+      mockClient.from.mockReturnValueOnce(mockClient);
+      mockClient.single.mockResolvedValueOnce({
+        data: { id: budgetId },
+        error: null
+      });
+
+      // Mock transaction list
+      mockClient.order = jest.fn().mockReturnThis();
+      mockClient.limit = jest.fn().mockReturnThis();
+      mockClient.from.mockReturnValueOnce(mockClient);
+      mockClient.select.mockResolvedValueOnce({
+        data: mockTransactions,
+        error: null
+      });
+
+      const result = await service.getRecentTransactions(budgetId);
+
+      expect(result).toEqual(mockTransactions);
+      expect(mockClient.limit).toHaveBeenCalledWith(10); // default limit
+      expect(mockClient.order).toHaveBeenCalledWith('transaction_date', { ascending: false });
+    });
+  });
+
+  describe('getPendingTransactions', () => {
+    it('should return uncleared transactions', async () => {
+      const budgetId = 'budget-123';
+      const mockTransactions = [
+        { id: 'tx-1', is_cleared: false, amount: 100 },
+        { id: 'tx-2', is_cleared: false, amount: 50 }
+      ];
+
+      // Mock budget verification
+      mockClient.from.mockReturnValueOnce(mockClient);
+      mockClient.single.mockResolvedValueOnce({
+        data: { id: budgetId },
+        error: null
+      });
+
+      // Mock transaction list
+      mockClient.order = jest.fn().mockReturnThis();
+      mockClient.limit = jest.fn().mockReturnThis();
+      mockClient.from.mockReturnValueOnce(mockClient);
+      mockClient.select.mockResolvedValueOnce({
+        data: mockTransactions,
+        error: null
+      });
+
+      const result = await service.getPendingTransactions(budgetId, 20);
+
+      expect(result).toEqual(mockTransactions);
+      expect(mockClient.eq).toHaveBeenCalledWith('is_cleared', false);
+      expect(mockClient.limit).toHaveBeenCalledWith(20);
+    });
+  });
 });

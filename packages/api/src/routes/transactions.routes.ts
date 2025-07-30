@@ -17,6 +17,7 @@ export interface TransactionRouteHandlers {
   deleteTransaction: (id: string) => Promise<void>;
   restoreTransaction: (id: string) => Promise<Transaction>;
   getRecentTransactions: (budgetId: string, limit?: number) => Promise<Transaction[]>;
+  getPendingTransactions: (budgetId: string, limit?: number) => Promise<Transaction[]>;
 }
 
 export function createTransactionRoutes(client: SupabaseClient<Database>): TransactionRouteHandlers {
@@ -49,6 +50,10 @@ export function createTransactionRoutes(client: SupabaseClient<Database>): Trans
 
     getRecentTransactions: async (budgetId: string, limit?: number) => {
       return await transactionService.getRecentTransactions(budgetId, limit);
+    },
+
+    getPendingTransactions: async (budgetId: string, limit?: number) => {
+      return await transactionService.getPendingTransactions(budgetId, limit);
     }
   };
 }
