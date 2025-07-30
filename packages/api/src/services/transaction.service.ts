@@ -253,6 +253,21 @@ export class TransactionService extends BaseService {
     return this.listTransactions(envelope.budget_id, { envelopeId }, limit);
   }
 
+  async getTransactionsByPayee(payeeId: string, limit?: number): Promise<Transaction[]> {
+    // First get the payee to verify access and get budget_id
+    const { data: payee, error: payeeError } = await this.client
+      .from('payees')
+      .select('budget_id')
+      .eq('id', payeeId)
+      .single();
+
+    if (payeeError || !payee) {
+      throw new ApiError(ErrorCode.NOT_FOUND, 'Payee not found');
+    }
+
+    return this.listTransactions(payee.budget_id, { payeeId }, limit);
+  }
+
   private async validateTransactionRequest(request: TransactionCreateRequest, budgetId?: string): Promise<void> {
     const { transaction_type, from_envelope_id, to_envelope_id, payee_id, income_source_id } = request;
 

@@ -79,4 +79,56 @@ describe('TransactionService', () => {
         .toThrow('Envelope not found');
     });
   });
+
+  describe('getTransactionsByPayee', () => {
+    it('should return transactions for a specific payee', async () => {
+      const payeeId = 'payee-123';
+      const budgetId = 'budget-123';
+      const mockTransactions = [
+        { id: 'tx-1', payee_id: payeeId, amount: 100 },
+        { id: 'tx-2', payee_id: payeeId, amount: 50 }
+      ];
+
+      // Mock payee lookup
+      mockClient.single.mockResolvedValueOnce({
+        data: { budget_id: budgetId },
+        error: null
+      });
+
+      // Mock transaction list
+      mockClient.order = jest.fn().mockReturnThis();
+      mockClient.limit = jest.fn().mockReturnThis();
+      mockClient.from.mockReturnValueOnce(mockClient); // For payee lookup
+      mockClient.from.mockReturnValueOnce(mockClient); // For budget verification
+      mockClient.single.mockResolvedValueOnce({
+        data: { id: budgetId },
+        error: null
+      });
+      mockClient.from.mockReturnValueOnce(mockClient); // For transaction list
+      mockClient.select.mockResolvedValueOnce({
+        data: mockTransactions,
+        error: null
+      });
+
+      const result = await service.getTransactionsByPayee(payeeId, 10);
+
+      expect(result).toEqual(mockTransactions);
+      expect(mockClient.from).toHaveBeenCalledWith('payees');
+      expect(mockClient.from).toHaveBeenCalledWith('transactions');
+      expect(mockClient.limit).toHaveBeenCalledWith(10);
+    });
+
+    it('should throw error if payee not found', async () => {
+      const payeeId = 'non-existent';
+
+      mockClient.single.mockResolvedValueOnce({
+        data: null,
+        error: { code: 'PGRST116' }
+      });
+
+      await expect(service.getTransactionsByPayee(payeeId))
+        .rejects
+        .toThrow('Payee not found');
+    });
+  });
 });

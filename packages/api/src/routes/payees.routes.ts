@@ -1,6 +1,6 @@
-import { PayeeService } from '../services';
+import { PayeeService, TransactionService } from '../services';
 import { SupabaseClient } from '@supabase/supabase-js';
-import { Database, Payee, PayeeCreateRequest, PayeeUpdateRequest } from '@nvlp/types';
+import { Database, Payee, PayeeCreateRequest, PayeeUpdateRequest, Transaction } from '@nvlp/types';
 
 export interface PayeeRouteHandlers {
   listPayees: (budgetId: string) => Promise<Payee[]>;
@@ -11,10 +11,12 @@ export interface PayeeRouteHandlers {
   searchPayees: (budgetId: string, query: string) => Promise<Payee[]>;
   getRecentPayees: (budgetId: string, limit?: number) => Promise<Payee[]>;
   getTopPayees: (budgetId: string, limit?: number) => Promise<Payee[]>;
+  getPayeeTransactions: (id: string, limit?: number) => Promise<Transaction[]>;
 }
 
 export function createPayeeRoutes(client: SupabaseClient<Database>): PayeeRouteHandlers {
   const payeeService = new PayeeService(client);
+  const transactionService = new TransactionService(client);
 
   return {
     listPayees: async (budgetId: string) => {
@@ -47,6 +49,10 @@ export function createPayeeRoutes(client: SupabaseClient<Database>): PayeeRouteH
 
     getTopPayees: async (budgetId: string, limit?: number) => {
       return await payeeService.getTopPayees(budgetId, limit);
+    },
+
+    getPayeeTransactions: async (id: string, limit?: number) => {
+      return await transactionService.getTransactionsByPayee(id, limit);
     }
   };
 }
