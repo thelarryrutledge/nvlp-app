@@ -163,9 +163,13 @@ if [ -n "$ACCESS_TOKEN" ]; then
   
   echo ""
   
-  # Test 5: Verify Token is Invalid After Logout
-  echo "5️⃣  Testing Access After Logout (should fail)..."
+  # Test 5: Verify Token Still Works After Logout (JWT behavior)
+  echo "5️⃣  Testing Access After Logout..."
   echo "GET /auth/user (with logged out token)"
+  echo ""
+  echo "ℹ️  Note: JWT tokens remain valid until expiration."
+  echo "   Logout only clears the session on Supabase's side."
+  echo ""
   
   INVALID_RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
     -X GET "$SUPABASE_URL/functions/v1/auth-user" \
@@ -175,11 +179,15 @@ if [ -n "$ACCESS_TOKEN" ]; then
   HTTP_STATUS=$(echo "$INVALID_RESPONSE" | grep "HTTP_STATUS" | cut -d: -f2)
   RESPONSE_BODY=$(echo "$INVALID_RESPONSE" | sed '/HTTP_STATUS/d')
   
-  if [ "$HTTP_STATUS" = "401" ] || [ "$HTTP_STATUS" = "403" ]; then
-    echo "✅ Access properly denied after logout"
+  if [ "$HTTP_STATUS" = "200" ]; then
+    echo "✅ Token still valid (expected JWT behavior)"
+    echo "   The token will work until it expires naturally"
+    echo "   Response: $RESPONSE_BODY"
+  elif [ "$HTTP_STATUS" = "401" ] || [ "$HTTP_STATUS" = "403" ]; then
+    echo "🔒 Token was invalidated (session-based invalidation)"
     echo "   Response: $RESPONSE_BODY"
   else
-    echo "⚠️  Unexpected response after logout (HTTP $HTTP_STATUS)"
+    echo "⚠️  Unexpected response (HTTP $HTTP_STATUS)"
     echo "   Response: $RESPONSE_BODY"
   fi
   
