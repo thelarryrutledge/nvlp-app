@@ -174,15 +174,17 @@ This roadmap outlines the complete API development process for NVLP, from databa
 ### 9.1 Core Client Setup
 - [x] Implement base HTTP client with retry logic
 - [x] Add automatic token refresh interceptor
-- [ ] Configure for both Supabase URL and custom domain
+- [x] **UNIFIED CLIENT CREATED** - Combines HTTP, PostgREST, and auth functionality
+- [x] Configure for both Supabase URL and custom domain
 - [ ] Add offline queue for failed requests
 
-### 9.2 Service Clients
-- [ ] Implement AuthClient with magic link support
-- [ ] Implement BudgetClient
-- [ ] Implement EnvelopeClient
-- [ ] Implement TransactionClient
-- [ ] Implement support entity clients
+### 9.2 Service Clients (REPLACED BY UNIFIED CLIENT)
+- [x] **UNIFIED CLIENT REPLACES ALL** - Single client handles all functionality
+- ~~[ ] Implement AuthClient with magic link support~~
+- ~~[ ] Implement BudgetClient~~
+- ~~[ ] Implement EnvelopeClient~~
+- ~~[ ] Implement TransactionClient~~  
+- ~~[ ] Implement support entity clients~~
 
 ## Phase 10: Testing Infrastructure
 ### 10.1 API Test Suite

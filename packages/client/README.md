@@ -1,15 +1,20 @@
-# NVLP PostgREST Client
+# NVLP Client Library
 
-A TypeScript client library for direct database access via PostgREST in the NVLP (Virtual Envelope Budgeting System).
+A unified TypeScript client library for the NVLP (Virtual Envelope Budgeting System) that provides both PostgREST database access and Edge Function API calls with automatic authentication.
 
 ## Overview
 
-This package provides a type-safe, feature-rich client for interacting with NVLP's database through PostgREST. It includes:
+This package provides a single, unified client that handles all NVLP interactions:
 
-- **PostgRESTClient**: Basic client for direct PostgREST API calls
-- **AuthenticatedPostgRESTClient**: Wrapper that handles JWT token management automatically
-- **Query Builder**: Fluent interface for building complex queries
-- **Type Safety**: Full TypeScript support with database schema types
+- **🎯 Unified Interface**: One client for both PostgREST (database) and Edge Functions (API)
+- **🔐 Automatic Authentication**: Built-in JWT token management and refresh
+- **🔄 Retry Logic**: Automatic retry with exponential backoff for failed requests
+- **📝 Type Safety**: Full TypeScript support with database schema types
+- **⚡ Performance**: Optimized for both direct database access and complex API operations
+
+## Recommended Usage: Unified Client
+
+The **NVLPClient** is the recommended way to interact with NVLP. It combines all functionality into a single, easy-to-use interface.
 
 ## Installation
 
@@ -23,26 +28,48 @@ pnpm --filter your-app add @nvlp/client
 
 ## Quick Start
 
-### Basic Usage
+### Unified Client (Recommended)
 
 ```typescript
-import { createClientFromConfig, defaultConfig } from '@nvlp/client';
+import { createNVLPClient, SessionProvider } from '@nvlp/client';
+import { createClient } from '@supabase/supabase-js';
 
-// Create a client with configuration
-const client = createClientFromConfig({
-  ...defaultConfig,
+// Create session provider (integrate with your auth system)
+class MySessionProvider implements SessionProvider {
+  // ... implement session management
+}
+
+// Create unified NVLP client
+const nvlp = createNVLPClient({
   supabaseUrl: 'https://your-project.supabase.co',
   supabaseAnonKey: 'your-anon-key',
+  customDomain: 'https://api.yourdomain.com', // Optional
+  sessionProvider: new MySessionProvider(),
 });
 
-// Set authentication token
-client.setToken('your-jwt-token');
-
-// Query data
-const budgets = await client.budgets
+// Use PostgREST for direct database access
+const budgets = await nvlp.budgets
   .eq('is_active', true)
   .order('created_at', false)
   .get();
+
+// Use Edge Functions for complex operations
+const dashboard = await nvlp.get(`/budgets/${budgetId}/dashboard`);
+const newTransaction = await nvlp.post(`/budgets/${budgetId}/transactions`, transactionData);
+```
+
+### Simple Setup from Environment
+
+```typescript
+import { createNVLPClientFromEnv } from '@nvlp/client';
+
+// Automatically uses SUPABASE_URL and SUPABASE_ANON_KEY environment variables
+const nvlp = createNVLPClientFromEnv({
+  customDomain: 'https://api.yourdomain.com',
+});
+
+// Add authentication later
+nvlp.setSessionProvider(sessionProvider);
 ```
 
 ### Authenticated Client

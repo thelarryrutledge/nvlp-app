@@ -1,3 +1,15 @@
+// Unified NVLP Client (RECOMMENDED)
+export {
+  NVLPClient,
+  createNVLPClient,
+  createNVLPClientFromEnv,
+} from './unified-client';
+
+export type {
+  NVLPClientConfig,
+  SessionProvider as NVLPSessionProvider,
+} from './unified-client';
+
 // Base HTTP Client exports
 export {
   HttpClient,
@@ -11,6 +23,7 @@ export type {
   HttpClientConfig,
   RequestConfig,
   RetryOptions,
+  TokenProvider,
 } from './http-client';
 
 // PostgREST Client exports
