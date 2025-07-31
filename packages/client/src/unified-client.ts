@@ -3,7 +3,7 @@
  */
 
 import { Session } from '@supabase/supabase-js';
-import { HttpClient, HttpClientConfig, TokenProvider, HttpError } from './http-client';
+import { HttpClient, HttpClientConfig, TokenProvider, HttpError, OfflineQueueConfig } from './http-client';
 
 /**
  * Authenticated PostgREST query builder that works with the unified client
@@ -224,6 +224,8 @@ export interface NVLPClientConfig {
   timeout?: number;
   /** Session provider for authentication */
   sessionProvider?: SessionProvider;
+  /** Offline queue configuration */
+  offlineQueue?: OfflineQueueConfig;
 }
 
 /**
@@ -293,6 +295,7 @@ export class NVLPClient {
         'User-Agent': 'NVLP-Client/1.0.0',
         ...config.headers,
       },
+      offlineQueue: config.offlineQueue,
     };
 
     // Add token provider if session provider is available
@@ -525,6 +528,29 @@ export class NVLPClient {
              message.includes('403');
     }
     return false;
+  }
+
+  // Offline Queue Management
+
+  /**
+   * Get the number of requests in the offline queue
+   */
+  getOfflineQueueSize(): number {
+    return this.httpClient.getOfflineQueueSize();
+  }
+
+  /**
+   * Process all queued offline requests
+   */
+  async processOfflineQueue(): Promise<void> {
+    await this.httpClient.processOfflineQueue();
+  }
+
+  /**
+   * Clear the offline queue
+   */
+  async clearOfflineQueue(): Promise<void> {
+    await this.httpClient.clearOfflineQueue();
   }
 
   /**

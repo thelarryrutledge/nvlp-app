@@ -176,7 +176,7 @@ This roadmap outlines the complete API development process for NVLP, from databa
 - [x] Add automatic token refresh interceptor
 - [x] **UNIFIED CLIENT CREATED** - Combines HTTP, PostgREST, and auth functionality
 - [x] Configure for both Supabase URL and custom domain
-- [ ] Add offline queue for failed requests
+- [x] Add offline queue for failed requests
 
 ### 9.2 Service Clients (REPLACED BY UNIFIED CLIENT)
 - [x] **UNIFIED CLIENT REPLACES ALL** - Single client handles all functionality

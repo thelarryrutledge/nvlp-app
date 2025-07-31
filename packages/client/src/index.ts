@@ -24,7 +24,18 @@ export type {
   RequestConfig,
   RetryOptions,
   TokenProvider,
+  OfflineQueueConfig,
+  OfflineStorage,
+  QueuedRequest,
 } from './http-client';
+
+// Offline storage implementations
+export {
+  LocalStorage,
+  AsyncStorageImpl,
+  FileSystemStorage,
+  createDefaultStorage,
+} from './offline-storage';
 
 // PostgREST Client exports
 export {
