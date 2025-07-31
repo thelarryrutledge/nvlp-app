@@ -1,3 +1,18 @@
+// Base HTTP Client exports
+export {
+  HttpClient,
+  HttpError,
+  NetworkError,
+  TimeoutError,
+  createHttpClient,
+} from './http-client';
+
+export type {
+  HttpClientConfig,
+  RequestConfig,
+  RetryOptions,
+} from './http-client';
+
 // PostgREST Client exports
 export {
   PostgRESTClient,
