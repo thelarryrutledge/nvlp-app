@@ -12,7 +12,7 @@ importers:
         specifier: ^2.39.3
         version: 2.52.1
       '@types/node':
-        specifier: ^20.11.0
+        specifier: ^20.19.9
         version: 20.19.9
       dotenv:
         specifier: ^17.2.1

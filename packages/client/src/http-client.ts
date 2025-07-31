@@ -9,11 +9,18 @@ export interface RetryOptions {
   shouldRetry?: (error: any) => boolean;
 }
 
+export interface TokenProvider {
+  getToken(): Promise<string | null>;
+  refreshToken(): Promise<string>;
+  isTokenExpired(token: string): boolean;
+}
+
 export interface HttpClientConfig {
   baseUrl: string;
   defaultHeaders?: Record<string, string>;
   timeout?: number;
   retryOptions?: RetryOptions;
+  tokenProvider?: TokenProvider;
 }
 
 export interface RequestConfig extends Omit<RequestInit, 'body' | 'headers'> {
@@ -123,7 +130,7 @@ function createTimeoutFetch(timeout: number) {
 }
 
 /**
- * Base HTTP client with automatic retry logic
+ * Base HTTP client with automatic retry logic and token refresh
  */
 export class HttpClient {
   private config: HttpClientConfig;
@@ -162,7 +169,57 @@ export class HttpClient {
   }
 
   /**
-   * Execute a raw HTTP request with retry logic
+   * Set token provider for automatic token refresh
+   */
+  setTokenProvider(tokenProvider: TokenProvider): void {
+    this.config.tokenProvider = tokenProvider;
+  }
+
+  /**
+   * Clear token provider
+   */
+  clearTokenProvider(): void {
+    this.config.tokenProvider = undefined;
+  }
+
+  /**
+   * Check if an error is an authentication error
+   */
+  private isAuthError(error: any): boolean {
+    if (error instanceof HttpError) {
+      return error.status === 401 || error.status === 403;
+    }
+    return false;
+  }
+
+  /**
+   * Ensure we have a valid token, refreshing if necessary
+   */
+  private async ensureValidToken(): Promise<string | null> {
+    if (!this.config.tokenProvider) {
+      return null;
+    }
+
+    const token = await this.config.tokenProvider.getToken();
+    if (!token) {
+      return null;
+    }
+
+    // Check if token is expired and refresh if needed
+    if (this.config.tokenProvider.isTokenExpired(token)) {
+      try {
+        return await this.config.tokenProvider.refreshToken();
+      } catch (error) {
+        console.warn('Failed to refresh token:', error);
+        return null;
+      }
+    }
+
+    return token;
+  }
+
+  /**
+   * Execute a raw HTTP request with retry logic and automatic token refresh
    */
   async request<T = any>(
     path: string, 
@@ -181,11 +238,19 @@ export class HttpClient {
 
     const fetchWithTimeout = createTimeoutFetch(timeout);
 
-    const operation = async (): Promise<T> => {
+    const makeRequest = async (includeToken: boolean = true): Promise<T> => {
       const finalHeaders: Record<string, string> = {
         ...this.config.defaultHeaders,
         ...headers,
       };
+
+      // Add token if available and requested
+      if (includeToken && this.config.tokenProvider) {
+        const token = await this.ensureValidToken();
+        if (token) {
+          finalHeaders['Authorization'] = `Bearer ${token}`;
+        }
+      }
 
       // Auto-set Content-Type for JSON bodies
       if (body && typeof body === 'object' && !finalHeaders['Content-Type']) {
@@ -215,6 +280,25 @@ export class HttpClient {
 
       // Return text for other content types
       return response.text() as Promise<T>;
+    };
+
+    const operation = async (): Promise<T> => {
+      try {
+        return await makeRequest();
+      } catch (error) {
+        // If auth error and we have a token provider, try to refresh and retry once
+        if (this.isAuthError(error) && this.config.tokenProvider) {
+          try {
+            // Force token refresh by calling refreshToken directly
+            await this.config.tokenProvider.refreshToken();
+            return await makeRequest();
+          } catch (refreshError) {
+            // If refresh fails, throw the original error
+            throw error;
+          }
+        }
+        throw error;
+      }
     };
 
     return withRetry(operation, finalRetryOptions);
