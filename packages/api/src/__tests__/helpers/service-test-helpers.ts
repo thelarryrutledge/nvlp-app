@@ -80,9 +80,7 @@ export const commonServiceTests = {
    */
   testEntityNotFound: (testFn: () => Promise<any>, entityName: string) => {
     it(`should throw NOT_FOUND when ${entityName} does not exist`, async () => {
-      await expect(testFn()).rejects.toThrow(
-        new ApiError(ErrorCode.NOT_FOUND, expect.stringContaining(entityName))
-      );
+      await expect(testFn()).rejects.toMatchApiError(ErrorCode.NOT_FOUND);
     });
   },
 

@@ -190,7 +190,7 @@ This roadmap outlines the complete API development process for NVLP, from databa
 ### 10.1 API Test Suite
 - [x] Set up Jest for API testing
 - [x] Create test utilities and fixtures
-- [ ] Write integration tests for each service
+- [x] Write integration tests for each service
 - [ ] Add performance benchmarks
 
 ### 10.2 cURL Test Scripts
