@@ -56,6 +56,68 @@ serve(async (req) => {
     const url = new URL(req.url)
     const pathParts = url.pathname.split('/').filter(p => p)
     
+    // Parse request body once for action-based requests
+    let requestBody = null
+    try {
+      requestBody = await req.json()
+    } catch {
+      // Not JSON, will be handled by path-based routing
+    }
+    
+    // Handle action-based requests (for set-default)
+    // Check if this is a direct function call with action in body
+    if (req.method === 'POST' && requestBody && requestBody.action) {
+      const { action, budgetId } = requestBody
+      
+      if (action === 'set-default' && budgetId) {
+        // Verify budget ownership
+        const { error: budgetError } = await supabaseClient
+          .from('budgets')
+          .select('id')
+          .eq('id', budgetId)
+          .eq('user_id', user.id)
+          .single()
+        
+        if (budgetError) {
+          return new Response(
+            JSON.stringify({ error: 'Budget not found or access denied' }),
+            { 
+              status: 404,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          )
+        }
+        
+        // Update user profile with default budget
+        const { error: updateError } = await supabaseClient
+          .from('user_profiles')
+          .update({ default_budget_id: budgetId })
+          .eq('id', user.id)
+        
+        if (updateError) {
+          return new Response(
+            JSON.stringify({ error: 'Failed to set default budget' }),
+            { 
+              status: 400,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          )
+        }
+        
+        return new Response(
+          JSON.stringify({ 
+            success: true,
+            message: 'Default budget set successfully',
+            budget_id: budgetId
+          }),
+          { 
+            status: 200,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        )
+      }
+    }
+    
     // Handle POST /budgets/{budgetId}/setup/defaults
     if (req.method === 'POST' && pathParts.length === 4 && 
         pathParts[0] === 'budgets' && pathParts[2] === 'setup' && pathParts[3] === 'defaults') {

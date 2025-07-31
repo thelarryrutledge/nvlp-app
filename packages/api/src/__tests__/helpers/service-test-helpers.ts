@@ -4,7 +4,7 @@
  */
 
 import { ApiError, ErrorCode } from '@nvlp/types';
-import { createMockSupabaseClient, setupAuthMocks, createSuccessResponse, createErrorResponse } from '../utils/test-utils';
+import { createMockSupabaseClient, setupAuthMocks, createSuccessResponse, createErrorResponse, createMockUser } from '../utils/test-utils';
 
 /**
  * Creates a service test setup with common mocks
@@ -14,7 +14,7 @@ export function createServiceTestSetup<T>(
   userId = 'test-user-id'
 ) {
   const mockClient = createMockSupabaseClient();
-  setupAuthMocks(mockClient, { id: userId });
+  setupAuthMocks(mockClient, createMockUser({ id: userId }));
   
   const service = new ServiceClass(mockClient);
   
@@ -68,9 +68,9 @@ export const commonServiceTests = {
    * Test budget access verification
    */
   testBudgetAccessRequired: (testFn: () => Promise<any>) => {
-    it('should throw FORBIDDEN when user does not have access to budget', async () => {
+    it('should throw UNAUTHORIZED when user does not have access to budget', async () => {
       await expect(testFn()).rejects.toThrow(
-        new ApiError(ErrorCode.FORBIDDEN, expect.any(String))
+        new ApiError(ErrorCode.UNAUTHORIZED, expect.any(String))
       );
     });
   },

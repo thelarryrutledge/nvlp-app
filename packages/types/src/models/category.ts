@@ -13,6 +13,8 @@ export interface Category {
   description?: string;
   is_income: boolean; // Matches database schema
   is_system: boolean;
+  icon?: string;
+  color?: string;
   display_order: number;
   total: number; // Cached total of envelope balances
   created_at: string;
@@ -24,6 +26,8 @@ export interface CategoryCreateRequest {
   description?: string;
   is_income?: boolean;
   is_system?: boolean;
+  icon?: string;
+  color?: string;
   display_order?: number;
   parent_id?: string;
 }
@@ -33,6 +37,8 @@ export interface CategoryUpdateRequest {
   description?: string;
   is_income?: boolean;
   is_system?: boolean;
+  icon?: string;
+  color?: string;
   display_order?: number;
   parent_id?: string;
 }
