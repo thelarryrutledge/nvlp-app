@@ -164,7 +164,7 @@ This roadmap outlines the complete API development process for NVLP, from databa
 
 ### 8.2 Edge Functions (for complex logic)
 - [x] Create edge function for transaction creation (complex validation)
-- [ ] Create edge function for bulk operations
+- [x] Create edge function for bulk operations
 - [ ] Create edge function for dashboard calculations
 - [ ] Create edge function for notification triggers
 - [ ] Create edge function for budget setup (defaults/demo data)
