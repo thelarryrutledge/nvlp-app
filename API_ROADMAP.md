@@ -163,7 +163,7 @@ This roadmap outlines the complete API development process for NVLP, from databa
 - [x] Test direct PostgREST performance
 
 ### 8.2 Edge Functions (for complex logic)
-- [ ] Create edge function for transaction creation (complex validation)
+- [x] Create edge function for transaction creation (complex validation)
 - [ ] Create edge function for bulk operations
 - [ ] Create edge function for dashboard calculations
 - [ ] Create edge function for notification triggers

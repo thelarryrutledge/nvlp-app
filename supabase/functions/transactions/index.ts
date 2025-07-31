@@ -268,6 +268,41 @@ serve(async (req) => {
         )
       }
 
+      // Validate amount has at most 2 decimal places
+      if (!Number.isInteger(body.amount * 100)) {
+        return new Response(
+          JSON.stringify({ error: 'Transaction amount can have at most 2 decimal places' }),
+          { 
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        )
+      }
+
+      // Validate transaction date is not in the future
+      const transactionDate = new Date(body.transaction_date)
+      const now = new Date()
+      if (transactionDate > now) {
+        return new Response(
+          JSON.stringify({ error: 'Transaction date cannot be in the future' }),
+          { 
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        )
+      }
+
+      // Validate description length
+      if (body.description && body.description.length > 500) {
+        return new Response(
+          JSON.stringify({ error: 'Description cannot exceed 500 characters' }),
+          { 
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        )
+      }
+
       // Validate transaction type specific requirements
       const { transaction_type, from_envelope_id, to_envelope_id, payee_id, income_source_id } = body
 
@@ -276,6 +311,34 @@ serve(async (req) => {
           if (!income_source_id || from_envelope_id || to_envelope_id || payee_id) {
             return new Response(
               JSON.stringify({ error: 'Income transactions require income_source_id and no envelope or payee references' }),
+              { 
+                status: 400,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+              }
+            )
+          }
+          
+          // Validate income source exists and belongs to budget
+          const { data: incomeSource, error: incomeSourceError } = await supabaseClient
+            .from('income_sources')
+            .select('id, is_active')
+            .eq('id', income_source_id)
+            .eq('budget_id', budgetId)
+            .single()
+          
+          if (incomeSourceError || !incomeSource) {
+            return new Response(
+              JSON.stringify({ error: 'Income source not found or does not belong to this budget' }),
+              { 
+                status: 400,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+              }
+            )
+          }
+          
+          if (!incomeSource.is_active) {
+            return new Response(
+              JSON.stringify({ error: 'Income source is not active' }),
               { 
                 status: 400,
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -294,6 +357,34 @@ serve(async (req) => {
               }
             )
           }
+          
+          // Validate target envelope exists and belongs to budget
+          const { data: targetEnvelope, error: targetEnvelopeError } = await supabaseClient
+            .from('envelopes')
+            .select('id, is_active')
+            .eq('id', to_envelope_id)
+            .eq('budget_id', budgetId)
+            .single()
+          
+          if (targetEnvelopeError || !targetEnvelope) {
+            return new Response(
+              JSON.stringify({ error: 'Target envelope not found or does not belong to this budget' }),
+              { 
+                status: 400,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+              }
+            )
+          }
+          
+          if (!targetEnvelope.is_active) {
+            return new Response(
+              JSON.stringify({ error: 'Cannot allocate to inactive envelope' }),
+              { 
+                status: 400,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+              }
+            )
+          }
           break
 
         case 'expense':
@@ -301,6 +392,73 @@ serve(async (req) => {
           if (!from_envelope_id || !payee_id || to_envelope_id || income_source_id) {
             return new Response(
               JSON.stringify({ error: `${transaction_type} transactions require from_envelope_id and payee_id` }),
+              { 
+                status: 400,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+              }
+            )
+          }
+          
+          // Validate source envelope exists and belongs to budget
+          const { data: sourceEnvelope, error: sourceEnvelopeError } = await supabaseClient
+            .from('envelopes')
+            .select('id, is_active, envelope_type')
+            .eq('id', from_envelope_id)
+            .eq('budget_id', budgetId)
+            .single()
+          
+          if (sourceEnvelopeError || !sourceEnvelope) {
+            return new Response(
+              JSON.stringify({ error: 'Source envelope not found or does not belong to this budget' }),
+              { 
+                status: 400,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+              }
+            )
+          }
+          
+          if (!sourceEnvelope.is_active) {
+            return new Response(
+              JSON.stringify({ error: 'Source envelope is not active' }),
+              { 
+                status: 400,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+              }
+            )
+          }
+          
+          // For debt payments, validate envelope is debt type
+          if (transaction_type === 'debt_payment' && sourceEnvelope.envelope_type !== 'debt') {
+            return new Response(
+              JSON.stringify({ error: 'Debt payments can only be made from debt envelopes' }),
+              { 
+                status: 400,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+              }
+            )
+          }
+          
+          // Validate payee exists and belongs to budget
+          const { data: payee, error: payeeError } = await supabaseClient
+            .from('payees')
+            .select('id, is_active')
+            .eq('id', payee_id)
+            .eq('budget_id', budgetId)
+            .single()
+          
+          if (payeeError || !payee) {
+            return new Response(
+              JSON.stringify({ error: 'Payee not found or does not belong to this budget' }),
+              { 
+                status: 400,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+              }
+            )
+          }
+          
+          if (!payee.is_active) {
+            return new Response(
+              JSON.stringify({ error: 'Payee is not active' }),
               { 
                 status: 400,
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -328,6 +486,34 @@ serve(async (req) => {
               }
             )
           }
+          
+          // Validate both envelopes exist and belong to budget
+          const { data: transferEnvelopes, error: transferEnvelopesError } = await supabaseClient
+            .from('envelopes')
+            .select('id, is_active')
+            .in('id', [from_envelope_id, to_envelope_id])
+            .eq('budget_id', budgetId)
+          
+          if (transferEnvelopesError || !transferEnvelopes || transferEnvelopes.length !== 2) {
+            return new Response(
+              JSON.stringify({ error: 'One or both envelopes not found or do not belong to this budget' }),
+              { 
+                status: 400,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+              }
+            )
+          }
+          
+          const inactiveEnvelopes = transferEnvelopes.filter(env => !env.is_active)
+          if (inactiveEnvelopes.length > 0) {
+            return new Response(
+              JSON.stringify({ error: 'Cannot transfer to or from inactive envelopes' }),
+              { 
+                status: 400,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+              }
+            )
+          }
           break
 
         default:
@@ -338,6 +524,26 @@ serve(async (req) => {
               headers: { ...corsHeaders, 'Content-Type': 'application/json' }
             }
           )
+      }
+
+      // Validate category if provided
+      if (body.category_id) {
+        const { data: category, error: categoryError } = await supabaseClient
+          .from('categories')
+          .select('id')
+          .eq('id', body.category_id)
+          .eq('budget_id', budgetId)
+          .single()
+        
+        if (categoryError || !category) {
+          return new Response(
+            JSON.stringify({ error: 'Category not found or does not belong to this budget' }),
+            { 
+              status: 400,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          )
+        }
       }
 
       // Create transaction
