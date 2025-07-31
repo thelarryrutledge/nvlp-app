@@ -167,7 +167,7 @@ This roadmap outlines the complete API development process for NVLP, from databa
 - [x] Create edge function for bulk operations
 - [x] Create edge function for dashboard calculations
 - [x] Create edge function for notification triggers
-- [ ] Create edge function for budget setup (defaults/demo data)
+- [x] Create edge function for budget setup (defaults/demo data)
 - [ ] Create edge function for bulk envelope operations
 
 ## Phase 9: Client Library Implementation
