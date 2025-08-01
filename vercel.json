@@ -28,6 +28,22 @@
     {
       "source": "/docs/error-codes",
       "destination": "/docs/error-codes.html"
+    },
+    {
+      "source": "/docs/postgrest-integration",
+      "destination": "/docs/postgrest-integration.html"
+    },
+    {
+      "source": "/docs/edge-functions",
+      "destination": "/docs/edge-functions.html"
+    },
+    {
+      "source": "/docs/client-library",
+      "destination": "/docs/client-library.html"
+    },
+    {
+      "source": "/docs/mobile-integration",
+      "destination": "/docs/mobile-integration.html"
     }
   ],
   "headers": [
