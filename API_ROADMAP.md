@@ -195,8 +195,8 @@ This roadmap outlines the complete API development process for NVLP, from databa
 
 ### 10.2 cURL Test Scripts
 - [x] Create auth flow test scripts
-- [ ] Create CRUD test scripts for each entity
-- [ ] Create transaction flow test scripts
+- [x] Create CRUD test scripts for each entity
+- [x] Create transaction flow test scripts
 - [ ] Create error scenario test scripts
 
 ### 10.3 Shell Script Test Suite
