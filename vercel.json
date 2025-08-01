@@ -24,6 +24,10 @@
     {
       "source": "/docs/auth-guide",
       "destination": "/docs/auth-guide.html"
+    },
+    {
+      "source": "/docs/error-codes",
+      "destination": "/docs/error-codes.html"
     }
   ],
   "headers": [

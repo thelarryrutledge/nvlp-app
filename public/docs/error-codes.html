@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NVLP Error Code Reference</title>
+    <meta name="description" content="Complete reference of error codes and troubleshooting guide for the NVLP API">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/assets/logo/IconOnly_Transparent_NoBuffer.png">
+    
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --text-dark: #2d3748;
+            --text-light: #4a5568;
+            --text-muted: #718096;
+            --bg-light: #f7fafc;
+            --bg-white: #ffffff;
+            --border-color: #e2e8f0;
+            --success-color: #48bb78;
+            --warning-color: #ed8936;
+            --error-color: #f56565;
+            --info-color: #4299e1;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            background: var(--bg-light);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 3rem;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .header img {
+            height: 48px;
+            width: auto;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 1.5rem;
+        }
+        
+        .breadcrumb {
+            opacity: 0.8;
+        }
+        
+        .breadcrumb a {
+            color: white;
+            text-decoration: none;
+        }
+        
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Search */
+        .search-section {
+            background: var(--bg-white);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .search-box {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+        
+        .search-box:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        /* Content */
+        .content {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .sidebar {
+            background: var(--bg-white);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            height: fit-content;
+            position: sticky;
+            top: 2rem;
+        }
+        
+        .sidebar h3 {
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+        
+        .sidebar ul {
+            list-style: none;
+        }
+        
+        .sidebar li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .sidebar a {
+            color: var(--text-light);
+            text-decoration: none;
+            padding: 0.25rem 0;
+            display: block;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        
+        .sidebar a:hover {
+            color: var(--primary-color);
+            background: var(--bg-light);
+            padding-left: 0.5rem;
+        }
+        
+        .main-content {
+            background: var(--bg-white);
+            border-radius: 12px;
+            padding: 3rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1, h2, h3, h4 {
+            color: var(--text-dark);
+            margin-bottom: 1rem;
+        }
+        
+        h2 {
+            font-size: 1.8rem;
+            margin-top: 2.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        h3 {
+            font-size: 1.4rem;
+            margin-top: 2rem;
+            color: var(--primary-color);
+        }
+        
+        p {
+            margin-bottom: 1rem;
+            color: var(--text-light);
+        }
+        
+        /* Error tables */
+        .error-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            background: var(--bg-white);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .error-table th {
+            background: var(--bg-light);
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-dark);
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        .error-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: top;
+        }
+        
+        .error-table tr:hover {
+            background: var(--bg-light);
+        }
+        
+        .status-code {
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+            font-weight: bold;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+        
+        .status-400 { background: #fed7d7; color: #742a2a; }
+        .status-401 { background: #fbb6ce; color: #702459; }
+        .status-403 { background: #fc8181; color: #742a2a; }
+        .status-404 { background: #fbb6ce; color: #702459; }
+        .status-409 { background: #f6ad55; color: #744210; }
+        .status-422 { background: #fbb6ce; color: #702459; }
+        .status-429 { background: #f6e05e; color: #744210; }
+        .status-500 { background: #fc8181; color: #742a2a; }
+        
+        .error-code {
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+            background: var(--bg-light);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        
+        /* Code blocks */
+        pre {
+            background: #2d3748;
+            color: #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+        }
+        
+        code {
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        
+        :not(pre) > code {
+            background: var(--bg-light);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+        
+        /* Callout boxes */
+        .callout {
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            border-left: 4px solid;
+        }
+        
+        .callout-info {
+            background: #ebf8ff;
+            border-color: var(--info-color);
+            color: #2a4365;
+        }
+        
+        .callout-warning {
+            background: #fffbeb;
+            border-color: var(--warning-color);
+            color: #744210;
+        }
+        
+        .callout-error {
+            background: #fed7d7;
+            border-color: var(--error-color);
+            color: #742a2a;
+        }
+        
+        .callout h4 {
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Filter badges */
+        .filter-badges {
+            margin-bottom: 1.5rem;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: var(--bg-light);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            margin: 0.25rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+        
+        .badge:hover,
+        .badge.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        /* Copy button */
+        .copy-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: none;
+            padding: 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        
+        .copy-btn:hover {
+            opacity: 1;
+        }
+        
+        .code-container {
+            position: relative;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                position: static;
+                order: 2;
+            }
+            
+            .main-content {
+                order: 1;
+                padding: 2rem;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .container {
+                padding: 0 1rem;
+            }
+        }
+        
+        /* Hidden class for filtering */
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>
+                <img src="/assets/logo/IconOnly_Transparent_NoBuffer.png" alt="NVLP Logo">
+                Error Code Reference
+            </h1>
+            <p>Complete guide to NVLP API error codes, troubleshooting, and solutions</p>
+            <div class="breadcrumb">
+                <a href="/">NVLP</a> / <a href="/docs/api">API Docs</a> / Error Codes
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="search-section">
+            <input type="text" class="search-box" id="searchInput" placeholder="Search error codes, messages, or solutions...">
+        </div>
+
+        <div class="content">
+            <div class="sidebar">
+                <h3>Quick Navigation</h3>
+                <ul>
+                    <li><a href="#http-status-codes">HTTP Status Codes</a></li>
+                    <li><a href="#authentication-errors">Authentication</a></li>
+                    <li><a href="#validation-errors">Validation</a></li>
+                    <li><a href="#business-logic-errors">Business Logic</a></li>
+                    <li><a href="#rate-limiting">Rate Limiting</a></li>
+                    <li><a href="#server-errors">Server Errors</a></li>
+                    <li><a href="#troubleshooting">Troubleshooting</a></li>
+                </ul>
+                
+                <h3>Filter by Status</h3>
+                <div class="filter-badges">
+                    <span class="badge active" data-filter="all">All</span>
+                    <span class="badge" data-filter="4xx">4xx Client</span>
+                    <span class="badge" data-filter="5xx">5xx Server</span>
+                </div>
+            </div>
+
+            <div class="main-content">
+                <section id="overview">
+                    <h2>📋 Overview</h2>
+                    
+                    <p>The NVLP API uses standard HTTP status codes and provides detailed error messages to help you identify and resolve issues quickly. This reference covers all possible error scenarios you might encounter.</p>
+                    
+                    <div class="callout callout-info">
+                        <h4>🔍 Error Response Format</h4>
+                        <p>All error responses follow a consistent JSON format:</p>
+                        <pre><code>{
+  "error": "Brief error description",
+  "details": "Detailed explanation (optional)",
+  "code": "NVLP_ERROR_CODE (optional)",
+  "field": "field_name (for validation errors)"
+}</code></pre>
+                    </div>
+                </section>
+
+                <section id="http-status-codes">
+                    <h2>🚦 HTTP Status Codes</h2>
+                    
+                    <p>NVLP API uses standard HTTP status codes to indicate the success or failure of requests:</p>
+                    
+                    <table class="error-table">
+                        <thead>
+                            <tr>
+                                <th>Status Code</th>
+                                <th>Meaning</th>
+                                <th>When It Occurs</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="status-code">200</span></td>
+                                <td><strong>OK</strong></td>
+                                <td>Request succeeded</td>
+                            </tr>
+                            <tr>
+                                <td><span class="status-code">201</span></td>
+                                <td><strong>Created</strong></td>
+                                <td>Resource created successfully</td>
+                            </tr>
+                            <tr>
+                                <td><span class="status-code">204</span></td>
+                                <td><strong>No Content</strong></td>
+                                <td>Request succeeded, no response body</td>
+                            </tr>
+                            <tr class="error-row" data-status="4xx">
+                                <td><span class="status-code status-400">400</span></td>
+                                <td><strong>Bad Request</strong></td>
+                                <td>Invalid request format or missing required fields</td>
+                            </tr>
+                            <tr class="error-row" data-status="4xx">
+                                <td><span class="status-code status-401">401</span></td>
+                                <td><strong>Unauthorized</strong></td>
+                                <td>Missing, invalid, or expired authentication token</td>
+                            </tr>
+                            <tr class="error-row" data-status="4xx">
+                                <td><span class="status-code status-403">403</span></td>
+                                <td><strong>Forbidden</strong></td>
+                                <td>Valid authentication but insufficient permissions</td>
+                            </tr>
+                            <tr class="error-row" data-status="4xx">
+                                <td><span class="status-code status-404">404</span></td>
+                                <td><strong>Not Found</strong></td>
+                                <td>Resource doesn't exist or user doesn't have access</td>
+                            </tr>
+                            <tr class="error-row" data-status="4xx">
+                                <td><span class="status-code status-409">409</span></td>
+                                <td><strong>Conflict</strong></td>
+                                <td>Request conflicts with current resource state</td>
+                            </tr>
+                            <tr class="error-row" data-status="4xx">
+                                <td><span class="status-code status-422">422</span></td>
+                                <td><strong>Unprocessable Entity</strong></td>
+                                <td>Valid request format but business logic validation failed</td>
+                            </tr>
+                            <tr class="error-row" data-status="4xx">
+                                <td><span class="status-code status-429">429</span></td>
+                                <td><strong>Too Many Requests</strong></td>
+                                <td>Rate limit exceeded</td>
+                            </tr>
+                            <tr class="error-row" data-status="5xx">
+                                <td><span class="status-code status-500">500</span></td>
+                                <td><strong>Internal Server Error</strong></td>
+                                <td>Unexpected server error</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <section id="authentication-errors">
+                    <h2>🔐 Authentication Errors</h2>
+                    
+                    <table class="error-table">
+                        <thead>
+                            <tr>
+                                <th>Error</th>
+                                <th>Status</th>
+                                <th>Description</th>
+                                <th>Solution</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="error-row" data-status="4xx">
+                                <td><code class="error-code">MISSING_AUTH_HEADER</code></td>
+                                <td><span class="status-code status-401">401</span></td>
+                                <td>No Authorization header provided</td>
+                                <td>Include <code>Authorization: Bearer TOKEN</code> header</td>
+                            </tr>
+                            <tr class="error-row" data-status="4xx">
+                                <td><code class="error-code">INVALID_TOKEN_FORMAT</code></td>
+                                <td><span class="status-code status-401">401</span></td>
+                                <td>Authorization header format is incorrect</td>
+                                <td>Use format: <code>Authorization: Bearer YOUR_TOKEN</code></td>
+                            </tr>
+                            <tr class="error-row" data-status="4xx">
+                                <td><code class="error-code">TOKEN_EXPIRED</code></td>
+                                <td><span class="status-code status-401">401</span></td>
+                                <td>JWT token has expired</td>
+                                <td>Request new magic link or refresh token</td>
+                            </tr>
+                            <tr class="error-row" data-status="4xx">
+                                <td><code class="error-code">INVALID_TOKEN</code></td>
+                                <td><span class="status-code status-401">401</span></td>
+                                <td>Token signature is invalid or corrupted</td>
+                                <td>Request new magic link authentication</td>
+                            </tr>
+                            <tr class="error-row" data-status="4xx">
+                                <td><code class="error-code">USER_NOT_FOUND</code></td>
+                                <td><span class="status-code status-401">401</span></td>
+                                <td>User associated with token doesn't exist</td>
+                                <td>Re-authenticate with magic link</td>
+                            </tr>
+                            <tr class="error-row" data-status="4xx">
+                                <td><code class="error-code">MAGIC_LINK_EXPIRED</code></td>
+                                <td><span class="status-code status-400">400</span></td>
+                                <td>Magic link has expired (typically after 1 hour)</td>
+                                <td>Request a new magic link</td>
+                            </tr>
+                            <tr class="error-row" data-status="4xx">
+                                <td><code class="error-code">MAGIC_LINK_USED</code></td>
+                                <td><span class="status-code status-400">400</span></td>
+                                <td>Magic link has already been used</td>
+                                <td>Request a new magic link</td>
+                            </tr>
+                            <tr class="error-row" data-status="4xx">
+                                <td><code class="error-code">RATE_LIMIT_MAGIC_LINK</code></td>
+                                <td><span class="status-code status-429">429</span></td>
+                                <td>Too many magic link requests for this email</td>
+                                <td>Wait before requesting another magic link</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="callout callout-info">
+                        <h4>🔧 Quick Fix for Auth Errors</h4>
+                        <div class="code-container">
+                            <pre><code>// Check token expiration
+function isTokenExpired(token) {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const currentTime = Math.floor(Date.now() / 1000);
+    return payload.exp < currentTime;
+  } catch {
+    return true;
+  }
+}
+
+// Handle 401 responses
+if (response.status === 401) {
+  localStorage.removeItem('nvlp_access_token');
+  window.location.href = '/login';
+}</code></pre>
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="validation-errors">
+                    <h2>✅ Validation Errors</h2>
+                    
+                    <p>These errors occur when request data doesn't meet the API's validation requirements:</p>
+                    
+                    <table class="error-table">
+                        <thead>
+                            <tr>
+                                <th>Error</th>
+                                <th>Status</th>
+                                <th>Description</th>
+                                <th>Example</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="error-row" data-status="4xx">
+                                <td><code class="error-code">REQUIRED_FIELD_MISSING</code></td>
+                                <td><span class="status-code status-400">400</span></td>
+                                <td>Required field is missing from request</td>
+                                <td><code>{"error": "Name is required", "field": "name"}</code></td>
+                            </tr>
+                            <tr class="error-row" data-status="4xx">
+                                <td><code class="error-code">INVALID_EMAIL_FORMAT</code></td>
+                                <td><span class="status-code status-400">400</span></td>
+                                <td>Email address format is invalid</td>
+                                <td><code>{"error": "Invalid email format", "field": "email"}</code></td>
+                            </tr>
+                            <tr class="error-row" data-status="4xx">
+                                <td><code class="error-code">INVALID_AMOUNT</code></td>
+                                <td><span class="status-code status-400">400</span></td>
+                                <td>Amount must be positive number</td>
+                                <td><code>{"error": "Amount must be greater than 0", "field": "amount"}</code></td>
+                            </tr>
+                            <tr class="error-row" data-status="4xx">
+                                <td><code class="error-code">INVALID_DATE_FORMAT</code></td>
+                                <td><span class="status-code status-400">400</span></td>
+                                <td>Date format is invalid</td>
+                                <td><code>{"error": "Date must be YYYY-MM-DD format", "field": "transaction_date"}</code></td>
+                            </tr>
+                            <tr class="error-row" data-status="4xx">
+                                <td><code class="error-code">INVALID_UUID</code></td>
+                                <td><span class="status-code status-400">400</span></td>
+                                <td>UUID format is invalid</td>
+                                <td><code>{"error": "Invalid UUID format", "field": "budget_id"}</code></td>
+                            </tr>
+                            <tr class="error-row" data-status="4xx">
+                                <td><code class="error-code">STRING_TOO_LONG</code></td>
+                                <td><span class="status-code status-400">400</span></td>
+                                <td>String exceeds maximum length</td>
+                                <td><code>{"error": "Name too long (max 255 chars)", "field": "name"}</code></td>
+                            </tr>
+                            <tr class="error-row" data-status="4xx">
+                                <td><code class="error-code">INVALID_ENUM_VALUE</code></td>
+                                <td><span class="status-code status-400">400</span></td>
+                                <td>Value not in allowed enum options</td>
+                                <td><code>{"error": "Invalid transaction type", "field": "transaction_type"}</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <section id="business-logic-errors">
+                    <h2>💼 Business Logic Errors</h2>
+                    
+                    <p>These errors occur when requests are valid but violate business rules:</p>
+                    
+                    <table class="error-table">
+                        <thead>
+                            <tr>
+                                <th>Error</th>
+                                <th>Status</th>
+                                <th>Description</th>
+                                <th>Solution</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="error-row" data-status="4xx">
+                                <td><code class="error-code">INSUFFICIENT_BALANCE</code></td>
+                                <td><span class="status-code status-422">422</span></td>
+                                <td>Envelope doesn't have enough balance for transaction</td>
+                                <td>Check envelope balance or allocate more funds</td>
+                            </tr>
+                            <tr class="error-row" data-status="4xx">
+                                <td><code class="error-code">INVALID_TRANSACTION_FIELDS</code></td>
+                                <td><span class="status-code status-422">422</span></td>
+                                <td>Transaction type and required fields don't match</td>
+                                <td>Review transaction type requirements</td>
+                            </tr>
+                            <tr class="error-row" data-status="4xx">
+                                <td><code class="error-code">CANNOT_DELETE_WITH_BALANCE</code></td>
+                                <td><span class="status-code status-409">409</span></td>
+                                <td>Cannot delete envelope with non-zero balance</td>
+                                <td>Transfer funds out or zero the balance first</td>
+                            </tr>
+                            <tr class="error-row" data-status="4xx">
+                                <td><code class="error-code">CANNOT_TRANSFER_SAME_ENVELOPE</code></td>
+                                <td><span class="status-code status-422">422</span></td>
+                                <td>Cannot transfer from envelope to itself</td>
+                                <td>Choose different source and destination envelopes</td>
+                            </tr>
+                            <tr class="error-row" data-status="4xx">
+                                <td><code class="error-code">BUDGET_ACCESS_DENIED</code></td>
+                                <td><span class="status-code status-403">403</span></td>
+                                <td>User doesn't have access to this budget</td>
+                                <td>Verify budget ownership or permissions</td>
+                            </tr>
+                            <tr class="error-row" data-status="4xx">
+                                <td><code class="error-code">RESOURCE_NOT_FOUND</code></td>
+                                <td><span class="status-code status-404">404</span></td>
+                                <td>Referenced resource doesn't exist</td>
+                                <td>Verify resource ID exists and user has access</td>
+                            </tr>
+                            <tr class="error-row" data-status="4xx">
+                                <td><code class="error-code">DUPLICATE_NAME</code></td>
+                                <td><span class="status-code status-409">409</span></td>
+                                <td>Resource name already exists in budget</td>
+                                <td>Choose a different name</td>
+                            </tr>
+                            <tr class="error-row" data-status="4xx">
+                                <td><code class="error-code">CANNOT_RESTORE_TRANSACTION</code></td>
+                                <td><span class="status-code status-409">409</span></td>
+                                <td>Transaction cannot be restored due to balance constraints</td>
+                                <td>Ensure sufficient balance for restoration</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="callout callout-warning">
+                        <h4>⚠️ Transaction Validation Rules</h4>
+                        <p>Different transaction types require specific fields:</p>
+                        <ul>
+                            <li><strong>INCOME:</strong> Requires <code>income_source_id</code> only</li>
+                            <li><strong>ALLOCATION:</strong> Requires <code>to_envelope_id</code> only</li>
+                            <li><strong>EXPENSE/DEBT_PAYMENT:</strong> Requires <code>from_envelope_id</code> + <code>payee_id</code></li>
+                            <li><strong>TRANSFER:</strong> Requires <code>from_envelope_id</code> + <code>to_envelope_id</code> (different)</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <section id="rate-limiting">
+                    <h2>🚦 Rate Limiting</h2>
+                    
+                    <p>NVLP implements rate limiting to ensure fair usage and prevent abuse:</p>
+                    
+                    <table class="error-table">
+                        <thead>
+                            <tr>
+                                <th>Endpoint</th>
+                                <th>Limit</th>
+                                <th>Window</th>
+                                <th>Error Response</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="error-row" data-status="4xx">
+                                <td>Magic Link Requests</td>
+                                <td>5 requests</td>
+                                <td>1 hour</td>
+                                <td><code>{"error": "Too many magic link requests"}</code></td>
+                            </tr>
+                            <tr class="error-row" data-status="4xx">
+                                <td>General API</td>
+                                <td>1000 requests</td>
+                                <td>1 hour</td>
+                                <td><code>{"error": "Rate limit exceeded"}</code></td>
+                            </tr>
+                            <tr class="error-row" data-status="4xx">
+                                <td>Transaction Creation</td>
+                                <td>100 requests</td>
+                                <td>1 minute</td>
+                                <td><code>{"error": "Too many transactions per minute"}</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="callout callout-info">
+                        <h4>📊 Rate Limit Headers</h4>
+                        <p>Check these response headers to monitor your usage:</p>
+                        <pre><code>X-RateLimit-Limit: 1000
+X-RateLimit-Remaining: 999
+X-RateLimit-Reset: 1640995200</code></pre>
+                    </div>
+                </section>
+
+                <section id="server-errors">
+                    <h2>🔥 Server Errors</h2>
+                    
+                    <table class="error-table">
+                        <thead>
+                            <tr>
+                                <th>Error</th>
+                                <th>Status</th>
+                                <th>Description</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="error-row" data-status="5xx">
+                                <td><code class="error-code">INTERNAL_SERVER_ERROR</code></td>
+                                <td><span class="status-code status-500">500</span></td>
+                                <td>Unexpected server error</td>
+                                <td>Retry request, contact support if persistent</td>
+                            </tr>
+                            <tr class="error-row" data-status="5xx">
+                                <td><code class="error-code">DATABASE_ERROR</code></td>
+                                <td><span class="status-code status-500">500</span></td>
+                                <td>Database connection or query error</td>
+                                <td>Retry after a few seconds</td>
+                            </tr>
+                            <tr class="error-row" data-status="5xx">
+                                <td><code class="error-code">SERVICE_UNAVAILABLE</code></td>
+                                <td><span class="status-code status-500">500</span></td>
+                                <td>Service temporarily unavailable</td>
+                                <td>Check status page, retry with exponential backoff</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="callout callout-error">
+                        <h4>🚨 Server Error Best Practices</h4>
+                        <ul>
+                            <li>Implement exponential backoff for retries</li>
+                            <li>Don't retry immediately on 5xx errors</li>
+                            <li>Log errors for debugging</li>
+                            <li>Check our status page for known issues</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <section id="troubleshooting">
+                    <h2>🔧 Troubleshooting Guide</h2>
+
+                    <h3>Common Debugging Steps</h3>
+                    
+                    <div class="callout callout-info">
+                        <h4>🔍 Step-by-Step Debugging</h4>
+                        <ol>
+                            <li><strong>Check HTTP Status Code</strong> - Determines error category</li>
+                            <li><strong>Read Error Message</strong> - Specific issue description</li>
+                            <li><strong>Verify Request Format</strong> - Headers, body, URL parameters</li>
+                            <li><strong>Check Authentication</strong> - Token validity and format</li>
+                            <li><strong>Validate Permissions</strong> - User access to resources</li>
+                            <li><strong>Review Business Rules</strong> - Data constraints and validations</li>
+                        </ol>
+                    </div>
+
+                    <h3>Error Handling Code Examples</h3>
+
+                    <div class="code-container">
+                        <pre><code>// JavaScript error handling
+async function handleApiResponse(response) {
+  if (!response.ok) {
+    const errorData = await response.json();
+    
+    switch (response.status) {
+      case 400:
+        console.error('Validation error:', errorData.error);
+        if (errorData.field) {
+          highlightField(errorData.field);
+        }
+        break;
+        
+      case 401:
+        console.error('Authentication error');
+        redirectToLogin();
+        break;
+        
+      case 403:
+        console.error('Permission denied');
+        showPermissionError();
+        break;
+        
+      case 422:
+        console.error('Business logic error:', errorData.error);
+        showBusinessError(errorData.error);
+        break;
+        
+      case 429:
+        console.error('Rate limited');
+        const retryAfter = response.headers.get('Retry-After');
+        scheduleRetry(retryAfter);
+        break;
+        
+      case 500:
+        console.error('Server error');
+        showRetryOption();
+        break;
+        
+      default:
+        console.error('Unknown error:', response.status);
+    }
+    
+    throw new Error(errorData.error);
+  }
+  
+  return response.json();
+}</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+
+                    <h3>Testing Error Scenarios</h3>
+                    
+                    <p>Use these cURL commands to test different error conditions:</p>
+                    
+                    <div class="code-container">
+                        <pre><code># Test authentication error (no token)
+curl -X GET "https://your-project.supabase.co/rest/v1/budgets"
+
+# Test validation error (invalid email)
+curl -X POST "https://your-project.supabase.co/functions/v1/auth-magic-link" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_ANON_KEY" \
+  -d '{"email": "invalid-email"}'
+
+# Test business logic error (insufficient balance)
+curl -X POST "https://your-project.supabase.co/functions/v1/transactions" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -d '{
+    "budget_id": "your-budget-id",
+    "transaction_type": "expense",
+    "amount": 9999999,
+    "from_envelope_id": "envelope-id",
+    "payee_id": "payee-id"
+  }'</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+
+                    <h3>Getting Help</h3>
+                    
+                    <div class="callout callout-info">
+                        <h4>📞 Support Resources</h4>
+                        <ul>
+                            <li><strong>API Documentation:</strong> <a href="/docs/api">Complete API Reference</a></li>
+                            <li><strong>Authentication Guide:</strong> <a href="/docs/auth-guide">Magic Link Auth Guide</a></li>
+                            <li><strong>GitHub Issues:</strong> <a href="https://github.com/nvlp-app/issues" target="_blank">Report bugs</a></li>
+                            <li><strong>Test Scripts:</strong> <a href="/scripts/tests/">Validation scripts</a></li>
+                        </ul>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        const errorRows = document.querySelectorAll('.error-row');
+        
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            errorRows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    row.classList.remove('hidden');
+                } else {
+                    row.classList.add('hidden');
+                }
+            });
+        });
+        
+        // Filter functionality
+        const filterBadges = document.querySelectorAll('.badge');
+        filterBadges.forEach(badge => {
+            badge.addEventListener('click', function() {
+                // Remove active class from all badges
+                filterBadges.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                const filter = this.dataset.filter;
+                
+                errorRows.forEach(row => {
+                    if (filter === 'all') {
+                        row.classList.remove('hidden');
+                    } else {
+                        const status = row.dataset.status;
+                        if (status === filter) {
+                            row.classList.remove('hidden');
+                        } else {
+                            row.classList.add('hidden');
+                        }
+                    }
+                });
+            });
+        });
+        
+        // Copy code functionality
+        function copyCode(button) {
+            const codeBlock = button.previousElementSibling.querySelector('code');
+            const text = codeBlock.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = button.textContent;
+                button.textContent = 'Copied!';
+                button.style.background = 'rgba(72, 187, 120, 0.2)';
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.background = 'rgba(255, 255, 255, 0.1)';
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy code:', err);
+            });
+        }
+        
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

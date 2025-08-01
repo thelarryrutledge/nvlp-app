@@ -210,7 +210,7 @@ This roadmap outlines the complete API development process for NVLP, from databa
 - [x] Generate OpenAPI/Swagger specification
 - [x] Document all endpoints with examples
 - [x] Create authentication guide
-- [ ] Add error code reference
+- [x] Add error code reference
 
 ### 11.2 Integration Guides
 - [ ] PostgREST integration guide
