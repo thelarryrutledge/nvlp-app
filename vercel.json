@@ -12,6 +12,25 @@
     {
       "source": "/auth/verify",
       "destination": "https://idmvyzmjcbxqusvjvzna.supabase.co/auth/v1/verify"
+    },
+    {
+      "source": "/docs/api",
+      "destination": "/docs/api/index.html"
+    },
+    {
+      "source": "/docs/api/postman",
+      "destination": "/docs/api/postman.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/docs/api/openapi.yaml",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/x-yaml"
+        }
+      ]
     }
   ]
 }
