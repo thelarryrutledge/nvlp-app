@@ -31,6 +31,15 @@
           "value": "application/x-yaml"
         }
       ]
+    },
+    {
+      "source": "/docs/api/openapi.json",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/json"
+        }
+      ]
     }
   ]
 }
