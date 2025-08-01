@@ -1,15 +1,22 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import { Database, DashboardSummary, SpendingStats, SpendingByCategory, SpendingByTime, IncomeStats, IncomeBySource, IncomeByTime, SpendingTrends, TrendData, CategoryTrend, ApiError, ErrorCode, Envelope, Transaction } from '@nvlp/types';
-import { BaseService } from './base.service';
+import { CachedBaseService } from './cached-base.service';
+import { CACHE_NAMESPACE, CACHE_TTL } from '../utils/cache';
 
-export class DashboardService extends BaseService {
+export class DashboardService extends CachedBaseService {
   constructor(client: SupabaseClient<Database>) {
     super(client);
   }
 
   async getDashboardSummary(budgetId: string): Promise<DashboardSummary> {
-    return this.withRetry(async () => {
-      const userId = await this.getCurrentUserId();
+    const userId = await this.getCurrentUserId();
+    const cacheKey = this.buildCacheKey(userId, budgetId);
+    
+    return this.withCache(
+      CACHE_NAMESPACE.DASHBOARD,
+      cacheKey,
+      { ttl: CACHE_TTL.DASHBOARD },
+      async () => this.withRetry(async () => {
 
       const { data: budget, error: budgetError } = await this.client
         .from('budgets')
@@ -117,7 +124,8 @@ export class DashboardService extends BaseService {
         negative_envelopes: negativeEnvelopesResult.data as Envelope[] || [],
         recent_transactions: recentTransactionsResult.data as Transaction[] || []
       };
-    });
+      })
+    );
   }
 
   async getSpendingStats(
@@ -126,8 +134,14 @@ export class DashboardService extends BaseService {
     endDate: string, 
     groupBy: 'day' | 'month' | 'year' = 'month'
   ): Promise<SpendingStats> {
-    return this.withRetry(async () => {
-      const userId = await this.getCurrentUserId();
+    const userId = await this.getCurrentUserId();
+    const cacheKey = this.buildCacheKey(userId, budgetId, startDate, endDate, groupBy);
+    
+    return this.withCache(
+      CACHE_NAMESPACE.SPENDING_STATS,
+      cacheKey,
+      { ttl: CACHE_TTL.STATS },
+      async () => this.withRetry(async () => {
 
       const { error: budgetError } = await this.client
         .from('budgets')
@@ -241,7 +255,8 @@ export class DashboardService extends BaseService {
         by_category: byCategory,
         by_time: byTime
       };
-    });
+      })
+    );
   }
 
   async getIncomeStats(

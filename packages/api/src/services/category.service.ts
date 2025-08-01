@@ -1,21 +1,31 @@
-import { BaseService } from './base.service';
+import { CachedBaseService } from './cached-base.service';
 import { Category, CategoryCreateRequest, CategoryUpdateRequest, CategoryReorderRequest, CategoryType, ApiError, ErrorCode } from '@nvlp/types';
+import { CACHE_NAMESPACE, CACHE_TTL, CACHE_INVALIDATION_GROUPS } from '../utils/cache';
 
-export class CategoryService extends BaseService {
+export class CategoryService extends CachedBaseService {
   async listCategories(budgetId: string): Promise<Category[]> {
     await this.verifyBudgetAccess(budgetId);
+    const userId = await this.getCurrentUserId();
+    const cacheKey = this.buildCacheKey(userId, budgetId);
 
-    const { data, error } = await this.client
-      .from('categories')
-      .select('*')
-      .eq('budget_id', budgetId)
-      .order('name', { ascending: true });
+    return this.withCache(
+      CACHE_NAMESPACE.CATEGORIES,
+      cacheKey,
+      { ttl: CACHE_TTL.CATEGORIES },
+      async () => {
+        const { data, error } = await this.client
+          .from('categories')
+          .select('*')
+          .eq('budget_id', budgetId)
+          .order('name', { ascending: true });
 
-    if (error) {
-      this.handleError(error);
-    }
+        if (error) {
+          this.handleError(error);
+        }
 
-    return data as Category[];
+        return data as Category[];
+      }
+    );
   }
 
   async getCategory(id: string): Promise<Category> {
@@ -88,6 +98,9 @@ export class CategoryService extends BaseService {
       this.handleError(error);
     }
 
+    // Invalidate category cache after creation
+    this.invalidateRelatedCaches([...CACHE_INVALIDATION_GROUPS.CATEGORY_CHANGE]);
+
     return data as Category;
   }
 
@@ -128,6 +141,9 @@ export class CategoryService extends BaseService {
       this.handleError(error);
     }
 
+    // Invalidate category cache after update
+    this.invalidateRelatedCaches([...CACHE_INVALIDATION_GROUPS.CATEGORY_CHANGE]);
+
     return data as Category;
   }
 
@@ -160,6 +176,9 @@ export class CategoryService extends BaseService {
     if (error) {
       this.handleError(error);
     }
+
+    // Invalidate category cache after deletion
+    this.invalidateRelatedCaches([...CACHE_INVALIDATION_GROUPS.CATEGORY_CHANGE]);
   }
 
   async getCategoriesByType(budgetId: string, type: CategoryType): Promise<Category[]> {

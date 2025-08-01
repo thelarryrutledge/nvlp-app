@@ -17,7 +17,8 @@
   },
   "dependencies": {
     "@nvlp/types": "workspace:*",
-    "@supabase/supabase-js": "^2.39.3"
+    "@supabase/supabase-js": "^2.39.3",
+    "lru-cache": "^11.1.0"
   },
   "devDependencies": {
     "@types/jest": "^29.5.11",
