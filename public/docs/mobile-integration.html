@@ -4,28 +4,1058 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NVLP Mobile App Integration Guide</title>
-    <meta name="description" content="Complete guide to integrating NVLP API with mobile applications (React Native, iOS, Android)">
+    <meta name="description" content="Complete guide for integrating NVLP into React Native and mobile applications">
     
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="/assets/logo/IconOnly_Transparent_NoBuffer.png">
+    
+    <!-- Prism.js for syntax highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --text-dark: #2d3748;
+            --text-light: #4a5568;
+            --text-muted: #718096;
+            --bg-light: #f7fafc;
+            --bg-white: #ffffff;
+            --border-color: #e2e8f0;
+            --success-color: #48bb78;
+            --warning-color: #ed8936;
+            --error-color: #f56565;
+            --info-color: #3182ce;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            background: var(--bg-light);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 3rem 0;
+            margin-bottom: 3rem;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        
+        .header-description {
+            font-size: 1.2rem;
+            text-align: center;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .nav-links {
+            text-align: center;
+            margin-top: 2rem;
+        }
+        
+        .nav-links a {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0.5rem 1rem;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 0.25rem;
+            font-weight: 500;
+        }
+        
+        .nav-links a:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .content {
+            background: var(--bg-white);
+            border-radius: 12px;
+            padding: 3rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+            margin-bottom: 2rem;
+        }
+        
+        h2 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin: 2rem 0 1rem 0;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        h3 {
+            color: var(--text-dark);
+            font-size: 1.4rem;
+            margin: 1.5rem 0 1rem 0;
+        }
+        
+        h4 {
+            color: var(--text-light);
+            font-size: 1.2rem;
+            margin: 1.2rem 0 0.8rem 0;
+        }
+        
+        p {
+            margin-bottom: 1rem;
+            color: var(--text-light);
+        }
+        
+        ul, ol {
+            margin: 1rem 0;
+            padding-left: 2rem;
+        }
+        
+        li {
+            margin-bottom: 0.5rem;
+            color: var(--text-light);
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .feature-card {
+            background: var(--bg-light);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .feature-card h4 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .platform-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        
+        .platform-card {
+            background: var(--bg-light);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 2px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+        
+        .platform-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.1);
+        }
+        
+        .platform-card h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+        
+        .warning {
+            background: #fef5e7;
+            border: 1px solid var(--warning-color);
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .warning h4 {
+            color: var(--warning-color);
+            margin-top: 0;
+        }
+        
+        .info {
+            background: #e6f3ff;
+            border: 1px solid var(--info-color);
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .info h4 {
+            color: var(--info-color);
+            margin-top: 0;
+        }
+        
+        .success {
+            background: #f0fff4;
+            border: 1px solid var(--success-color);
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .success h4 {
+            color: var(--success-color);
+            margin-top: 0;
+        }
+        
+        pre[class*="language-"] {
+            margin: 1.5rem 0;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        
+        code[class*="language-"] {
+            font-size: 0.9rem;
+        }
+        
+        .toc {
+            background: var(--bg-light);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .toc h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+        
+        .toc ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .toc li {
+            margin-bottom: 0.3rem;
+        }
+        
+        .toc a {
+            color: var(--text-light);
+            text-decoration: none;
+            display: block;
+            padding: 0.3rem 0;
+        }
+        
+        .toc a:hover {
+            color: var(--primary-color);
+        }
+        
+        .toc ul ul {
+            padding-left: 1.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .content {
+                padding: 1.5rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .feature-grid, .platform-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif; padding: 2rem; text-align: center; background: #f7fafc; min-height: 100vh;">
-        <img src="/assets/logo/FullLogo_Transparent.png" alt="NVLP Logo" style="height: 80px; margin-bottom: 2rem;">
-        <h1 style="color: #2d3748; margin-bottom: 1rem;">Mobile App Integration Guide</h1>
-        <p style="color: #4a5568; margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto;">
-            Complete guide to integrating NVLP API with mobile applications including React Native, iOS, and Android development.
-        </p>
-        <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); max-width: 500px; margin: 0 auto;">
-            <h2 style="color: #667eea; margin-bottom: 1rem;">🚧 Coming Soon</h2>
-            <p style="color: #718096; margin-bottom: 2rem;">
-                This guide is currently being developed and will be available soon.
+    <header>
+        <div class="header-content">
+            <h1>NVLP Mobile App Integration Guide</h1>
+            <p class="header-description">
+                Complete guide for integrating NVLP into React Native and mobile applications with offline support, authentication, and performance optimization.
             </p>
-            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                <a href="/docs/api" style="background: #667eea; color: white; padding: 0.75rem 1.5rem; text-decoration: none; border-radius: 6px; font-weight: 500;">← Back to API Docs</a>
-                <a href="/docs/postgrest-integration" style="background: #6c757d; color: white; padding: 0.75rem 1.5rem; text-decoration: none; border-radius: 6px; font-weight: 500;">PostgREST Guide</a>
+            <div class="nav-links">
+                <a href="/docs/api">← API Docs</a>
+                <a href="/docs/client-library">Client Library</a>
+                <a href="/docs/postgrest-integration">PostgREST Integration</a>
+                <a href="/docs/auth-guide">Auth Guide</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="content">
+            <div class="toc">
+                <h3>Table of Contents</h3>
+                <ul>
+                    <li><a href="#overview">Overview</a></li>
+                    <li><a href="#platforms">Platform Support</a></li>
+                    <li><a href="#setup">Project Setup</a>
+                        <ul>
+                            <li><a href="#react-native">React Native CLI</a></li>
+                            <li><a href="#expo">Expo Managed Workflow</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#authentication">Mobile Authentication</a></li>
+                    <li><a href="#offline-support">Offline Support</a></li>
+                    <li><a href="#state-management">State Management</a></li>
+                    <li><a href="#performance">Performance Optimization</a></li>
+                    <li><a href="#security">Security Considerations</a></li>
+                    <li><a href="#examples">Complete Examples</a></li>
+                </ul>
+            </div>
+
+            <h2 id="overview">Overview</h2>
+            
+            <p>NVLP provides comprehensive support for mobile applications through the unified client library. This guide covers integration patterns, offline capabilities, authentication flows, and performance optimization specifically for mobile development.</p>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>📱 Cross-Platform Support</h4>
+                    <p>Works with React Native CLI, Expo, and hybrid applications across iOS and Android.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🔒 Mobile Authentication</h4>
+                    <p>Deep linking, biometric authentication, and secure session management.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📡 Offline-First</h4>
+                    <p>Built-in request queuing, local storage, and automatic synchronization.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>⚡ Performance Optimized</h4>
+                    <p>Lazy loading, request batching, and memory-efficient data handling.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🔄 Real-time Updates</h4>
+                    <p>WebSocket support for live data updates and collaborative features.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🛡️ Security Built-in</h4>
+                    <p>Secure storage, automatic token refresh, and certificate validation.</p>
+                </div>
+            </div>
+
+            <h2 id="platforms">Platform Support</h2>
+
+            <div class="platform-grid">
+                <div class="platform-card">
+                    <h3>React Native CLI</h3>
+                    <p><strong>✅ Fully Supported</strong></p>
+                    <ul>
+                        <li>Full native module access</li>
+                        <li>Custom native code integration</li>
+                        <li>Advanced offline storage options</li>
+                        <li>Biometric authentication</li>
+                        <li>Push notifications</li>
+                    </ul>
+                </div>
+                <div class="platform-card">
+                    <h3>Expo Managed</h3>
+                    <p><strong>✅ Supported</strong></p>
+                    <ul>
+                        <li>Zero native code required</li>
+                        <li>Over-the-air updates</li>
+                        <li>Simplified deployment</li>
+                        <li>Limited to Expo SDK features</li>
+                        <li>AsyncStorage for persistence</li>
+                    </ul>
+                </div>
+                <div class="platform-card">
+                    <h3>Expo Bare Workflow</h3>
+                    <p><strong>✅ Fully Supported</strong></p>
+                    <ul>
+                        <li>Best of both worlds</li>
+                        <li>Expo tooling + native access</li>
+                        <li>Full customization</li>
+                        <li>Advanced security features</li>
+                        <li>Custom native modules</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h2 id="setup">Project Setup</h2>
+
+            <h3 id="react-native">React Native CLI Setup</h3>
+
+            <h4>1. Install Dependencies</h4>
+
+            <pre><code class="language-bash"># Core NVLP client
+npm install @nvlp/client
+
+# React Native dependencies
+npm install @react-native-async-storage/async-storage
+npm install @supabase/supabase-js
+npm install react-native-url-polyfill
+
+# Optional: Enhanced features
+npm install react-native-keychain  # Secure storage
+npm install @react-native-community/netinfo  # Network status
+npm install react-native-biometrics  # Biometric auth</code></pre>
+
+            <h4>2. Platform Configuration</h4>
+
+            <pre><code class="language-javascript">// metro.config.js - Add polyfills
+const { getDefaultConfig } = require('metro-config');
+
+module.exports = (async () => {
+  const {
+    resolver: { sourceExts, assetExts },
+  } = await getDefaultConfig();
+
+  return {
+    resolver: {
+      assetExts: assetExts.filter(ext => ext !== 'svg'),
+      sourceExts: [...sourceExts, 'svg'],
+    },
+    transformer: {
+      babelTransformerPath: require.resolve('react-native-svg-transformer'),
+    },
+  };
+})();</code></pre>
+
+            <pre><code class="language-javascript">// index.js - Add polyfills at the top
+import 'react-native-url-polyfill/auto';
+import { AppRegistry } from 'react-native';
+import App from './App';
+import { name as appName } from './app.json';
+
+AppRegistry.registerComponent(appName, () => App);</code></pre>
+
+            <h3 id="expo">Expo Setup</h3>
+
+            <h4>1. Install Dependencies</h4>
+
+            <pre><code class="language-bash"># Core NVLP client
+npx expo install @nvlp/client
+
+# Expo-compatible dependencies
+npx expo install @react-native-async-storage/async-storage
+npx expo install @supabase/supabase-js
+npx expo install expo-secure-store  # For secure token storage
+npx expo install expo-auth-session  # For OAuth flows
+npx expo install expo-linking  # For deep linking
+npx expo install expo-network  # For network status</code></pre>
+
+            <h4>2. App Configuration</h4>
+
+            <pre><code class="language-json">// app.json - Configure deep linking and permissions
+{
+  "expo": {
+    "name": "NVLP Budget App",
+    "slug": "nvlp-budget",
+    "scheme": "nvlp",
+    "platforms": ["ios", "android"],
+    "ios": {
+      "bundleIdentifier": "com.yourcompany.nvlp",
+      "buildNumber": "1.0.0",
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "Use Face ID to secure your budget data"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png"
+      },
+      "permissions": [
+        "USE_FINGERPRINT",
+        "USE_BIOMETRIC"
+      ]
+    }
+  }
+}</code></pre>
+
+            <h2 id="authentication">Mobile Authentication</h2>
+
+            <h3>Complete Authentication Setup</h3>
+
+            <pre><code class="language-typescript">// src/services/AuthService.ts
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { createNVLPClient, NVLPClient, NVLPSessionProvider } from '@nvlp/client';
+import { Platform, Linking } from 'react-native';
+
+export class MobileAuthService implements NVLPSessionProvider {
+  private supabase: SupabaseClient;
+  private nvlp: NVLPClient;
+  private sessionListeners: Set<(session: any) => void> = new Set();
+
+  constructor() {
+    // Initialize Supabase with custom storage
+    this.supabase = createClient(
+      process.env.EXPO_PUBLIC_SUPABASE_URL!,
+      process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        auth: {
+          storage: AsyncStorage,
+          autoRefreshToken: true,
+          persistSession: true,
+          detectSessionInUrl: Platform.OS === 'web',
+        },
+      }
+    );
+
+    // Initialize NVLP client
+    this.nvlp = createNVLPClient({
+      supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL!,
+      supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!,
+      sessionProvider: this,
+      offlineQueue: {
+        enabled: true,
+        maxSize: 100,
+        retryOnReconnect: true,
+      },
+    });
+
+    // Listen for auth state changes
+    this.supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state changed:', event, session?.user?.id);
+      this.notifySessionListeners(session);
+    });
+
+    // Handle deep linking for magic links
+    this.setupDeepLinking();
+  }
+
+  // NVLPSessionProvider implementation
+  async getSession() {
+    const { data: { session } } = await this.supabase.auth.getSession();
+    return session;
+  }
+
+  async ensureValidSession() {
+    const { data: { session }, error } = await this.supabase.auth.getSession();
+    
+    if (!session) {
+      throw new Error('No active session');
+    }
+
+    // Check if token needs refresh
+    if (session.expires_at && session.expires_at * 1000 < Date.now()) {
+      const { data: refreshData, error: refreshError } = 
+        await this.supabase.auth.refreshSession();
+      if (refreshError || !refreshData.session) {
+        throw new Error('Failed to refresh session');
+      }
+      return refreshData.session;
+    }
+
+    return session;
+  }
+
+  onSessionChange(handler: (session: any) => void) {
+    this.sessionListeners.add(handler);
+    return () => this.sessionListeners.delete(handler);
+  }
+
+  private notifySessionListeners(session: any) {
+    this.sessionListeners.forEach(listener => listener(session));
+  }
+
+  // Magic link authentication
+  async signInWithMagicLink(email: string) {
+    const { data, error } = await this.supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: 'nvlp://auth/callback',
+      },
+    });
+
+    if (error) throw error;
+    return data;
+  }
+
+  // OAuth authentication
+  async signInWithOAuth(provider: 'google' | 'apple') {
+    const { data, error } = await this.supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: 'nvlp://auth/callback',
+      },
+    });
+
+    if (error) throw error;
+    return data;
+  }
+
+  // Sign out
+  async signOut() {
+    await this.nvlp.clearOfflineQueue();
+    const { error } = await this.supabase.auth.signOut();
+    if (error) throw error;
+  }
+
+  // Deep linking setup
+  private setupDeepLinking() {
+    const handleDeepLink = (url: string) => {
+      if (url.includes('auth/callback')) {
+        const urlParams = new URL(url);
+        const accessToken = urlParams.searchParams.get('access_token');
+        const refreshToken = urlParams.searchParams.get('refresh_token');
+        
+        if (accessToken && refreshToken) {
+          this.supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+        }
+      }
+    };
+
+    Linking.addEventListener('url', (event) => {
+      handleDeepLink(event.url);
+    });
+
+    Linking.getInitialURL().then((url) => {
+      if (url) handleDeepLink(url);
+    });
+  }
+
+  getNVLPClient(): NVLPClient {
+    return this.nvlp;
+  }
+}</code></pre>
+
+            <h2 id="offline-support">Offline Support</h2>
+
+            <h3>Complete Offline Implementation</h3>
+
+            <pre><code class="language-typescript">// src/services/OfflineService.ts
+import { createNVLPClient, AsyncStorageImpl } from '@nvlp/client';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import NetInfo from '@react-native-community/netinfo';
+
+export class OfflineService {
+  private nvlp: any;
+  private isOnline: boolean = true;
+  private offlineListeners: Set<(isOnline: boolean) => void> = new Set();
+
+  constructor(authService: MobileAuthService) {
+    // Configure NVLP client with offline support
+    this.nvlp = createNVLPClient({
+      supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL!,
+      supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!,
+      sessionProvider: authService,
+      offlineQueue: {
+        enabled: true,
+        maxSize: 200,
+        maxRetries: 3,
+        retryDelay: 2000,
+        storage: new AsyncStorageImpl(AsyncStorage),
+        retryOnReconnect: true,
+      },
+    });
+
+    this.setupNetworkMonitoring();
+  }
+
+  private setupNetworkMonitoring() {
+    NetInfo.addEventListener(state => {
+      const wasOffline = !this.isOnline;
+      this.isOnline = state.isConnected && state.isInternetReachable;
+      
+      console.log('Network status:', {
+        connected: state.isConnected,
+        reachable: state.isInternetReachable,
+        type: state.type,
+      });
+
+      // Notify listeners
+      this.offlineListeners.forEach(listener => listener(this.isOnline));
+
+      // Process queue when coming back online
+      if (wasOffline && this.isOnline) {
+        this.processOfflineQueue();
+      }
+    });
+  }
+
+  async processOfflineQueue() {
+    try {
+      console.log('Processing offline queue...');
+      const processed = await this.nvlp.processOfflineQueue();
+      console.log(`Processed ${processed} queued requests`);
+      return processed;
+    } catch (error) {
+      console.error('Error processing offline queue:', error);
+      return 0;
+    }
+  }
+
+  onNetworkChange(listener: (isOnline: boolean) => void) {
+    this.offlineListeners.add(listener);
+    return () => this.offlineListeners.delete(listener);
+  }
+
+  getNetworkStatus(): boolean {
+    return this.isOnline;
+  }
+}</code></pre>
+
+            <h2 id="state-management">State Management Integration</h2>
+
+            <h3>React Context + Hooks Pattern</h3>
+
+            <pre><code class="language-typescript">// src/context/NVLPContext.tsx
+import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { MobileAuthService } from '../services/AuthService';
+import { OfflineService } from '../services/OfflineService';
+
+interface NVLPContextType {
+  session: any;
+  user: any;
+  signIn: (email: string) => Promise<void>;
+  signOut: () => Promise<void>;
+  isOnline: boolean;
+  queueSize: number;
+  authService: MobileAuthService;
+  offlineService: OfflineService;
+  isLoading: boolean;
+}
+
+const NVLPContext = createContext<NVLPContextType | null>(null);
+
+export function NVLPProvider({ children }: { children: ReactNode }) {
+  const [authService] = useState(() => new MobileAuthService());
+  const [offlineService] = useState(() => new OfflineService(authService));
+  
+  const [session, setSession] = useState(null);
+  const [user, setUser] = useState(null);
+  const [isOnline, setIsOnline] = useState(true);
+  const [queueSize, setQueueSize] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Initialize auth state
+    const initAuth = async () => {
+      try {
+        const currentSession = await authService.getSession();
+        setSession(currentSession);
+        setUser(currentSession?.user || null);
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initAuth();
+
+    // Listen for auth changes
+    const unsubscribeAuth = authService.onSessionChange((newSession) => {
+      setSession(newSession);
+      setUser(newSession?.user || null);
+    });
+
+    // Listen for network changes
+    const unsubscribeNetwork = offlineService.onNetworkChange((online) => {
+      setIsOnline(online);
+    });
+
+    return () => {
+      unsubscribeAuth();
+      unsubscribeNetwork();
+    };
+  }, [authService, offlineService]);
+
+  const signIn = async (email: string) => {
+    await authService.signInWithMagicLink(email);
+  };
+
+  const signOut = async () => {
+    await authService.signOut();
+  };
+
+  const value: NVLPContextType = {
+    session,
+    user,
+    signIn,
+    signOut,
+    isOnline,
+    queueSize,
+    authService,
+    offlineService,
+    isLoading,
+  };
+
+  return (
+    <NVLPContext.Provider value={value}>
+      {children}
+    </NVLPContext.Provider>
+  );
+}
+
+export function useNVLP() {
+  const context = useContext(NVLPContext);
+  if (!context) {
+    throw new Error('useNVLP must be used within NVLPProvider');
+  }
+  return context;
+}</code></pre>
+
+            <h2 id="performance">Performance Optimization</h2>
+
+            <div class="info">
+                <h4>📊 Mobile Performance Tips</h4>
+                <p>Key strategies for optimal mobile performance:</p>
+            </div>
+
+            <h3>Data Loading Optimization</h3>
+
+            <pre><code class="language-typescript">// src/hooks/useBudgetData.ts
+import { useState, useEffect, useCallback } from 'react';
+import { useNVLP } from '../context/NVLPContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+export function useBudgetData(budgetId: string) {
+  const { authService } = useNVLP();
+  const nvlp = authService.getNVLPClient();
+  
+  const [data, setData] = useState({
+    budget: null,
+    categories: [],
+    envelopes: [],
+    recentTransactions: [],
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const cacheKey = `budget_data_${budgetId}`;
+
+  const loadCachedData = useCallback(async () => {
+    try {
+      const cached = await AsyncStorage.getItem(cacheKey);
+      if (cached) {
+        const parsedData = JSON.parse(cached);
+        const cacheAge = Date.now() - parsedData.timestamp;
+        if (cacheAge < 5 * 60 * 1000) { // 5 minutes
+          setData(parsedData.data);
+          return true;
+        }
+      }
+    } catch (error) {
+      console.error('Error loading cached data:', error);
+    }
+    return false;
+  }, [cacheKey]);
+
+  const fetchFreshData = useCallback(async () => {
+    try {
+      setError(null);
+      
+      // Load data in parallel for better performance
+      const [budget, categories, envelopes, recentTransactions] = await Promise.all([
+        nvlp.budgets.eq('id', budgetId).single(),
+        nvlp.categories.eq('budget_id', budgetId).order('display_order').get(),
+        nvlp.envelopes.eq('budget_id', budgetId).eq('is_active', true).get(),
+        nvlp.transactions.eq('budget_id', budgetId).order('created_at', false).limit(20).get(),
+      ]);
+
+      const freshData = { budget, categories, envelopes, recentTransactions };
+      setData(freshData);
+
+      // Cache the fresh data
+      await AsyncStorage.setItem(cacheKey, JSON.stringify({
+        data: freshData,
+        timestamp: Date.now(),
+      }));
+
+    } catch (err) {
+      console.error('Error fetching budget data:', err);
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
+  }, [nvlp, budgetId, cacheKey]);
+
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    await fetchFreshData();
+  }, [fetchFreshData]);
+
+  useEffect(() => {
+    const loadData = async () => {
+      const hasCachedData = await loadCachedData();
+      if (hasCachedData) {
+        setLoading(false);
+        fetchFreshData(); // Background refresh
+      } else {
+        await fetchFreshData();
+      }
+    };
+
+    loadData();
+  }, [budgetId, loadCachedData, fetchFreshData]);
+
+  return { ...data, loading, error, refresh };
+}</code></pre>
+
+            <h2 id="security">Security Considerations</h2>
+
+            <div class="warning">
+                <h4>🔐 Mobile Security Best Practices</h4>
+                <p>Essential security measures for mobile apps:</p>
+            </div>
+
+            <h3>Secure Token Storage</h3>
+
+            <pre><code class="language-typescript">// src/services/SecureStorage.ts
+import * as Keychain from 'react-native-keychain';
+// import * as SecureStore from 'expo-secure-store'; // For Expo
+
+export class SecureTokenStorage {
+  private static readonly TOKEN_KEY = 'nvlp_auth_token';
+
+  static async storeTokens(accessToken: string, refreshToken: string): Promise<void> {
+    try {
+      // React Native CLI with Keychain
+      await Keychain.setInternetCredentials(
+        this.TOKEN_KEY,
+        'nvlp_user',
+        JSON.stringify({ accessToken, refreshToken })
+      );
+      
+      // Expo alternative:
+      // await SecureStore.setItemAsync(this.TOKEN_KEY, accessToken);
+    } catch (error) {
+      console.error('Failed to store tokens securely:', error);
+      throw new Error('Token storage failed');
+    }
+  }
+
+  static async getTokens(): Promise<{ accessToken: string; refreshToken: string } | null> {
+    try {
+      const credentials = await Keychain.getInternetCredentials(this.TOKEN_KEY);
+      if (credentials) {
+        return JSON.parse(credentials.password);
+      }
+    } catch (error) {
+      console.error('Failed to retrieve tokens:', error);
+    }
+    return null;
+  }
+
+  static async clearTokens(): Promise<void> {
+    try {
+      await Keychain.resetInternetCredentials(this.TOKEN_KEY);
+    } catch (error) {
+      console.error('Failed to clear tokens:', error);
+    }
+  }
+}</code></pre>
+
+            <h2 id="examples">Complete App Example</h2>
+
+            <h3>Main App Component</h3>
+
+            <pre><code class="language-typescript">// App.tsx
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import { StatusBar, Platform } from 'react-native';
+import { NVLPProvider, useNVLP } from './src/context/NVLPContext';
+import { LoadingScreen } from './src/screens/LoadingScreen';
+import { AuthScreen } from './src/screens/AuthScreen';
+import { BudgetDashboard } from './src/screens/BudgetDashboard';
+
+const Stack = createStackNavigator();
+
+function AppNavigator() {
+  const { session, isLoading } = useNVLP();
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
+
+  return (
+    <NavigationContainer>
+      <StatusBar 
+        barStyle={Platform.OS === 'ios' ? 'dark-content' : 'light-content'} 
+        backgroundColor="#667eea" 
+      />
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        {session ? (
+          <Stack.Screen name="Dashboard" component={BudgetDashboard} />
+        ) : (
+          <Stack.Screen name="Auth" component={AuthScreen} />
+        )}
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
+
+export default function App() {
+  return (
+    <NVLPProvider>
+      <AppNavigator />
+    </NVLPProvider>
+  );
+}</code></pre>
+
+            <div class="success">
+                <h4>🎉 Complete Mobile Integration</h4>
+                <p>You now have a complete mobile app setup with:</p>
+                <ul>
+                    <li>✅ Cross-platform authentication with deep linking</li>
+                    <li>✅ Offline-first architecture with automatic sync</li>
+                    <li>✅ Secure token storage and session management</li>
+                    <li>✅ Performance optimized data loading and caching</li>
+                    <li>✅ Production-ready deployment configuration</li>
+                </ul>
+            </div>
+
+            <div class="info">
+                <h4>🚀 Next Steps</h4>
+                <p>Ready to build your mobile app? Explore these resources:</p>
+                <ul>
+                    <li><a href="/docs/client-library">Client Library Guide</a> - Core API integration patterns</li>
+                    <li><a href="/docs/auth-guide">Authentication Guide</a> - Magic links and OAuth setup</li>
+                    <li><a href="/docs/postgrest-integration">PostgREST Integration</a> - Direct database access</li>
+                    <li><a href="/docs/api">API Reference</a> - Complete endpoint documentation</li>
+                </ul>
             </div>
         </div>
     </div>
+
+    <!-- Prism.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    
+    <!-- Smooth scrolling for anchor links -->
+    <script>
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
 </body>
 </html>
