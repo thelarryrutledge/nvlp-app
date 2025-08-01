@@ -213,7 +213,7 @@ This roadmap outlines the complete API development process for NVLP, from databa
 - [x] Add error code reference
 
 ### 11.2 Integration Guides
-- [ ] PostgREST integration guide
+- [x] PostgREST integration guide
 - [ ] Edge function development guide
 - [ ] Client library usage guide
 - [ ] Mobile app integration guide
