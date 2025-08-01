@@ -716,11 +716,11 @@ echo ""
 # Cleanup
 echo "🧹 Cleaning up test data..."
 
-# Best-effort cleanup process 
+# Best-effort cleanup - transaction audit triggers cause timing issues
 if [ -n "$BUDGET_ID" ]; then
-  echo "    Attempting to clean up test budget: $BUDGET_ID"
+  echo "    Attempting cleanup of test budget: $BUDGET_ID"
   
-  # Try to delete the test budget - the cascade should handle most cleanup
+  # Try to delete the budget - most cleanup will happen via cascade
   DELETE_BUDGET_RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
     -X DELETE "$SUPABASE_URL/rest/v1/budgets?id=eq.$BUDGET_ID" \
     -H "Authorization: Bearer $ACCESS_TOKEN" \
@@ -729,14 +729,13 @@ if [ -n "$BUDGET_ID" ]; then
   HTTP_STATUS=$(echo "$DELETE_BUDGET_RESPONSE" | grep "HTTP_STATUS" | cut -d: -f2)
   
   if [ "$HTTP_STATUS" = "204" ] || [ "$HTTP_STATUS" = "200" ]; then
-    echo "✅ Test budget and all related data deleted successfully"
+    echo "✅ Test budget deleted successfully"
   else
-    echo "⚠️  Budget cleanup incomplete - this is a known issue with transaction audit events"
-    echo "    Test data is isolated to budget: $BUDGET_ID"
-    echo "    All transaction flows tested successfully ✅"
-    echo "    Note: Cleanup issues don't affect test validity or other budgets"
+    echo "⚠️  Test budget cleanup skipped due to transaction audit trigger conflict"
+    echo "    Budget ID: $BUDGET_ID (isolated test data)"
+    echo "    This is a known limitation and doesn't affect test validity"
   fi
-else
+else  
   echo "    No budget ID to clean up"
 fi
 
