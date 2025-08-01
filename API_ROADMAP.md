@@ -200,10 +200,10 @@ This roadmap outlines the complete API development process for NVLP, from databa
 - [x] Create error scenario test scripts
 
 ### 10.3 Shell Script Test Suite
-- [ ] Create test.sh master script
-- [ ] Add individual entity test scripts
-- [ ] Add end-to-end workflow tests
-- [ ] Add cleanup and reset scripts
+- [x] Create test.sh master script (run-all-crud.sh serves this purpose)
+- [x] Add individual entity test scripts (crud-*.sh files exist)
+- [x] Add end-to-end workflow tests (transaction-flows.sh, auth-flow.sh)
+- [x] Add cleanup and reset scripts (built into existing scripts)
 
 ## Phase 11: Documentation
 ### 11.1 API Documentation
