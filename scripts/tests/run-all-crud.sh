@@ -96,6 +96,12 @@ echo "===================="
 ./crud-envelopes.sh
 echo ""
 
+echo "======================="
+echo "Running Error Scenarios"
+echo "======================="
+./error-scenarios.sh
+echo ""
+
 # Clean up test budget
 echo "🧹 Cleaning up test budget..."
 DELETE_RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
