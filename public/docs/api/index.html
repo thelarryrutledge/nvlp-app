@@ -126,6 +126,89 @@
         .btn.warning:hover {
             background: #e56b02;
         }
+        
+        /* Dropdown Styles */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .dropdown-toggle {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .dropdown-toggle:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+        
+        .dropdown-arrow {
+            font-size: 0.7rem;
+            transition: transform 0.2s;
+        }
+        
+        .dropdown.active .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+        
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            min-width: 200px;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s ease;
+        }
+        
+        .dropdown.active .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .dropdown-menu a {
+            display: block;
+            color: #374151;
+            text-decoration: none;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #f3f4f6;
+            transition: background-color 0.2s;
+            font-size: 0.9rem;
+        }
+        
+        .dropdown-menu a:last-child {
+            border-bottom: none;
+        }
+        
+        .dropdown-menu a:hover {
+            background-color: #f8fafc;
+            color: #667eea;
+        }
+        
+        .dropdown-menu a:first-child {
+            border-top-left-radius: 6px;
+            border-top-right-radius: 6px;
+        }
+        
+        .dropdown-menu a:last-child {
+            border-bottom-left-radius: 6px;
+            border-bottom-right-radius: 6px;
+        }
     </style>
 </head>
 <body>
@@ -138,10 +221,18 @@
         <div class="nav-links">
             <a href="/">← Back to NVLP</a>
             <a href="/docs/auth-guide">Auth Guide</a>
-            <a href="/docs/postgrest-integration">PostgREST Integration</a>
-            <a href="/docs/edge-functions">Edge Functions</a>
-            <a href="/docs/client-library">Client Library</a>
-            <a href="/docs/mobile-integration">Mobile Integration</a>
+            <div class="dropdown">
+                <div class="dropdown-toggle" onclick="toggleDropdown(this)">
+                    Integration Guides
+                    <span class="dropdown-arrow">▼</span>
+                </div>
+                <div class="dropdown-menu">
+                    <a href="/docs/postgrest-integration">PostgREST Integration</a>
+                    <a href="/docs/edge-functions">Edge Functions</a>
+                    <a href="/docs/client-library">Client Library</a>
+                    <a href="/docs/mobile-integration">Mobile Integration</a>
+                </div>
+            </div>
             <a href="/docs/error-codes">Error Codes</a>
             <a href="/docs/api/openapi.yaml" target="_blank">OpenAPI Spec</a>
             <a href="/docs/api/postman">Postman Collection</a>
@@ -193,6 +284,31 @@
         function showSuccess() {
             log('Documentation loaded successfully');
         }
+        
+        // Dropdown functionality
+        function toggleDropdown(trigger) {
+            const dropdown = trigger.parentElement;
+            const isActive = dropdown.classList.contains('active');
+            
+            // Close all other dropdowns
+            document.querySelectorAll('.dropdown.active').forEach(dd => {
+                dd.classList.remove('active');
+            });
+            
+            // Toggle current dropdown
+            if (!isActive) {
+                dropdown.classList.add('active');
+            }
+        }
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.dropdown')) {
+                document.querySelectorAll('.dropdown.active').forEach(dd => {
+                    dd.classList.remove('active');
+                });
+            }
+        });
         
         // Initialize documentation
         async function initializeDocs() {
