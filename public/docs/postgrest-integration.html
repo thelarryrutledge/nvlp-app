@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NVLP PostgREST Integration Guide</title>
+    <meta name="description" content="Complete guide to integrating with NVLP's PostgREST API for direct database access">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/assets/logo/IconOnly_Transparent_NoBuffer.png">
+    
+    <!-- Prism.js for syntax highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --text-dark: #2d3748;
+            --text-light: #4a5568;
+            --text-muted: #718096;
+            --bg-light: #f7fafc;
+            --bg-white: #ffffff;
+            --border-color: #e2e8f0;
+            --success-color: #48bb78;
+            --warning-color: #ed8936;
+            --error-color: #f56565;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            background: var(--bg-light);
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 2rem 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header img {
+            height: 40px;
+            width: auto;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
+        .nav-links {
+            margin-top: 1.5rem;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            margin-right: 1.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+            font-size: 0.9rem;
+        }
+        
+        .nav-links a:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+        
+        /* Content */
+        .content {
+            background: var(--bg-white);
+            margin: 2rem 0;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+        
+        .content-inner {
+            padding: 3rem 2rem;
+        }
+        
+        /* Typography */
+        h1, h2, h3, h4 {
+            color: var(--text-dark);
+            margin-bottom: 1rem;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        h2 {
+            font-size: 2rem;
+            margin-top: 3rem;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--primary-color);
+            padding-left: 1rem;
+        }
+        
+        h3 {
+            font-size: 1.5rem;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            color: var(--text-light);
+        }
+        
+        h4 {
+            font-size: 1.25rem;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            color: var(--text-light);
+        }
+        
+        p {
+            margin-bottom: 1rem;
+            color: var(--text-light);
+        }
+        
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Lists */
+        ul, ol {
+            margin-bottom: 1rem;
+            margin-left: 2rem;
+        }
+        
+        li {
+            margin-bottom: 0.5rem;
+            color: var(--text-light);
+        }
+        
+        /* Code blocks */
+        pre {
+            background: #2d3748;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            font-size: 0.9rem;
+        }
+        
+        code {
+            font-family: 'Monaco', 'SF Mono', 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+        }
+        
+        p code, li code {
+            background: var(--bg-light);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.9em;
+            border: 1px solid var(--border-color);
+        }
+        
+        /* Alerts */
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            border-left: 4px solid;
+        }
+        
+        .alert-info {
+            background: #ebf8ff;
+            border-color: #3182ce;
+            color: #2c5aa0;
+        }
+        
+        .alert-warning {
+            background: #fffbeb;
+            border-color: var(--warning-color);
+            color: #c05621;
+        }
+        
+        .alert-success {
+            background: #f0fff4;
+            border-color: var(--success-color);
+            color: #276749;
+        }
+        
+        .alert-error {
+            background: #fed7d7;
+            border-color: var(--error-color);
+            color: #c53030;
+        }
+        
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            background: var(--bg-white);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        th {
+            background: var(--bg-light);
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        
+        /* Navigation within content */
+        .toc {
+            background: var(--bg-light);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .toc h3 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+        }
+        
+        .toc ul {
+            margin-left: 1rem;
+        }
+        
+        .toc a {
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 1rem;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .content-inner {
+                padding: 2rem 1rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            h2 {
+                font-size: 1.5rem;
+            }
+            
+            pre {
+                padding: 1rem;
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>
+                <img src="/assets/logo/IconOnly_Transparent_NoBuffer.png" alt="NVLP Logo">
+                PostgREST Integration Guide
+            </h1>
+            <p>Complete guide to integrating with NVLP's PostgREST API for direct database access</p>
+            <div class="nav-links">
+                <a href="/docs/api">← Back to API Docs</a>
+                <a href="/docs/auth-guide">Auth Guide</a>
+                <a href="/docs/error-codes">Error Codes</a>
+                <a href="https://github.com/nvlp-app" target="_blank">GitHub</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="content">
+            <div class="content-inner">
+                <div class="toc">
+                    <h3>📖 Table of Contents</h3>
+                    <ul>
+                        <li><a href="#overview">Overview</a></li>
+                        <li><a href="#quick-start">Quick Start</a></li>
+                        <li><a href="#authentication">Authentication Setup</a></li>
+                        <li><a href="#client-options">Client Integration Options</a></li>
+                        <li><a href="#query-builder">Query Builder Usage</a></li>
+                        <li><a href="#common-patterns">Common Patterns</a></li>
+                        <li><a href="#performance">Performance Optimization</a></li>
+                        <li><a href="#error-handling">Error Handling</a></li>
+                        <li><a href="#testing">Testing</a></li>
+                        <li><a href="#production">Production Considerations</a></li>
+                    </ul>
+                </div>
+
+                <section id="overview">
+                    <h2>🎯 Overview</h2>
+                    <p>NVLP provides two API interfaces for different use cases:</p>
+                    
+                    <div class="alert alert-info">
+                        <strong>PostgREST:</strong> Direct database access with automatic RESTful endpoints for simple CRUD operations
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <strong>Edge Functions:</strong> Complex business logic, validation, and multi-table operations
+                    </div>
+
+                    <h3>✅ PostgREST is ideal for:</h3>
+                    <ul>
+                        <li>Simple CRUD operations (Create, Read, Update, Delete)</li>
+                        <li>Filtering and querying data</li>
+                        <li>Bulk operations</li>
+                        <li>High-performance read operations</li>
+                        <li>Complex queries with relationships</li>
+                    </ul>
+
+                    <h3>❌ Use Edge Functions for:</h3>
+                    <ul>
+                        <li>Complex transaction creation with validation</li>
+                        <li>Business logic enforcement</li>
+                        <li>Multi-table operations with constraints</li>
+                        <li>Balance calculations and updates</li>
+                    </ul>
+                </section>
+
+                <section id="quick-start">
+                    <h2>🚀 Quick Start</h2>
+                    
+                    <h3>1. Environment Setup</h3>
+                    <pre><code class="language-bash"># Environment variables required
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-key</code></pre>
+
+                    <h3>2. Basic Configuration</h3>
+                    <pre><code class="language-javascript">// Direct fetch approach
+const POSTGREST_URL = `${process.env.SUPABASE_URL}/rest/v1`;
+const headers = {
+  'apikey': process.env.SUPABASE_ANON_KEY,
+  'Authorization': `Bearer ${userToken}`,
+  'Content-Type': 'application/json',
+  'Accept': 'application/json'
+};</code></pre>
+
+                    <h3>3. Simple Query Example</h3>
+                    <pre><code class="language-javascript">// Get all active budgets
+const response = await fetch(`${POSTGREST_URL}/budgets?is_active=eq.true&order=created_at.desc`, {
+  headers
+});
+const budgets = await response.json();</code></pre>
+                </section>
+
+                <section id="authentication">
+                    <h2>🔐 Authentication Setup</h2>
+                    
+                    <h3>Token-Based Authentication</h3>
+                    <p>PostgREST requires a valid JWT token for all authenticated requests:</p>
+                    
+                    <pre><code class="language-javascript">// Get token from Supabase auth
+const { data: { session } } = await supabaseClient.auth.getSession();
+const token = session?.access_token;
+
+// Include in all requests
+const headers = {
+  'apikey': process.env.SUPABASE_ANON_KEY,
+  'Authorization': `Bearer ${token}`,
+  'Content-Profile': 'public',
+  'Accept-Profile': 'public'
+};</code></pre>
+
+                    <h3>Automatic Token Refresh</h3>
+                    <pre><code class="language-javascript">async function getValidToken() {
+  let session = await supabaseClient.auth.getSession();
+  
+  // Check if token is about to expire
+  if (isTokenExpiring(session.data.session?.access_token)) {
+    const { data } = await supabaseClient.auth.refreshSession();
+    session = data;
+  }
+  
+  return session.session?.access_token;
+}
+
+function isTokenExpiring(token) {
+  if (!token) return true;
+  
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const expiryTime = payload.exp * 1000;
+    const bufferMs = 5 * 60 * 1000; // 5 minute buffer
+    return Date.now() > (expiryTime - bufferMs);
+  } catch {
+    return true;
+  }
+}</code></pre>
+                </section>
+
+                <section id="client-options">
+                    <h2>🛠 Client Integration Options</h2>
+                    
+                    <h3>Option 1: NVLP Unified Client (Recommended)</h3>
+                    <p>The unified client provides a fluent query builder interface with automatic authentication:</p>
+                    
+                    <pre><code class="language-javascript">import { createNVLPClient, SupabaseSessionProvider } from '@nvlp/client';
+import { createClient } from '@supabase/supabase-js';
+
+// Setup
+const supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
+const sessionProvider = new SupabaseSessionProvider(supabaseClient);
+
+const nvlp = createNVLPClient({
+  supabaseUrl,
+  supabaseAnonKey,
+  sessionProvider,
+});
+
+// Usage examples
+const budgets = await nvlp.budgets
+  .select('*')
+  .eq('is_active', true)
+  .order('created_at', false)
+  .get();
+
+const envelope = await nvlp.envelopes
+  .select('*, category:categories(*)')
+  .eq('id', envelopeId)
+  .single();</code></pre>
+
+                    <h3>Option 2: Direct Fetch with Helper Functions</h3>
+                    <pre><code class="language-javascript">class PostgRESTClient {
+  constructor(baseUrl, apiKey) {
+    this.baseUrl = baseUrl;
+    this.apiKey = apiKey;
+    this.token = null;
+  }
+
+  setToken(token) {
+    this.token = token;
+  }
+
+  getHeaders(additional = {}) {
+    return {
+      'apikey': this.apiKey,
+      'Authorization': `Bearer ${this.token}`,
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      ...additional
+    };
+  }
+
+  async query(table, params = {}) {
+    const url = new URL(`${this.baseUrl}/${table}`);
+    Object.entries(params).forEach(([key, value]) => {
+      url.searchParams.append(key, value);
+    });
+
+    const response = await fetch(url, {
+      headers: this.getHeaders()
+    });
+
+    if (!response.ok) {
+      throw new Error(`PostgREST query failed: ${response.status} ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+}</code></pre>
+                </section>
+
+                <section id="query-builder">
+                    <h2>🔍 Query Builder Usage</h2>
+                    
+                    <h3>Basic Filtering</h3>
+                    <pre><code class="language-javascript">// Equality
+await nvlp.budgets.eq('is_active', true).get();
+
+// Comparison operators
+await nvlp.envelopes.gt('current_balance', 0).get();
+await nvlp.transactions.gte('transaction_date', '2025-01-01').get();
+await nvlp.envelopes.lt('current_balance', 0).get();
+
+// Pattern matching
+await nvlp.payees.like('name', '*grocery*').get();
+await nvlp.categories.ilike('name', '*FOOD*').get(); // Case-insensitive
+
+// List membership
+await nvlp.envelopes.in('envelope_type', ['regular', 'savings']).get();
+
+// Null checks
+await nvlp.categories.isNull('parent_id').get(); // Top-level categories</code></pre>
+
+                    <h3>Complex Filtering</h3>
+                    <pre><code class="language-javascript">// OR conditions
+await nvlp.transactions
+  .or('transaction_type.eq.income,transaction_type.eq.allocation')
+  .get();
+
+// Complex OR with AND
+await nvlp.transactions
+  .eq('budget_id', budgetId)
+  .or('(from_envelope_id.eq.' + envelopeId + ',to_envelope_id.eq.' + envelopeId + ')')
+  .get();</code></pre>
+
+                    <h3>Selecting Columns and Relationships</h3>
+                    <pre><code class="language-javascript">// Select specific columns
+await nvlp.budgets
+  .select('id,name,description')
+  .get();
+
+// Select with relationships
+await nvlp.envelopes
+  .select('*, category:categories(name), budget:budgets(name)')
+  .eq('budget_id', budgetId)
+  .get();</code></pre>
+                </section>
+
+                <section id="common-patterns">
+                    <h2>📚 Common Patterns</h2>
+                    
+                    <h3>1. Budget Data Loading</h3>
+                    <pre><code class="language-javascript">async function loadBudgetData(budgetId) {
+  // Load all budget-related data in parallel
+  const [budget, categories, envelopes, payees, incomeSources] = await Promise.all([
+    nvlp.budgets.eq('id', budgetId).single(),
+    nvlp.categories.eq('budget_id', budgetId).order('display_order').get(),
+    nvlp.envelopes.eq('budget_id', budgetId).eq('is_active', true).order('display_order').get(),
+    nvlp.payees.eq('budget_id', budgetId).eq('is_active', true).order('name').get(),
+    nvlp.incomeSources.eq('budget_id', budgetId).eq('is_active', true).order('name').get()
+  ]);
+
+  return { budget, categories, envelopes, payees, incomeSources };
+}</code></pre>
+
+                    <h3>2. Transaction History with Details</h3>
+                    <pre><code class="language-javascript">async function getTransactionHistory(budgetId, limit = 50, offset = 0) {
+  return await nvlp.transactions
+    .select(`
+      *,
+      from_envelope:envelopes!from_envelope_id(name),
+      to_envelope:envelopes!to_envelope_id(name),
+      payee:payees(name),
+      income_source:income_sources(name),
+      category:categories(name)
+    `)
+    .eq('budget_id', budgetId)
+    .eq('is_deleted', false)
+    .order('transaction_date', false)
+    .order('created_at', false)
+    .limit(limit)
+    .offset(offset)
+    .get();
+}</code></pre>
+
+                    <h3>3. Envelope Balance Monitoring</h3>
+                    <pre><code class="language-javascript">async function getNegativeBalanceEnvelopes(budgetId) {
+  return await nvlp.envelopes
+    .select('*, category:categories(name)')
+    .eq('budget_id', budgetId)
+    .eq('is_active', true)
+    .lt('current_balance', 0)
+    .order('current_balance') // Worst first
+    .get();
+}</code></pre>
+                </section>
+
+                <section id="performance">
+                    <h2>⚡ Performance Optimization</h2>
+                    
+                    <h3>1. Use Indexes Effectively</h3>
+                    <p>Always include these filters when possible:</p>
+                    
+                    <pre><code class="language-javascript">// Budget-scoped queries (uses budget_id indexes)
+await nvlp.envelopes.eq('budget_id', budgetId).get();
+
+// Active record filters (uses partial indexes)
+await nvlp.envelopes.eq('is_active', true).get();
+await nvlp.transactions.eq('is_deleted', false).get();
+
+// Date range queries (uses btree indexes)
+await nvlp.transactions
+  .gte('transaction_date', '2025-01-01')
+  .lte('transaction_date', '2025-01-31')
+  .get();</code></pre>
+
+                    <h3>2. Optimize Column Selection</h3>
+                    <div class="alert alert-error">
+                        <strong>❌ Don't:</strong> Select all columns if you don't need them
+                    </div>
+                    <pre><code class="language-javascript">await nvlp.transactions.select('*').get();</code></pre>
+                    
+                    <div class="alert alert-success">
+                        <strong>✅ Do:</strong> Select only needed columns
+                    </div>
+                    <pre><code class="language-javascript">await nvlp.transactions
+  .select('id,amount,description,transaction_date,transaction_type')
+  .get();</code></pre>
+                </section>
+
+                <section id="error-handling">
+                    <h2>🚨 Error Handling</h2>
+                    
+                    <h3>HTTP Status Codes</h3>
+                    <pre><code class="language-javascript">async function handlePostgRESTRequest(operation) {
+  try {
+    const result = await operation();
+    return { data: result, error: null };
+  } catch (error) {
+    switch (error.status || error.response?.status) {
+      case 400:
+        throw new Error(`Bad Request: Invalid query parameters`);
+      case 401:
+        throw new Error('Unauthorized: Please log in again');
+      case 403:
+        throw new Error('Forbidden: You don\'t have access to this resource');
+      case 404:
+        throw new Error('Not Found: Resource doesn\'t exist');
+      case 409:
+        throw new Error(`Conflict: Constraint violation`);
+      default:
+        throw new Error(`PostgREST Error: ${error.message}`);
+    }
+  }
+}</code></pre>
+
+                    <h3>Retry Logic with Exponential Backoff</h3>
+                    <pre><code class="language-javascript">async function withRetry(operation, maxRetries = 3) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await operation();
+    } catch (error) {
+      // Handle auth errors with refresh
+      if (error.status === 401 && attempt < maxRetries) {
+        const shouldRetry = await handleRLSError(error);
+        if (shouldRetry) {
+          continue;
+        }
+      }
+      
+      // Handle temporary errors
+      if ([408, 429, 500, 502, 503, 504].includes(error.status) && attempt < maxRetries) {
+        const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue;
+      }
+      
+      throw error;
+    }
+  }
+}</code></pre>
+                </section>
+
+                <section id="testing">
+                    <h2>🧪 Testing</h2>
+                    
+                    <h3>Unit Testing PostgREST Operations</h3>
+                    <pre><code class="language-javascript">// Mock PostgREST client for testing
+class MockPostgRESTClient {
+  constructor(mockData = {}) {
+    this.mockData = mockData;
+    this.operations = [];
+  }
+
+  from(table) {
+    return new MockQueryBuilder(table, this.mockData[table] || [], this.operations);
+  }
+}
+
+// Test example
+describe('Budget Operations', () => {
+  let mockClient;
+
+  beforeEach(() => {
+    mockClient = new MockPostgRESTClient({
+      budgets: [
+        { id: '1', name: 'Test Budget', is_active: true },
+        { id: '2', name: 'Inactive Budget', is_active: false }
+      ]
+    });
+  });
+
+  test('should get active budgets only', async () => {
+    const budgets = await mockClient.from('budgets')
+      .eq('is_active', true)
+      .get();
+
+    expect(budgets).toHaveLength(1);
+    expect(budgets[0].name).toBe('Test Budget');
+  });
+});</code></pre>
+                </section>
+
+                <section id="production">
+                    <h2>🏭 Production Considerations</h2>
+                    
+                    <h3>1. Connection Management</h3>
+                    <p>Use connection pooling for high-traffic applications:</p>
+                    
+                    <pre><code class="language-javascript">// Custom fetch with pooling (using undici or similar)
+import { Agent } from 'undici';
+
+const agent = new Agent({
+  connections: 100,
+  keepAliveTimeout: 10000,
+  keepAliveMaxTimeout: 10000
+});
+
+const customFetch = (url, options) => {
+  return fetch(url, {
+    ...options,
+    dispatcher: agent
+  });
+};</code></pre>
+
+                    <h3>2. Security Best Practices</h3>
+                    <pre><code class="language-javascript">// Input validation and sanitization
+function sanitizePostgRESTInput(input) {
+  if (typeof input === 'string') {
+    // Prevent injection attacks in PostgREST filters
+    return input.replace(/[;'"\\]/g, '');
+  }
+  return input;
+}
+
+// Request timeout to prevent hanging requests
+const REQUEST_TIMEOUT = 30000; // 30 seconds
+
+function withTimeout(promise, timeoutMs = REQUEST_TIMEOUT) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Request timeout')), timeoutMs)
+    )
+  ]);
+}</code></pre>
+
+                    <div class="alert alert-info">
+                        <strong>📖 More Information:</strong> For detailed endpoint documentation, see the <a href="/docs/api">full API documentation</a> and <a href="https://github.com/nvlp-app" target="_blank">GitHub repository</a>.
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- Prism.js for syntax highlighting -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    
+    <script>
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
