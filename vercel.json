@@ -20,6 +20,10 @@
     {
       "source": "/docs/api/postman",
       "destination": "/docs/api/postman.html"
+    },
+    {
+      "source": "/docs/auth-guide",
+      "destination": "/docs/auth-guide.html"
     }
   ],
   "headers": [

@@ -207,9 +207,9 @@ This roadmap outlines the complete API development process for NVLP, from databa
 
 ## Phase 11: Documentation
 ### 11.1 API Documentation
-- [ ] Generate OpenAPI/Swagger specification
+- [x] Generate OpenAPI/Swagger specification
 - [ ] Document all endpoints with examples
-- [ ] Create authentication guide
+- [x] Create authentication guide
 - [ ] Add error code reference
 
 ### 11.2 Integration Guides
