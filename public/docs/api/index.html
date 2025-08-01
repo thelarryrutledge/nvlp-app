@@ -9,10 +9,6 @@
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="/assets/logo/IconOnly_Transparent_NoBuffer.png">
     
-    <!-- Redoc CSS -->
-    <link rel="stylesheet" href="https://cdn.redoc.ly/redoc/2.1.3/bundles/redoc.standalone.css">
-    
-    <!-- Custom styles -->
     <style>
         body {
             margin: 0;
@@ -67,14 +63,68 @@
             height: calc(100vh - 140px);
         }
         
-        /* Redoc customizations */
-        .redoc-wrap {
-            height: 100%;
+        .status-message {
+            padding: 2rem;
+            text-align: center;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin: 2rem;
         }
         
-        /* Custom theme colors to match NVLP branding */
-        :root {
-            --redoc-brand-color: #667eea;
+        .loading {
+            color: #667eea;
+        }
+        
+        .error {
+            color: #dc3545;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .btn {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .btn:hover {
+            background: #5a6fd8;
+        }
+        
+        .btn.secondary {
+            background: #6c757d;
+        }
+        
+        .btn.secondary:hover {
+            background: #5a6169;
+        }
+        
+        .btn.warning {
+            background: #fd7e14;
+        }
+        
+        .btn.warning:hover {
+            background: #e56b02;
         }
     </style>
 </head>
@@ -95,260 +145,204 @@
     
     <div class="content">
         <div id="redoc-container">
-            <div style="
-                padding: 4rem 2rem;
-                text-align: center;
-                background: #fff;
-                border: 1px solid #e2e8f0;
-                border-radius: 8px;
-                margin: 2rem;
-            ">
-                <div style="
-                    display: inline-block;
-                    width: 40px;
-                    height: 40px;
-                    border: 4px solid #f3f3f3;
-                    border-top: 4px solid #667eea;
-                    border-radius: 50%;
-                    animation: spin 1s linear infinite;
-                    margin-bottom: 1rem;
-                "></div>
-                <h2 style="color: #667eea; margin-bottom: 1rem;">Loading API Documentation...</h2>
-                <p style="color: #6c757d;">
-                    Please wait while we load the OpenAPI specification
-                </p>
-                <style>
-                    @keyframes spin {
-                        0% { transform: rotate(0deg); }
-                        100% { transform: rotate(360deg); }
-                    }
-                </style>
+            <div class="status-message loading">
+                <div class="spinner"></div>
+                <h2>Loading API Documentation...</h2>
+                <p>Please wait while we initialize the documentation viewer</p>
+                <div id="debug-info" style="margin-top: 1rem; font-size: 0.8rem; color: #666;"></div>
             </div>
         </div>
     </div>
     
-    <!-- Redoc JavaScript -->
-    <script src="https://cdn.redoc.ly/redoc/2.1.3/bundles/redoc.standalone.js" onload="initializeRedoc()" onerror="handleRedocLoadError()"></script>
-    
     <script>
-        let redocLoadAttempts = 0;
-        const maxRetries = 3;
-        
-        function handleRedocLoadError() {
-            console.error('Failed to load Redoc from CDN');
-            redocLoadAttempts++;
-            
-            if (redocLoadAttempts < maxRetries) {
-                console.log(`Retrying Redoc load (attempt ${redocLoadAttempts + 1}/${maxRetries})...`);
-                // Try alternative CDN
-                const script = document.createElement('script');
-                script.src = 'https://unpkg.com/redoc@2.1.3/bundles/redoc.standalone.js';
-                script.onload = initializeRedoc;
-                script.onerror = handleRedocLoadError;
-                document.head.appendChild(script);
-            } else {
-                showFallbackError('Failed to load Redoc library after multiple attempts');
+        // Debug logging
+        function log(message) {
+            console.log(`[API Docs] ${message}`);
+            const debugEl = document.getElementById('debug-info');
+            if (debugEl) {
+                debugEl.innerHTML += `<div>${new Date().toLocaleTimeString()}: ${message}</div>`;
             }
         }
         
-        function showFallbackError(message) {
+        function showError(message, details = '') {
+            log(`Error: ${message}`);
             document.getElementById('redoc-container').innerHTML = `
-                <div style="
-                    padding: 2rem;
-                    text-align: center;
-                    background: #fff;
-                    border: 1px solid #e2e8f0;
-                    border-radius: 8px;
-                    margin: 2rem;
-                ">
-                    <h2 style="color: #dc3545; margin-bottom: 1rem;">Documentation Unavailable</h2>
-                    <p style="color: #6c757d; margin-bottom: 1rem;">
-                        ${message}
-                    </p>
-                    <p style="color: #6c757d; margin-bottom: 2rem;">
-                        You can still access the raw API specification files:
-                    </p>
+                <div class="status-message error">
+                    <h2>❌ Documentation Unavailable</h2>
+                    <p><strong>${message}</strong></p>
+                    ${details ? `<p style="margin: 1rem 0; color: #666; font-size: 0.9rem;">${details}</p>` : ''}
+                    <p style="margin: 2rem 0 1rem 0;">You can still access the API specification:</p>
                     <div>
-                        <a href="/docs/api/openapi.json" 
-                           style="
-                               display: inline-block;
-                               background: #667eea;
-                               color: white;
-                               padding: 0.75rem 1.5rem;
-                               text-decoration: none;
-                               border-radius: 6px;
-                               margin: 0.5rem;
-                               font-weight: 500;
-                           "
-                           target="_blank">
-                            📄 View JSON Spec
-                        </a>
-                        <a href="/docs/api/openapi.yaml" 
-                           style="
-                               display: inline-block;
-                               background: #6c757d;
-                               color: white;
-                               padding: 0.75rem 1.5rem;
-                               text-decoration: none;
-                               border-radius: 6px;
-                               margin: 0.5rem;
-                               font-weight: 500;
-                           "
-                           target="_blank">
-                            📥 Download YAML
-                        </a>
-                        <a href="/docs/api/postman" 
-                           style="
-                               display: inline-block;
-                               background: #fd7e14;
-                               color: white;
-                               padding: 0.75rem 1.5rem;
-                               text-decoration: none;
-                               border-radius: 6px;
-                               margin: 0.5rem;
-                               font-weight: 500;
-                           ">
-                            🚀 Postman Collection
-                        </a>
+                        <a href="/docs/api/openapi.json" class="btn" target="_blank">📄 View JSON Spec</a>
+                        <a href="/docs/api/openapi.yaml" class="btn secondary" target="_blank">📥 Download YAML</a>
+                        <a href="/docs/api/postman" class="btn warning">🚀 Postman Collection</a>
                     </div>
-                    <p style="color: #6c757d; margin-top: 2rem; font-size: 0.9rem;">
-                        You can also import the JSON spec into tools like Swagger Editor, Insomnia, or Postman.
+                    <p style="margin-top: 2rem; color: #666; font-size: 0.9rem;">
+                        Import the JSON spec into Swagger Editor, Insomnia, or other API tools.
                     </p>
                 </div>
             `;
         }
         
-        // Initialize Redoc with error handling
-        async function initializeRedoc() {
+        function showSuccess() {
+            log('Documentation loaded successfully');
+        }
+        
+        // Initialize documentation
+        async function initializeDocs() {
             try {
-                // Check if Redoc is available
-                if (typeof Redoc === 'undefined') {
-                    throw new Error('Redoc library not loaded');
-                }
+                log('Starting initialization...');
                 
-                console.log('Loading OpenAPI specification...');
+                // Step 1: Load Redoc
+                log('Loading Redoc library...');
+                await loadRedoc();
                 
-                // Try to load the JSON spec first
-                const response = await fetch('/docs/api/openapi.json');
-                if (!response.ok) {
-                    throw new Error(`Failed to load OpenAPI spec: ${response.status} ${response.statusText}`);
-                }
+                // Step 2: Load OpenAPI spec
+                log('Loading OpenAPI specification...');
+                const spec = await loadOpenAPISpec();
                 
-                const spec = await response.json();
-                console.log('OpenAPI spec loaded successfully');
+                // Step 3: Initialize Redoc
+                log('Initializing Redoc...');
+                await initializeRedoc(spec);
                 
-                // Initialize Redoc with the loaded spec
-                Redoc.init(spec, {
-                    scrollYOffset: 60,
-                    hideDownloadButton: false,
-                    disableSearch: false,
-                    expandResponses: "200,201",
-                    requiredPropsFirst: true,
-                    sortPropsAlphabetically: false,
-                    showExtensions: true,
-                    hideSchemaPattern: true,
-                    expandSingleSchemaField: true,
-                    menuToggle: true,
-                    theme: {
-                        colors: {
-                            primary: {
-                                main: '#667eea'
-                            },
-                            success: {
-                                main: '#28a745'
-                            },
-                            warning: {
-                                main: '#ffc107'
-                            },
-                            error: {
-                                main: '#dc3545'
-                            }
-                        },
-                        typography: {
-                            fontSize: '14px',
-                            lineHeight: '1.5em',
-                            code: {
-                                fontSize: '13px',
-                                fontFamily: 'Monaco, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace'
-                            },
-                            headings: {
-                                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", sans-serif'
-                            }
-                        },
-                        sidebar: {
-                            width: '280px',
-                            backgroundColor: '#fafafa'
-                        },
-                        rightPanel: {
-                            backgroundColor: '#263238',
-                            width: '40%'
-                        }
-                    }
-                }, document.getElementById('redoc-container'));
-                
-                console.log('Redoc initialized successfully');
+                showSuccess();
                 
             } catch (error) {
-                console.error('Error initializing Redoc:', error);
-                
-                // Show error message to user
-                document.getElementById('redoc-container').innerHTML = `
-                    <div style="
-                        padding: 2rem;
-                        text-align: center;
-                        background: #fff;
-                        border: 1px solid #e2e8f0;
-                        border-radius: 8px;
-                        margin: 2rem;
-                    ">
-                        <h2 style="color: #dc3545; margin-bottom: 1rem;">Failed to Load API Documentation</h2>
-                        <p style="color: #6c757d; margin-bottom: 1rem;">
-                            There was an error loading the OpenAPI specification.
-                        </p>
-                        <p style="color: #6c757d; margin-bottom: 2rem;">
-                            Error: ${error.message}
-                        </p>
-                        <div>
-                            <a href="/docs/api/openapi.json" 
-                               style="
-                                   display: inline-block;
-                                   background: #667eea;
-                                   color: white;
-                                   padding: 0.5rem 1rem;
-                                   text-decoration: none;
-                                   border-radius: 4px;
-                                   margin-right: 1rem;
-                               "
-                               target="_blank">
-                                View JSON Spec
-                            </a>
-                            <a href="/docs/api/openapi.yaml" 
-                               style="
-                                   display: inline-block;
-                                   background: #6c757d;
-                                   color: white;
-                                   padding: 0.5rem 1rem;
-                                   text-decoration: none;
-                                   border-radius: 4px;
-                               "
-                               target="_blank">
-                                Download YAML
-                            </a>
-                        </div>
-                    </div>
-                `;
+                console.error('Failed to initialize docs:', error);
+                showError(error.message, 'Check the browser console for more details.');
             }
         }
         
-        // Fallback initialization if script loads but onload doesn't fire
-        document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(function() {
-                if (typeof Redoc !== 'undefined' && !document.querySelector('.redoc-wrap')) {
-                    console.log('Fallback initialization triggered');
-                    initializeRedoc();
+        function loadRedoc() {
+            return new Promise((resolve, reject) => {
+                // Check if already loaded
+                if (typeof Redoc !== 'undefined') {
+                    resolve();
+                    return;
                 }
-            }, 1000);
-        });
+                
+                const script = document.createElement('script');
+                script.src = 'https://cdn.redoc.ly/redoc/2.1.3/bundles/redoc.standalone.js';
+                script.onload = () => {
+                    if (typeof Redoc !== 'undefined') {
+                        log('Redoc library loaded successfully');
+                        resolve();
+                    } else {
+                        reject(new Error('Redoc library loaded but not available'));
+                    }
+                };
+                script.onerror = () => {
+                    // Try alternative CDN
+                    log('Primary CDN failed, trying alternative...');
+                    const altScript = document.createElement('script');
+                    altScript.src = 'https://unpkg.com/redoc@2.1.3/bundles/redoc.standalone.js';
+                    altScript.onload = () => {
+                        if (typeof Redoc !== 'undefined') {
+                            log('Redoc library loaded from alternative CDN');
+                            resolve();
+                        } else {
+                            reject(new Error('Redoc library loaded from alternative CDN but not available'));
+                        }
+                    };
+                    altScript.onerror = () => reject(new Error('Failed to load Redoc from both CDNs'));
+                    document.head.appendChild(altScript);
+                };
+                document.head.appendChild(script);
+            });
+        }
+        
+        async function loadOpenAPISpec() {
+            try {
+                log('Fetching OpenAPI spec from /docs/api/openapi.json...');
+                const response = await fetch('/docs/api/openapi.json');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const spec = await response.json();
+                log('OpenAPI spec parsed successfully');
+                
+                // Validate spec has required fields
+                if (!spec.openapi || !spec.info || !spec.paths) {
+                    throw new Error('Invalid OpenAPI specification format');
+                }
+                
+                return spec;
+                
+            } catch (error) {
+                log(`Fetch failed: ${error.message}`);
+                throw new Error(`Failed to load OpenAPI specification: ${error.message}`);
+            }
+        }
+        
+        function initializeRedoc(spec) {
+            return new Promise((resolve, reject) => {
+                try {
+                    log('Calling Redoc.init...');
+                    
+                    Redoc.init(spec, {
+                        scrollYOffset: 60,
+                        hideDownloadButton: false,
+                        disableSearch: false,
+                        expandResponses: "200,201",
+                        requiredPropsFirst: true,
+                        sortPropsAlphabetically: false,
+                        showExtensions: true,
+                        hideSchemaPattern: true,
+                        expandSingleSchemaField: true,
+                        menuToggle: true,
+                        theme: {
+                            colors: {
+                                primary: { main: '#667eea' },
+                                success: { main: '#28a745' },
+                                warning: { main: '#ffc107' },
+                                error: { main: '#dc3545' }
+                            },
+                            typography: {
+                                fontSize: '14px',
+                                lineHeight: '1.5em',
+                                code: {
+                                    fontSize: '13px',
+                                    fontFamily: 'Monaco, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace'
+                                },
+                                headings: {
+                                    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", sans-serif'
+                                }
+                            },
+                            sidebar: {
+                                width: '280px',
+                                backgroundColor: '#fafafa'
+                            },
+                            rightPanel: {
+                                backgroundColor: '#263238',
+                                width: '40%'
+                            }
+                        }
+                    }, document.getElementById('redoc-container'));
+                    
+                    // Give Redoc a moment to render
+                    setTimeout(() => {
+                        if (document.querySelector('.redoc-wrap')) {
+                            log('Redoc rendering confirmed');
+                            resolve();
+                        } else {
+                            reject(new Error('Redoc failed to render'));
+                        }
+                    }, 1000);
+                    
+                } catch (error) {
+                    reject(new Error(`Redoc initialization failed: ${error.message}`));
+                }
+            });
+        }
+        
+        // Start initialization when page loads
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeDocs);
+        } else {
+            initializeDocs();
+        }
     </script>
 </body>
 </html>
