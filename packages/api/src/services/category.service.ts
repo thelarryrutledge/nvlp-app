@@ -248,33 +248,51 @@ export class CategoryService extends CachedBaseService {
   async reorderCategories(budgetId: string, reorders: CategoryReorderRequest[]): Promise<void> {
     await this.verifyBudgetAccess(budgetId);
 
-    // Update each category's display_order
-    for (const reorder of reorders) {
-      const { error } = await this.client
+    // Update all categories' display_order in parallel to reduce latency
+    const updatePromises = reorders.map(reorder => 
+      this.client
         .from('categories')
         .update({ 
           display_order: reorder.display_order,
           updated_at: new Date().toISOString(),
         })
         .eq('id', reorder.id)
-        .eq('budget_id', budgetId); // Extra security check
+        .eq('budget_id', budgetId) // Extra security check
+    );
 
-      if (error) {
-        this.handleError(error);
+    const updateResults = await Promise.all(updatePromises);
+    
+    // Check for errors
+    updateResults.forEach(result => {
+      if (result.error) {
+        this.handleError(result.error);
       }
-    }
+    });
 
     // Clean up ordering within affected scopes (budget + parent combinations)
     const affectedScopes = new Set<string>();
     
+    // Batch fetch parent_ids for all reordered categories to avoid N+1 queries
+    const categoryIds = reorders.map(r => r.id);
+    const { data: categories, error: fetchError } = await this.client
+      .from('categories')
+      .select('id, parent_id')
+      .in('id', categoryIds);
+    
+    if (fetchError) {
+      this.handleError(fetchError);
+    }
+    
+    // Create parent_id lookup map
+    const parentIdMap = new Map<string, string | null>();
+    categories?.forEach(cat => {
+      parentIdMap.set(cat.id, cat.parent_id);
+    });
+    
+    // Determine affected scopes using the batched data
     for (const reorder of reorders) {
-      const { data: category } = await this.client
-        .from('categories')
-        .select('parent_id')
-        .eq('id', reorder.id)
-        .single();
-      
-      const scopeKey = `${budgetId}:${category?.parent_id || 'null'}`;
+      const parentId = parentIdMap.get(reorder.id);
+      const scopeKey = `${budgetId}:${parentId || 'null'}`;
       affectedScopes.add(scopeKey);
     }
 

@@ -179,36 +179,28 @@ export class BudgetService extends BaseService {
       { name: 'Other Income', description: 'Gifts, refunds, misc income' },
     ];
 
-    // Insert expense categories
-    for (const category of expenseCategories) {
-      const { error } = await this.client
-        .from('categories')
-        .insert({
-          budget_id: budgetId,
-          name: category.name,
-          description: category.description,
-          type: 'EXPENSE',
-        });
+    // Insert all categories in bulk to avoid N+1 queries
+    const allCategories = [
+      ...expenseCategories.map(cat => ({
+        budget_id: budgetId,
+        name: cat.name,
+        description: cat.description,
+        type: 'EXPENSE' as const,
+      })),
+      ...incomeCategories.map(cat => ({
+        budget_id: budgetId,
+        name: cat.name,
+        description: cat.description,
+        type: 'INCOME' as const,
+      }))
+    ];
 
-      if (error && error.code !== '23505') { // Ignore duplicate key errors
-        this.handleError(error);
-      }
-    }
+    const { error: categoriesError } = await this.client
+      .from('categories')
+      .insert(allCategories);
 
-    // Insert income categories
-    for (const category of incomeCategories) {
-      const { error } = await this.client
-        .from('categories')
-        .insert({
-          budget_id: budgetId,
-          name: category.name,
-          description: category.description,
-          type: 'INCOME',
-        });
-
-      if (error && error.code !== '23505') { // Ignore duplicate key errors
-        this.handleError(error);
-      }
+    if (categoriesError && categoriesError.code !== '23505') { // Ignore duplicate key errors
+      this.handleError(categoriesError);
     }
 
     // Create default envelopes
@@ -230,8 +222,8 @@ export class BudgetService extends BaseService {
 
     const categoryMap = new Map(categories?.map(c => [c.name, c.id]) || []);
 
-    // Insert envelopes
-    for (const envelope of defaultEnvelopes) {
+    // Insert envelopes in bulk to avoid N+1 queries
+    const envelopesToInsert = defaultEnvelopes.map(envelope => {
       // Try to match envelope to category
       let categoryId = null;
       if (envelope.name === 'Groceries') categoryId = categoryMap.get('Food');
@@ -240,19 +232,21 @@ export class BudgetService extends BaseService {
       else if (envelope.name === 'Entertainment') categoryId = categoryMap.get('Entertainment');
       else if (envelope.name === 'Emergency Fund') categoryId = categoryMap.get('Savings');
 
-      const { error } = await this.client
-        .from('envelopes')
-        .insert({
-          budget_id: budgetId,
-          category_id: categoryId,
-          name: envelope.name,
-          target_amount: envelope.target_amount,
-          current_balance: 0,
-        });
+      return {
+        budget_id: budgetId,
+        category_id: categoryId,
+        name: envelope.name,
+        target_amount: envelope.target_amount,
+        current_balance: 0,
+      };
+    });
 
-      if (error && error.code !== '23505') { // Ignore duplicate key errors
-        this.handleError(error);
-      }
+    const { error: envelopesError } = await this.client
+      .from('envelopes')
+      .insert(envelopesToInsert);
+
+    if (envelopesError && envelopesError.code !== '23505') { // Ignore duplicate key errors
+      this.handleError(envelopesError);
     }
 
     // Create default payees
@@ -264,18 +258,19 @@ export class BudgetService extends BaseService {
       { name: 'Landlord/Mortgage', description: 'Housing payment' },
     ];
 
-    for (const payee of defaultPayees) {
-      const { error } = await this.client
-        .from('payees')
-        .insert({
-          budget_id: budgetId,
-          name: payee.name,
-          description: payee.description,
-        });
+    // Insert payees in bulk to avoid N+1 queries
+    const payeesToInsert = defaultPayees.map(payee => ({
+      budget_id: budgetId,
+      name: payee.name,
+      description: payee.description,
+    }));
 
-      if (error && error.code !== '23505') { // Ignore duplicate key errors
-        this.handleError(error);
-      }
+    const { error: payeesError } = await this.client
+      .from('payees')
+      .insert(payeesToInsert);
+
+    if (payeesError && payeesError.code !== '23505') { // Ignore duplicate key errors
+      this.handleError(payeesError);
     }
   }
 
@@ -459,15 +454,14 @@ export class BudgetService extends BaseService {
       });
     }
 
-    // Insert all transactions
-    for (const transaction of transactions) {
-      const { error } = await this.client
-        .from('transactions')
-        .insert(transaction);
+    // Insert all transactions in bulk to avoid N+1 queries
+    const { error: bulkInsertError } = await this.client
+      .from('transactions')
+      .insert(transactions);
 
-      if (error) {
-        console.error('Error inserting demo transaction:', error);
-      }
+    if (bulkInsertError) {
+      console.error('Error inserting demo transactions:', bulkInsertError);
+      this.handleError(bulkInsertError);
     }
   }
 }

@@ -94,6 +94,86 @@ export class TransactionService extends BaseService {
     return data as Transaction[];
   }
 
+  /**
+   * List transactions with all related data included to avoid N+1 queries
+   * Use this when you need full transaction details for multiple records
+   */
+  async listTransactionsWithDetails(
+    budgetId: string, 
+    filters?: TransactionFilters,
+    limit?: number,
+    offset?: number
+  ): Promise<TransactionWithDetails[]> {
+    await this.verifyBudgetAccess(budgetId);
+
+    let query = this.client
+      .from('transactions')
+      .select(`
+        *,
+        from_envelope:from_envelope_id(id, name),
+        to_envelope:to_envelope_id(id, name),
+        payee:payee_id(id, name),
+        income_source:income_source_id(id, name),
+        category:category_id(id, name)
+      `)
+      .eq('budget_id', budgetId)
+      .eq('is_deleted', false);
+
+    // Apply filters (same as listTransactions)
+    if (filters) {
+      if (filters.startDate) {
+        query = query.gte('transaction_date', filters.startDate);
+      }
+      if (filters.endDate) {
+        query = query.lte('transaction_date', filters.endDate);
+      }
+      if (filters.transactionType) {
+        query = query.eq('transaction_type', filters.transactionType);
+      }
+      if (filters.envelopeId) {
+        query = query.or(`from_envelope_id.eq.${filters.envelopeId},to_envelope_id.eq.${filters.envelopeId}`);
+      }
+      if (filters.payeeId) {
+        query = query.eq('payee_id', filters.payeeId);
+      }
+      if (filters.incomeSourceId) {
+        query = query.eq('income_source_id', filters.incomeSourceId);
+      }
+      if (filters.categoryId) {
+        query = query.eq('category_id', filters.categoryId);
+      }
+      if (filters.isCleared !== undefined) {
+        query = query.eq('is_cleared', filters.isCleared);
+      }
+      if (filters.isReconciled !== undefined) {
+        query = query.eq('is_reconciled', filters.isReconciled);
+      }
+      if (filters.minAmount !== undefined) {
+        query = query.gte('amount', filters.minAmount);
+      }
+      if (filters.maxAmount !== undefined) {
+        query = query.lte('amount', filters.maxAmount);
+      }
+    }
+
+    query = query.order('transaction_date', { ascending: false });
+
+    if (limit) {
+      query = query.limit(limit);
+    }
+    if (offset) {
+      query = query.range(offset, offset + (limit || 50) - 1);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      this.handleError(error);
+    }
+
+    return data as TransactionWithDetails[];
+  }
+
   async getTransaction(id: string): Promise<TransactionWithDetails> {
     const { data, error } = await this.client
       .from('transactions')

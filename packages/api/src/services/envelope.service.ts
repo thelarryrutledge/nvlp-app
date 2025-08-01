@@ -183,36 +183,47 @@ export class EnvelopeService extends BaseService {
   async reorderEnvelopes(budgetId: string, reorders: EnvelopeReorderRequest[]): Promise<void> {
     await this.verifyBudgetAccess(budgetId);
 
-    // Update each envelope's display_order
-    for (const reorder of reorders) {
-      const { error } = await this.client
+    // Update all envelopes' display_order in parallel to reduce latency
+    const updatePromises = reorders.map(reorder => 
+      this.client
         .from('envelopes')
         .update({ 
           display_order: reorder.display_order,
           updated_at: new Date().toISOString(),
         })
         .eq('id', reorder.id)
-        .eq('budget_id', budgetId); // Extra security check
+        .eq('budget_id', budgetId) // Extra security check
+    );
 
-      if (error) {
-        this.handleError(error);
+    const updateResults = await Promise.all(updatePromises);
+    
+    // Check for errors
+    updateResults.forEach(result => {
+      if (result.error) {
+        this.handleError(result.error);
       }
-    }
+    });
 
     // Clean up ordering within affected categories
     const affectedCategories = new Set<string>();
     
-    for (const reorder of reorders) {
-      const { data: envelope } = await this.client
-        .from('envelopes')
-        .select('category_id')
-        .eq('id', reorder.id)
-        .single();
-      
-      if (envelope?.category_id) {
+    // Batch fetch category_ids for all reordered envelopes to avoid N+1 queries
+    const envelopeIds = reorders.map(r => r.id);
+    const { data: envelopes, error: fetchError } = await this.client
+      .from('envelopes')
+      .select('id, category_id')
+      .in('id', envelopeIds);
+    
+    if (fetchError) {
+      this.handleError(fetchError);
+    }
+    
+    // Determine affected categories using the batched data
+    envelopes?.forEach(envelope => {
+      if (envelope.category_id) {
         affectedCategories.add(envelope.category_id);
       }
-    }
+    });
 
     // Reorder each affected category to eliminate gaps
     for (const categoryId of affectedCategories) {
