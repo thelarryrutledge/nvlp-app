@@ -215,7 +215,7 @@ This roadmap outlines the complete API development process for NVLP, from databa
 ### 11.2 Integration Guides
 - [x] PostgREST integration guide
 - [x] Edge function development guide
-- [ ] Client library usage guide
+- [x] Client library usage guide
 - [ ] Mobile app integration guide
 
 ## Phase 12: Performance & Security
