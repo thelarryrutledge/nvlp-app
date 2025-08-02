@@ -2,6 +2,7 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts'
 import { withRateLimit } from '../_shared/rate-limiter.ts'
+import { withSecurity } from '../_shared/security-headers.ts'
 
 const handler = async (req: Request) => {
   // Handle CORS
@@ -658,5 +659,5 @@ const handler = async (req: Request) => {
   }
 }
 
-// Apply rate limiting to the handler
-serve(withRateLimit('critical', handler))
+// Apply security headers and rate limiting to the handler
+serve(withSecurity(withRateLimit('critical', handler)))

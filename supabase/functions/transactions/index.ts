@@ -6,6 +6,7 @@ import {
   validateTransactionRequest, 
   createValidationErrorResponse 
 } from '../_shared/validation.ts'
+import { withSecurity } from '../_shared/security-headers.ts'
 
 const handler = async (req: Request) => {
   // Handle CORS
@@ -929,5 +930,5 @@ const handler = async (req: Request) => {
   }
 }
 
-// Apply rate limiting to the handler
-serve(withRateLimit('critical', handler))
+// Apply security headers and rate limiting to the handler
+serve(withSecurity(withRateLimit('critical', handler)))
