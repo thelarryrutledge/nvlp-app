@@ -8,6 +8,13 @@ import {
   recordFailedRequest,
   createRateLimitHeaders 
 } from '../_shared/rate-limiter.ts'
+import { 
+  validateEmail, 
+  validateString,
+  createValidationErrorResponse,
+  sanitizeString
+} from '../_shared/validation.ts'
+import { withSecurity } from '../_shared/security-headers.ts'
 
 const handler = async (req: Request) => {
   // Handle CORS
@@ -20,18 +27,25 @@ const handler = async (req: Request) => {
 
   try {
     const body = await req.json()
-    email = body.email;
-    const redirectTo = body.redirectTo;
-
-    if (!email) {
-      return new Response(
-        JSON.stringify({ error: 'Email is required' }),
-        { 
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      )
+    
+    // Validate email
+    const emailError = validateEmail(body.email);
+    if (emailError) {
+      return createValidationErrorResponse([emailError], corsHeaders);
     }
+    
+    // Validate redirectTo if provided
+    const redirectToError = validateString(body.redirectTo, 'redirectTo', { 
+      required: false, 
+      maxLength: 2048 
+    });
+    if (redirectToError) {
+      return createValidationErrorResponse([redirectToError], corsHeaders);
+    }
+    
+    // Use sanitized values
+    email = sanitizeString(body.email);
+    const redirectTo = body.redirectTo ? sanitizeString(body.redirectTo) : undefined;
 
     // Create Supabase client with service role key for server-side operations
     const supabaseClient = createClient(
@@ -108,5 +122,5 @@ const handler = async (req: Request) => {
   }
 }
 
-// Apply rate limiting to the handler
-serve(withRateLimit('auth', handler))
+// Apply security middleware and rate limiting to the handler
+serve(withSecurity(withRateLimit('auth', handler)))
