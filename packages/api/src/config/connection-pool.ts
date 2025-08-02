@@ -290,9 +290,9 @@ export class SupabaseConnectionPool {
     this.pendingRequests = [];
 
     // Close all connections
-    this.connections.forEach(connection => {
-      this.destroyConnection(connection);
-    });
+    while (this.connections.length > 0) {
+      this.destroyConnection(this.connections[0]);
+    }
 
     this.updateStats();
   }
@@ -302,7 +302,7 @@ export class SupabaseConnectionPool {
       const client = await this.acquire();
       
       // Simple health check query
-      const { data, error } = await client
+      const { error } = await client
         .from('budgets')
         .select('count', { count: 'exact', head: true })
         .limit(1);

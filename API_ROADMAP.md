@@ -225,7 +225,7 @@ This roadmap outlines the complete API development process for NVLP, from databa
 - [x] Optimize N+1 query issues
 - [x] Add connection pooling
 
-### 12.2 Security Hardening
+### 12.2 Security Hardening  
 - [ ] Audit all RLS policies
 - [ ] Add rate limiting
 - [ ] Implement request validation
