@@ -227,7 +227,7 @@ This roadmap outlines the complete API development process for NVLP, from databa
 
 ### 12.2 Security Hardening  
 - [x] Audit all RLS policies
-- [ ] Add rate limiting
+- [x] Add rate limiting
 - [ ] Implement request validation
 - [ ] Add security headers
 

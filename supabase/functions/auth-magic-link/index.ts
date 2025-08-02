@@ -1,15 +1,27 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts'
+import { 
+  withRateLimit, 
+  getClientIP, 
+  checkRateLimit, 
+  recordFailedRequest,
+  createRateLimitHeaders 
+} from '../_shared/rate-limiter.ts'
 
-serve(async (req) => {
+const handler = async (req: Request) => {
   // Handle CORS
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
+  const clientIP = getClientIP(req);
+  let email: string;
+
   try {
-    const { email, redirectTo } = await req.json()
+    const body = await req.json()
+    email = body.email;
+    const redirectTo = body.redirectTo;
 
     if (!email) {
       return new Response(
@@ -43,6 +55,18 @@ serve(async (req) => {
     })
 
     if (error) {
+      // Record failed authentication attempt for rate limiting
+      recordFailedRequest({
+        type: 'auth',
+        identifier: clientIP
+      });
+      
+      // Also record per-email rate limiting for auth attacks
+      recordFailedRequest({
+        type: 'auth', 
+        identifier: `email:${email}`
+      });
+
       return new Response(
         JSON.stringify({ error: error.message }),
         { 
@@ -52,6 +76,13 @@ serve(async (req) => {
       )
     }
 
+    // Get current rate limit status for headers
+    const rateLimitResult = checkRateLimit({
+      type: 'auth',
+      identifier: clientIP,
+      skipOnSuccess: true, // Don't count successful requests
+    });
+
     return new Response(
       JSON.stringify({ 
         success: true,
@@ -59,7 +90,11 @@ serve(async (req) => {
       }),
       { 
         status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { 
+          ...corsHeaders, 
+          ...createRateLimitHeaders(rateLimitResult),
+          'Content-Type': 'application/json' 
+        }
       }
     )
   } catch (error) {
@@ -71,4 +106,7 @@ serve(async (req) => {
       }
     )
   }
-})
+}
+
+// Apply rate limiting to the handler
+serve(withRateLimit('auth', handler))
