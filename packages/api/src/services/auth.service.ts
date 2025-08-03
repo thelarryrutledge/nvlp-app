@@ -2,6 +2,7 @@ import { BaseService } from './base.service';
 import { User, UserUpdateRequest, ApiError, ErrorCode } from '@nvlp/types';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { Database } from '@nvlp/types';
+import { BudgetService } from './budget.service';
 
 export interface SignInOptions {
   email: string;
@@ -137,6 +138,32 @@ export class AuthService extends BaseService {
         'User profile not found',
         error
       );
+    }
+
+    // If user has no default budget, create one
+    if (!data.default_budget_id) {
+      const budgetService = new BudgetService(this.client);
+      
+      // Create the initial budget
+      const budget = await budgetService.createBudget({
+        name: 'My Budget',
+        description: 'Your personal budget',
+        is_active: true
+      });
+
+      // Set it as the default
+      await budgetService.setDefaultBudget(budget.id);
+      
+      // Re-fetch the updated profile
+      const { data: updatedProfile } = await this.client
+        .from('user_profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+      
+      if (updatedProfile) {
+        return updatedProfile as User;
+      }
     }
 
     return data as User;

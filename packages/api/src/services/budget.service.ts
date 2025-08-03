@@ -99,6 +99,45 @@ export class BudgetService extends BaseService {
   async deleteBudget(id: string): Promise<void> {
     const userId = await this.getCurrentUserId();
 
+    // Get all user's budgets
+    const budgets = await this.listBudgets();
+    
+    // Check if this is the only budget
+    if (budgets.length === 1) {
+      // Generate a unique name for the new budget
+      const timestamp = new Date().toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric', 
+        year: 'numeric' 
+      });
+      
+      // Create a new empty budget first
+      const newBudget = await this.createBudget({
+        name: `Budget - ${timestamp}`,
+        description: 'Your personal budget',
+        is_active: true
+      });
+      
+      // Set the new budget as default
+      await this.setDefaultBudget(newBudget.id);
+    } else {
+      // Check if we're deleting the default budget
+      const { data: profile } = await this.client
+        .from('user_profiles')
+        .select('default_budget_id')
+        .eq('user_id', userId)
+        .single();
+      
+      if (profile?.default_budget_id === id) {
+        // Find another budget to set as default (not the one being deleted)
+        const newDefaultBudget = budgets.find(b => b.id !== id);
+        if (newDefaultBudget) {
+          await this.setDefaultBudget(newDefaultBudget.id);
+        }
+      }
+    }
+
+    // Now delete the budget
     const { error } = await this.client
       .from('budgets')
       .delete()
@@ -125,7 +164,7 @@ export class BudgetService extends BaseService {
         default_budget_id: budgetId,
         updated_at: new Date().toISOString(),
       })
-      .eq('id', userId);
+      .eq('user_id', userId);
 
     if (error) {
       this.handleError(error);
@@ -138,7 +177,7 @@ export class BudgetService extends BaseService {
     const { data: profile, error: profileError } = await this.client
       .from('user_profiles')
       .select('default_budget_id')
-      .eq('id', userId)
+      .eq('user_id', userId)
       .single();
 
     if (profileError || !profile?.default_budget_id) {
