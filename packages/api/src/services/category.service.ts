@@ -69,16 +69,9 @@ export class CategoryService extends CachedBaseService {
       }
     }
 
-    // Get next display_order if not provided
-    let displayOrder = request.display_order;
-    if (displayOrder === undefined) {
-      const { data: nextOrder } = await this.client
-        .rpc('get_next_category_display_order', { 
-          budget_id_param: budgetId, 
-          parent_id_param: request.parent_id || null 
-        });
-      displayOrder = nextOrder || 0;
-    }
+    // The database trigger will handle display_order assignment and shifting
+    // If display_order is not provided, the trigger will assign the next available value
+    // If display_order is provided and conflicts exist, the trigger will shift existing categories
 
     const { data, error } = await this.client
       .from('categories')
@@ -88,7 +81,7 @@ export class CategoryService extends CachedBaseService {
         description: request.description,
         is_income: request.is_income ?? false,
         is_system: request.is_system ?? false,
-        display_order: displayOrder,
+        display_order: request.display_order, // Let the database trigger handle auto-assignment and shifting
         parent_id: request.parent_id,
       })
       .select()
@@ -127,6 +120,8 @@ export class CategoryService extends CachedBaseService {
       }
     }
 
+    // The database trigger will handle display_order shifting when needed
+
     const { data, error } = await this.client
       .from('categories')
       .update({
@@ -148,7 +143,7 @@ export class CategoryService extends CachedBaseService {
   }
 
   async deleteCategory(id: string): Promise<void> {
-    const category = await this.getCategory(id);
+    await this.getCategory(id); // Verify category exists and access
 
     // Check if category has subcategories
     const { data: subcategories, error: subError } = await this.client

@@ -18,9 +18,11 @@ export class AuthenticatedPostgRESTClient {
   private client: PostgRESTClient;
   private sessionProvider: SessionProvider;
   private unsubscribeFromSession?: () => void;
+  private config: ClientConfig;
 
   constructor(config: ClientConfig, sessionProvider: SessionProvider) {
     this.sessionProvider = sessionProvider;
+    this.config = config;
     
     // Create initial client without token
     const postgrestConfig: PostgRESTConfig = {
@@ -100,6 +102,24 @@ export class AuthenticatedPostgRESTClient {
              message.includes('403');
     }
     return false;
+  }
+
+  /**
+   * Get authenticated headers for Edge Function requests
+   */
+  private async getAuthHeaders(): Promise<Record<string, string>> {
+    const session = await this.sessionProvider.ensureValidSession();
+    return {
+      'Authorization': `Bearer ${session.access_token}`,
+    };
+  }
+
+  /**
+   * Get Edge Functions URL
+   */
+  private get functionsUrl(): string {
+    const baseUrl = this.config.customDomain || this.config.supabaseUrl || process.env.SUPABASE_URL!;
+    return `${baseUrl}/functions/v1`;
   }
 
   // Convenience methods that ensure authentication
@@ -209,29 +229,102 @@ export class AuthenticatedPostgRESTClient {
   }
 
   /**
-   * Envelopes table (authenticated)
+   * Envelopes - Uses Edge Function for business logic validation
    */
   get envelopes() {
     return {
-      listByBudget: (budgetId: string) => this.withAuth(client =>
-        client.envelopes
-          .eq('budget_id', budgetId)
-          .eq('is_active', true)
-          .order('display_order')
-          .get()
-      ),
-      get: (id: string) => this.withAuth(client => client.envelopes.eq('id', id).single()),
-      create: (data: any) => this.withAuth(client => client.envelopes.post(data)),
-      update: (id: string, data: any) => this.withAuth(client => client.envelopes.eq('id', id).patch(data)),
-      delete: (id: string) => this.withAuth(client => client.envelopes.eq('id', id).delete()),
-      getNegativeBalance: (budgetId: string) => this.withAuth(client =>
-        client.envelopes
-          .eq('budget_id', budgetId)
-          .eq('is_active', true)
-          .lt('current_balance', 0)
-          .order('current_balance')
-          .get()
-      ),
+      // List envelopes (uses Edge Function)
+      listByBudget: async (budgetId: string) => {
+        const headers = await this.getAuthHeaders();
+        const response = await fetch(`${this.functionsUrl}/envelopes?budget_id=${budgetId}`, {
+          method: 'GET',
+          headers
+        });
+        if (!response.ok) throw new Error(`Failed to list envelopes: ${response.statusText}`);
+        const data = await response.json() as { envelopes: any[] };
+        return data.envelopes;
+      },
+      
+      // Get single envelope (uses Edge Function)
+      get: async (id: string) => {
+        const headers = await this.getAuthHeaders();
+        const response = await fetch(`${this.functionsUrl}/envelopes/envelopes/${id}`, {
+          method: 'GET',
+          headers
+        });
+        if (!response.ok) throw new Error(`Failed to get envelope: ${response.statusText}`);
+        const data = await response.json() as { envelope: any };
+        return data.envelope;
+      },
+      
+      // Create envelope (uses Edge Function for validation)
+      create: async (data: any) => {
+        const headers = await this.getAuthHeaders();
+        const response = await fetch(`${this.functionsUrl}/envelopes`, {
+          method: 'POST',
+          headers: {
+            ...headers,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+        if (!response.ok) throw new Error(`Failed to create envelope: ${response.statusText}`);
+        const result = await response.json() as { envelope: any };
+        return result.envelope;
+      },
+      
+      // Update envelope (uses Edge Function)
+      update: async (id: string, data: any) => {
+        const headers = await this.getAuthHeaders();
+        const response = await fetch(`${this.functionsUrl}/envelopes/envelopes/${id}`, {
+          method: 'PATCH',
+          headers: {
+            ...headers,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+        if (!response.ok) throw new Error(`Failed to update envelope: ${response.statusText}`);
+        const result = await response.json() as { envelope: any };
+        return result.envelope;
+      },
+      
+      // Delete envelope (uses Edge Function for validation)
+      delete: async (id: string) => {
+        const headers = await this.getAuthHeaders();
+        const response = await fetch(`${this.functionsUrl}/envelopes/envelopes/${id}`, {
+          method: 'DELETE',
+          headers
+        });
+        if (!response.ok) throw new Error(`Failed to delete envelope: ${response.statusText}`);
+        return response.json();
+      },
+      
+      // Get negative balance envelopes (uses Edge Function)
+      getNegativeBalance: async (budgetId: string) => {
+        const headers = await this.getAuthHeaders();
+        const response = await fetch(`${this.functionsUrl}/envelopes/envelopes/negative?budget_id=${budgetId}`, {
+          method: 'GET',
+          headers
+        });
+        if (!response.ok) throw new Error(`Failed to get negative envelopes: ${response.statusText}`);
+        const data = await response.json() as { envelopes: any[] };
+        return data.envelopes;
+      },
+      
+      // Get low balance envelopes (uses Edge Function)
+      getLowBalance: async (budgetId: string) => {
+        const headers = await this.getAuthHeaders();
+        const response = await fetch(`${this.functionsUrl}/envelopes/envelopes/low-balance?budget_id=${budgetId}`, {
+          method: 'GET',
+          headers
+        });
+        if (!response.ok) throw new Error(`Failed to get low balance envelopes: ${response.statusText}`);
+        const data = await response.json() as { envelopes: any[] };
+        return data.envelopes;
+      },
+      
+      // Keep PostgREST option for direct queries if needed
       getByType: (budgetId: string, envelopeType: string) => this.withAuth(client =>
         client.envelopes
           .eq('budget_id', budgetId)

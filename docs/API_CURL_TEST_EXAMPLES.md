@@ -233,6 +233,158 @@ curl -X POST "$SUPABASE_URL/rest/v1/categories" \
   }'
 ```
 
+### 3. Create Subcategory
+
+```bash
+# First, create a parent category (e.g., "Transportation")
+curl -X POST "$SUPABASE_URL/rest/v1/categories" \
+  -H "Authorization: Bearer $USER_ACCESS_TOKEN" \
+  -H "apikey: $SUPABASE_ANON_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Prefer: return=representation" \
+  -d '{
+    "budget_id": "'$BUDGET_ID'",
+    "name": "Transportation",
+    "description": "All transportation expenses",
+    "is_income": false,
+    "display_order": 3
+  }'
+
+# Expected Response (201 Created):
+{
+  "id": "parent-category-uuid",
+  "budget_id": "budget-uuid",
+  "parent_id": null,
+  "name": "Transportation",
+  "description": "All transportation expenses",
+  "is_income": false,
+  "display_order": 3,
+  "total": "0.00",
+  ...
+}
+
+# Then create subcategories using the parent_id
+export PARENT_CATEGORY_ID="parent-category-uuid"  # Use the ID from above response
+
+# Create "Gas" subcategory
+curl -X POST "$SUPABASE_URL/rest/v1/categories" \
+  -H "Authorization: Bearer $USER_ACCESS_TOKEN" \
+  -H "apikey: $SUPABASE_ANON_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Prefer: return=representation" \
+  -d '{
+    "budget_id": "'$BUDGET_ID'",
+    "parent_id": "'$PARENT_CATEGORY_ID'",
+    "name": "Gas",
+    "description": "Fuel for vehicles",
+    "is_income": false,
+    "display_order": 1
+  }'
+
+# Create "Car Maintenance" subcategory
+curl -X POST "$SUPABASE_URL/rest/v1/categories" \
+  -H "Authorization: Bearer $USER_ACCESS_TOKEN" \
+  -H "apikey: $SUPABASE_ANON_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Prefer: return=representation" \
+  -d '{
+    "budget_id": "'$BUDGET_ID'",
+    "parent_id": "'$PARENT_CATEGORY_ID'",
+    "name": "Car Maintenance",
+    "description": "Oil changes, repairs, etc.",
+    "is_income": false,
+    "display_order": 2
+  }'
+
+# Create "Public Transit" subcategory
+curl -X POST "$SUPABASE_URL/rest/v1/categories" \
+  -H "Authorization: Bearer $USER_ACCESS_TOKEN" \
+  -H "apikey: $SUPABASE_ANON_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Prefer: return=representation" \
+  -d '{
+    "budget_id": "'$BUDGET_ID'",
+    "parent_id": "'$PARENT_CATEGORY_ID'",
+    "name": "Public Transit",
+    "description": "Bus, train, subway fares",
+    "is_income": false,
+    "display_order": 3
+  }'
+
+# Expected Response for subcategories (201 Created):
+{
+  "id": "subcategory-uuid",
+  "budget_id": "budget-uuid",
+  "parent_id": "parent-category-uuid",
+  "name": "Gas",
+  "description": "Fuel for vehicles",
+  "is_income": false,
+  "display_order": 1,
+  "total": "0.00",
+  ...
+}
+```
+
+### 4. Get Category Tree
+
+```bash
+# Get hierarchical category structure (parents with children)
+curl -X GET "$SUPABASE_URL/rest/v1/categories?budget_id=eq.$BUDGET_ID&parent_id=is.null&select=*,children:categories(*)&order=display_order" \
+  -H "Authorization: Bearer $USER_ACCESS_TOKEN" \
+  -H "apikey: $SUPABASE_ANON_KEY"
+
+# Expected Response (200 OK):
+[
+  {
+    "id": "parent-category-uuid",
+    "budget_id": "budget-uuid",
+    "parent_id": null,
+    "name": "Transportation",
+    "description": "All transportation expenses",
+    "is_income": false,
+    "display_order": 3,
+    "total": "450.00",
+    "children": [
+      {
+        "id": "subcategory1-uuid",
+        "budget_id": "budget-uuid", 
+        "parent_id": "parent-category-uuid",
+        "name": "Gas",
+        "description": "Fuel for vehicles",
+        "is_income": false,
+        "display_order": 1,
+        "total": "200.00"
+      },
+      {
+        "id": "subcategory2-uuid",
+        "budget_id": "budget-uuid",
+        "parent_id": "parent-category-uuid", 
+        "name": "Car Maintenance",
+        "description": "Oil changes, repairs, etc.",
+        "is_income": false,
+        "display_order": 2,
+        "total": "150.00"
+      },
+      {
+        "id": "subcategory3-uuid",
+        "budget_id": "budget-uuid",
+        "parent_id": "parent-category-uuid",
+        "name": "Public Transit", 
+        "description": "Bus, train, subway fares",
+        "is_income": false,
+        "display_order": 3,
+        "total": "100.00"
+      }
+    ]
+  }
+]
+
+# Get only subcategories for a specific parent
+curl -X GET "$SUPABASE_URL/rest/v1/categories?budget_id=eq.$BUDGET_ID&parent_id=eq.$PARENT_CATEGORY_ID&order=display_order" \
+  -H "Authorization: Bearer $USER_ACCESS_TOKEN" \
+  -H "apikey: $SUPABASE_ANON_KEY"
+```
+
 ## Envelopes
 
 ### 1. List Envelopes
@@ -263,10 +415,10 @@ curl -X GET "$SUPABASE_URL/rest/v1/envelopes?budget_id=eq.$BUDGET_ID&is_active=e
 ]
 ```
 
-### 2. Create Envelope via Edge Function
+### 2. Create Envelope 
 
 ```bash
-# Create envelope with validation
+# Create regular envelope via Edge Function (RECOMMENDED - with validation)
 curl -X POST "$SUPABASE_URL/functions/v1/envelopes" \
   -H "Authorization: Bearer $USER_ACCESS_TOKEN" \
   -H "Content-Type: application/json" \
@@ -275,35 +427,151 @@ curl -X POST "$SUPABASE_URL/functions/v1/envelopes" \
     "name": "Emergency Fund",
     "description": "6 months of expenses",
     "target_amount": 10000.00,
-    "target_date": "2025-12-31",
-    "fill_type": "percentage",
-    "fill_amount": 10.00
+    "envelope_type": "regular",
+    "category_id": "'$CATEGORY_ID'",
+    "notify_on_low_balance": false
+  }'
+
+# Create debt envelope
+# For debt envelopes:
+# - target_amount = total debt owed (e.g., credit card balance)
+# - current_balance = funds allocated for payment (starts at 0, increased via allocations)
+curl -X POST "$SUPABASE_URL/functions/v1/envelopes" \
+  -H "Authorization: Bearer $USER_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "budget_id": "'$BUDGET_ID'",
+    "name": "Credit Card",
+    "description": "Chase Visa ending in 1234",
+    "target_amount": 5000.00,
+    "current_balance": 0.00,
+    "envelope_type": "debt",
+    "category_id": "'$DEBT_CATEGORY_ID'",
+    "notify_on_low_balance": false
   }'
 
 # Expected Response (201 Created):
 {
-  "id": "new-envelope-uuid",
-  "budget_id": "budget-uuid",
-  "name": "Emergency Fund",
-  "description": "6 months of expenses",
-  "current_balance": "0.00",
-  "target_amount": "10000.00",
-  "target_date": "2025-12-31",
-  "fill_type": "percentage",
-  "fill_amount": "10.00",
-  "is_active": true,
-  "created_at": "2025-08-02T12:00:00Z",
-  "updated_at": "2025-08-02T12:00:00Z"
+  "envelope": {
+    "id": "new-envelope-uuid",
+    "budget_id": "budget-uuid",
+    "name": "Emergency Fund",
+    "description": "6 months of expenses",
+    "current_balance": "0.00",
+    "target_amount": "10000.00",
+    "envelope_type": "regular",
+    "category_id": "category-uuid",
+    "notify_on_low_balance": false,
+    "low_balance_threshold": null,
+    "is_active": true,
+    "created_at": "2025-08-02T12:00:00Z",
+    "updated_at": "2025-08-02T12:00:00Z"
+  }
 }
+
+# Alternative: Create envelope via PostgREST (direct database)
+curl -X POST "$SUPABASE_URL/rest/v1/envelopes" \
+  -H "Authorization: Bearer $USER_ACCESS_TOKEN" \
+  -H "apikey: $SUPABASE_ANON_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Prefer: return=representation" \
+  -d '{
+    "budget_id": "'$BUDGET_ID'",
+    "name": "Vacation Fund",
+    "description": "Summer vacation savings",
+    "target_amount": 5000.00,
+    "envelope_type": "regular",
+    "category_id": "'$CATEGORY_ID'"
+  }'
 ```
 
 ### 3. Get Envelopes with Negative Balance
 
 ```bash
-# Find overdrawn envelopes
-curl -X GET "$SUPABASE_URL/rest/v1/envelopes?budget_id=eq.$BUDGET_ID&current_balance=lt.0" \
+# Get overdrawn envelopes via Edge Function
+curl -X GET "$SUPABASE_URL/functions/v1/envelopes/negative?budget_id=$BUDGET_ID" \
+  -H "Authorization: Bearer $USER_ACCESS_TOKEN"
+
+# Expected Response (200 OK):
+{
+  "envelopes": [
+    {
+      "id": "envelope-uuid",
+      "budget_id": "budget-uuid",
+      "name": "Credit Card",
+      "current_balance": "-125.50",
+      ...
+    }
+  ]
+}
+```
+
+### 4. Get Low Balance Envelopes
+
+```bash
+# Get envelopes with low balance notifications
+curl -X GET "$SUPABASE_URL/functions/v1/envelopes/low-balance?budget_id=$BUDGET_ID" \
+  -H "Authorization: Bearer $USER_ACCESS_TOKEN"
+
+# Expected Response (200 OK):
+{
+  "envelopes": [
+    {
+      "id": "envelope-uuid",
+      "budget_id": "budget-uuid",
+      "name": "Emergency Fund",
+      "current_balance": "450.00",
+      "low_balance_threshold": "500.00",
+      "notify_on_low_balance": true,
+      ...
+    }
+  ]
+}
+```
+
+### 5. Update Envelope
+
+```bash
+# Update envelope via Edge Function
+curl -X PATCH "$SUPABASE_URL/functions/v1/envelopes/$ENVELOPE_ID" \
   -H "Authorization: Bearer $USER_ACCESS_TOKEN" \
-  -H "apikey: $SUPABASE_ANON_KEY"
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Updated Emergency Fund",
+    "target_amount": 15000.00,
+    "notify_on_low_balance": true,
+    "low_balance_threshold": 1000.00
+  }'
+
+# Expected Response (200 OK):
+{
+  "envelope": {
+    "id": "envelope-uuid",
+    "name": "Updated Emergency Fund",
+    "target_amount": "15000.00",
+    "notify_on_low_balance": true,
+    "low_balance_threshold": "1000.00",
+    ...
+  }
+}
+```
+
+### 6. Delete Envelope
+
+```bash
+# Delete envelope via Edge Function (only if balance is zero)
+curl -X DELETE "$SUPABASE_URL/functions/v1/envelopes/$ENVELOPE_ID" \
+  -H "Authorization: Bearer $USER_ACCESS_TOKEN"
+
+# Expected Response (200 OK):
+{
+  "success": true
+}
+
+# If envelope has non-zero balance (400 Bad Request):
+{
+  "error": "Cannot delete envelope with non-zero balance"
+}
 ```
 
 ## Income Sources
@@ -455,7 +723,90 @@ curl -X POST "$SUPABASE_URL/functions/v1/transactions" \
   }'
 ```
 
-### 5. List Transactions with Filters
+### 5. Create Debt Payment Transaction
+
+```bash
+# Regular debt payment (reduces envelope balance and debt target amount)
+curl -X POST "$SUPABASE_URL/functions/v1/transactions" \
+  -H "Authorization: Bearer $USER_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "budget_id": "'$BUDGET_ID'",
+    "transaction_type": "debt_payment",
+    "amount": 500.00,
+    "description": "Monthly credit card payment",
+    "transaction_date": "'$(date +%Y-%m-%d)'",
+    "from_envelope_id": "'$CREDIT_CARD_ENVELOPE_ID'",
+    "payee_id": "'$CREDIT_CARD_PAYEE_ID'",
+    "category_id": "'$DEBT_CATEGORY_ID'"
+  }'
+
+# Expected Response (201 Created):
+{
+  "id": "transaction-uuid",
+  "budget_id": "budget-uuid",
+  "transaction_type": "debt_payment",
+  "amount": "500.00",
+  "description": "Monthly credit card payment",
+  "transaction_date": "2025-08-02",
+  "from_envelope_id": "credit-card-envelope-uuid",
+  "payee_id": "credit-card-payee-uuid",
+  "category_id": "debt-category-uuid",
+  "is_cleared": false,
+  "is_reconciled": false,
+  "created_at": "2025-08-02T12:00:00Z"
+}
+```
+
+### 6. Create Payoff Transaction
+
+```bash
+# Complete debt payoff (zeros out envelope balance and target amount)
+# Note: The amount should be the payoff amount from the lender
+# The envelope balance will be set to 0 and any remaining allocated funds
+# will be available for reallocation
+
+curl -X POST "$SUPABASE_URL/functions/v1/transactions" \
+  -H "Authorization: Bearer $USER_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "budget_id": "'$BUDGET_ID'",
+    "transaction_type": "payoff",
+    "amount": 2850.00,
+    "description": "Final payoff - saved $150 in interest!",
+    "transaction_date": "'$(date +%Y-%m-%d)'",
+    "from_envelope_id": "'$CREDIT_CARD_ENVELOPE_ID'",
+    "payee_id": "'$CREDIT_CARD_PAYEE_ID'",
+    "category_id": "'$DEBT_CATEGORY_ID'"
+  }'
+
+# Expected Response (201 Created):
+{
+  "id": "transaction-uuid",
+  "budget_id": "budget-uuid",
+  "transaction_type": "payoff",
+  "amount": "2850.00",
+  "description": "Final payoff - saved $150 in interest!",
+  "transaction_date": "2025-08-02",
+  "from_envelope_id": "credit-card-envelope-uuid",
+  "payee_id": "credit-card-payee-uuid",
+  "category_id": "debt-category-uuid",
+  "is_cleared": false,
+  "is_reconciled": false,
+  "created_at": "2025-08-02T12:00:00Z"
+}
+
+# After a payoff transaction on a debt envelope:
+# - The envelope's target_amount becomes 0 (debt is fully paid off)
+# - The envelope's current_balance becomes 0 (all allocated funds cleared)
+# - Any excess allocated funds are automatically returned to budget available_amount
+# - Example: If you allocated $3000 but only needed $2850 for payoff:
+#   - $2850 is paid to the creditor
+#   - $150 is automatically returned to available_amount
+#   - Both envelope balances become 0
+```
+
+### 7. List Transactions with Filters
 
 ```bash
 # Get recent transactions (last 30 days)
@@ -474,7 +825,7 @@ curl -X GET "$SUPABASE_URL/rest/v1/transactions?or=(from_envelope_id.eq.$ENVELOP
   -H "apikey: $SUPABASE_ANON_KEY"
 ```
 
-### 6. Update Transaction
+### 8. Update Transaction
 
 ```bash
 # Mark transaction as cleared
@@ -488,7 +839,7 @@ curl -X PATCH "$SUPABASE_URL/rest/v1/transactions?id=eq.$TRANSACTION_ID" \
   }'
 ```
 
-### 7. Soft Delete Transaction
+### 9. Soft Delete Transaction
 
 ```bash
 # Soft delete via Edge Function
@@ -725,7 +1076,7 @@ curl -X POST "$SUPABASE_URL/functions/v1/transactions" \
   "details": [
     {
       "field": "transaction_type",
-      "message": "Transaction type must be one of: income, expense, transfer, allocation, debt_payment",
+      "message": "Transaction type must be one of: income, expense, transfer, allocation, debt_payment, payoff",
       "code": "INVALID_VALUE"
     }
   ]

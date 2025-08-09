@@ -56,109 +56,11 @@ const handler = async (req: Request) => {
     }
 
     const url = new URL(req.url)
-    const pathname = url.pathname
+    const pathParts = url.pathname.split('/').filter(p => p)
     
-    // Parse request body if it's a POST/PATCH request
-    let body: any = {}
-    if (req.method === 'POST' || req.method === 'PATCH') {
-      try {
-        body = await req.json()
-      } catch {
-        // Body might be empty or invalid JSON
-      }
-    }
-    
-    // Handle POST for creating envelopes
-    if (req.method === 'POST' && pathname === '/envelopes') {
-      // Validate budget_id in body
-      if (!body.budget_id) {
-        return new Response(
-          JSON.stringify({ error: 'budget_id is required' }),
-          { 
-            status: 400,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          }
-        )
-      }
-      
-      const budgetId = body.budget_id
-      
-      // Verify budget access
-      const { error: budgetError } = await supabaseClient
-        .from('budgets')
-        .select('id')
-        .eq('id', budgetId)
-        .eq('user_id', user.id)
-        .single()
-
-      if (budgetError) {
-        if (budgetError.code === 'PGRST116') {
-          return new Response(
-            JSON.stringify({ error: 'Budget not found or access denied' }),
-            { 
-              status: 404,
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-            }
-          )
-        }
-        throw budgetError
-      }
-
-      // Validate required fields
-      if (!body.name || typeof body.name !== 'string' || body.name.trim() === '') {
-        return new Response(
-          JSON.stringify({ error: 'Name is required and must be a non-empty string' }),
-          { 
-            status: 400,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          }
-        )
-      }
-
-      // Create envelope
-      const { data: envelope, error: envelopeError } = await supabaseClient
-        .from('envelopes')
-        .insert({
-          budget_id: budgetId,
-          name: body.name,
-          description: body.description || null,
-          target_amount: body.target_amount || null,
-          envelope_type: body.envelope_type || 'regular',
-          category_id: body.category_id || null,
-          notify_on_low_balance: body.notify_on_low_balance ?? false,
-          low_balance_threshold: body.low_balance_threshold || null,
-          current_balance: body.current_balance ?? 0,
-          is_active: body.is_active ?? true,
-        })
-        .select()
-        .single()
-
-      if (envelopeError) {
-        throw envelopeError
-      }
-
-      return new Response(
-        JSON.stringify({ envelope }),
-        { 
-          status: 201,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      )
-    }
-
-    // Handle GET /envelopes?budget_id={budgetId}
-    if (req.method === 'GET' && pathname === '/envelopes') {
-      const budgetId = url.searchParams.get('budget_id')
-      
-      if (!budgetId) {
-        return new Response(
-          JSON.stringify({ error: 'budget_id query parameter is required' }),
-          { 
-            status: 400,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          }
-        )
-      }
+    // Handle GET /budgets/{budgetId}/envelopes
+    if (req.method === 'GET' && pathParts.length === 3 && pathParts[0] === 'budgets' && pathParts[2] === 'envelopes') {
+      const budgetId = pathParts[1]
       
       // Verify budget access
       const { error: budgetError } = await supabaseClient
@@ -186,7 +88,7 @@ const handler = async (req: Request) => {
         .from('envelopes')
         .select('*')
         .eq('budget_id', budgetId)
-        .order('display_order', { ascending: true })
+        .order('name', { ascending: true })
 
       if (envelopesError) {
         throw envelopesError
@@ -201,9 +103,107 @@ const handler = async (req: Request) => {
       )
     }
 
+    // Handle GET /budgets/{budgetId}/envelopes/negative
+    if (req.method === 'GET' && pathParts.length === 4 && pathParts[0] === 'budgets' && pathParts[2] === 'envelopes' && pathParts[3] === 'negative') {
+      const budgetId = pathParts[1]
+      
+      // Verify budget access
+      const { error: budgetError } = await supabaseClient
+        .from('budgets')
+        .select('id')
+        .eq('id', budgetId)
+        .eq('user_id', user.id)
+        .single()
+
+      if (budgetError) {
+        if (budgetError.code === 'PGRST116') {
+          return new Response(
+            JSON.stringify({ error: 'Budget not found or access denied' }),
+            { 
+              status: 404,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          )
+        }
+        throw budgetError
+      }
+
+      // Get envelopes with negative balance
+      const { data: envelopes, error: envelopesError } = await supabaseClient
+        .from('envelopes')
+        .select('*')
+        .eq('budget_id', budgetId)
+        .lt('current_balance', 0)
+        .order('current_balance', { ascending: true })
+
+      if (envelopesError) {
+        throw envelopesError
+      }
+
+      return new Response(
+        JSON.stringify({ envelopes }),
+        { 
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
+    // Handle GET /budgets/{budgetId}/envelopes/low-balance
+    if (req.method === 'GET' && pathParts.length === 4 && pathParts[0] === 'budgets' && pathParts[2] === 'envelopes' && pathParts[3] === 'low-balance') {
+      const budgetId = pathParts[1]
+      
+      // Verify budget access
+      const { error: budgetError } = await supabaseClient
+        .from('budgets')
+        .select('id')
+        .eq('id', budgetId)
+        .eq('user_id', user.id)
+        .single()
+
+      if (budgetError) {
+        if (budgetError.code === 'PGRST116') {
+          return new Response(
+            JSON.stringify({ error: 'Budget not found or access denied' }),
+            { 
+              status: 404,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          )
+        }
+        throw budgetError
+      }
+
+      // Get envelopes that have low balance notification enabled and a threshold set
+      const { data: envelopes, error: envelopesError } = await supabaseClient
+        .from('envelopes')
+        .select('*')
+        .eq('budget_id', budgetId)
+        .eq('notify_on_low_balance', true)
+        .not('low_balance_threshold', 'is', null)
+        .order('current_balance', { ascending: true })
+
+      if (envelopesError) {
+        throw envelopesError
+      }
+
+      // Filter envelopes where current_balance <= low_balance_threshold
+      const lowBalanceEnvelopes = (envelopes || []).filter((envelope: any) => 
+        envelope.current_balance <= (envelope.low_balance_threshold || 0)
+      )
+
+      return new Response(
+        JSON.stringify({ envelopes: lowBalanceEnvelopes }),
+        { 
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
     // Handle GET /envelopes/{id}
-    if (req.method === 'GET' && pathname.match(/^\/envelopes\/[a-f0-9-]+$/)) {
-      const envelopeId = pathname.replace('/envelopes/', '')
+    if (req.method === 'GET' && pathParts.length === 2 && pathParts[0] === 'envelopes') {
+      const envelopeId = pathParts[1]
       
       // Get the envelope
       const { data: envelope, error: envelopeError } = await supabaseClient
@@ -255,9 +255,77 @@ const handler = async (req: Request) => {
       )
     }
 
+    // Handle POST /budgets/{budgetId}/envelopes
+    if (req.method === 'POST' && pathParts.length === 3 && pathParts[0] === 'budgets' && pathParts[2] === 'envelopes') {
+      const budgetId = pathParts[1]
+      
+      // Verify budget access
+      const { error: budgetError } = await supabaseClient
+        .from('budgets')
+        .select('id')
+        .eq('id', budgetId)
+        .eq('user_id', user.id)
+        .single()
+
+      if (budgetError) {
+        if (budgetError.code === 'PGRST116') {
+          return new Response(
+            JSON.stringify({ error: 'Budget not found or access denied' }),
+            { 
+              status: 404,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          )
+        }
+        throw budgetError
+      }
+
+      // Parse request body
+      const body = await req.json()
+      
+      // Validate required fields
+      if (!body.name || typeof body.name !== 'string' || body.name.trim() === '') {
+        return new Response(
+          JSON.stringify({ error: 'Name is required and must be a non-empty string' }),
+          { 
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        )
+      }
+
+      // Create envelope
+      const { data: envelope, error: envelopeError } = await supabaseClient
+        .from('envelopes')
+        .insert({
+          budget_id: budgetId,
+          name: body.name,
+          description: body.description || null,
+          target_amount: body.target_amount || null,
+          envelope_type: body.envelope_type || 'regular',
+          category_id: body.category_id || null,
+          notify_on_low_balance: body.notify_on_low_balance ?? false,
+          low_balance_threshold: body.low_balance_threshold || null,
+        })
+        .select()
+        .single()
+
+      if (envelopeError) {
+        throw envelopeError
+      }
+
+      return new Response(
+        JSON.stringify({ envelope }),
+        { 
+          status: 201,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
     // Handle PATCH /envelopes/{id}
-    if (req.method === 'PATCH' && pathname.match(/^\/envelopes\/[a-f0-9-]+$/)) {
-      const envelopeId = pathname.replace('/envelopes/', '')
+    if (req.method === 'PATCH' && pathParts.length === 2 && pathParts[0] === 'envelopes') {
+      const envelopeId = pathParts[1]
       
       // Get the envelope first to verify it exists and we have access
       const { data: envelope, error: envelopeError } = await supabaseClient
@@ -299,6 +367,9 @@ const handler = async (req: Request) => {
         }
         throw budgetError
       }
+
+      // Parse request body
+      const body = await req.json()
       
       // Validate name if provided
       if (body.name !== undefined && (typeof body.name !== 'string' || body.name.trim() === '')) {
@@ -347,8 +418,8 @@ const handler = async (req: Request) => {
     }
 
     // Handle DELETE /envelopes/{id}
-    if (req.method === 'DELETE' && pathname.match(/^\/envelopes\/[a-f0-9-]+$/)) {
-      const envelopeId = pathname.replace('/envelopes/', '')
+    if (req.method === 'DELETE' && pathParts.length === 2 && pathParts[0] === 'envelopes') {
+      const envelopeId = pathParts[1]
       
       // Get the envelope first to verify it exists and we have access
       const { data: envelope, error: envelopeError } = await supabaseClient
@@ -414,124 +485,6 @@ const handler = async (req: Request) => {
 
       return new Response(
         JSON.stringify({ success: true }),
-        { 
-          status: 200,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      )
-    }
-
-    // Handle special endpoints
-    if (req.method === 'GET' && pathname === '/envelopes/negative') {
-      const budgetId = url.searchParams.get('budget_id')
-      
-      if (!budgetId) {
-        return new Response(
-          JSON.stringify({ error: 'budget_id query parameter is required' }),
-          { 
-            status: 400,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          }
-        )
-      }
-      
-      // Verify budget access
-      const { error: budgetError } = await supabaseClient
-        .from('budgets')
-        .select('id')
-        .eq('id', budgetId)
-        .eq('user_id', user.id)
-        .single()
-
-      if (budgetError) {
-        if (budgetError.code === 'PGRST116') {
-          return new Response(
-            JSON.stringify({ error: 'Budget not found or access denied' }),
-            { 
-              status: 404,
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-            }
-          )
-        }
-        throw budgetError
-      }
-
-      // Get envelopes with negative balance
-      const { data: envelopes, error: envelopesError } = await supabaseClient
-        .from('envelopes')
-        .select('*')
-        .eq('budget_id', budgetId)
-        .lt('current_balance', 0)
-        .order('current_balance', { ascending: true })
-
-      if (envelopesError) {
-        throw envelopesError
-      }
-
-      return new Response(
-        JSON.stringify({ envelopes }),
-        { 
-          status: 200,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      )
-    }
-
-    // Handle low-balance endpoint
-    if (req.method === 'GET' && pathname === '/envelopes/low-balance') {
-      const budgetId = url.searchParams.get('budget_id')
-      
-      if (!budgetId) {
-        return new Response(
-          JSON.stringify({ error: 'budget_id query parameter is required' }),
-          { 
-            status: 400,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          }
-        )
-      }
-      
-      // Verify budget access
-      const { error: budgetError } = await supabaseClient
-        .from('budgets')
-        .select('id')
-        .eq('id', budgetId)
-        .eq('user_id', user.id)
-        .single()
-
-      if (budgetError) {
-        if (budgetError.code === 'PGRST116') {
-          return new Response(
-            JSON.stringify({ error: 'Budget not found or access denied' }),
-            { 
-              status: 404,
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-            }
-          )
-        }
-        throw budgetError
-      }
-
-      // Get envelopes that have low balance notification enabled and a threshold set
-      const { data: envelopes, error: envelopesError } = await supabaseClient
-        .from('envelopes')
-        .select('*')
-        .eq('budget_id', budgetId)
-        .eq('notify_on_low_balance', true)
-        .not('low_balance_threshold', 'is', null)
-        .order('current_balance', { ascending: true })
-
-      if (envelopesError) {
-        throw envelopesError
-      }
-
-      // Filter envelopes where current_balance <= low_balance_threshold
-      const lowBalanceEnvelopes = (envelopes || []).filter((envelope: any) => 
-        envelope.current_balance <= (envelope.low_balance_threshold || 0)
-      )
-
-      return new Response(
-        JSON.stringify({ envelopes: lowBalanceEnvelopes }),
         { 
           status: 200,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }

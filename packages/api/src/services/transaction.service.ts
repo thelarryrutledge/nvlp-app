@@ -488,6 +488,58 @@ export class TransactionService extends BaseService {
         }
         break;
 
+      case TransactionType.PAYOFF:
+        if (!from_envelope_id || !payee_id || to_envelope_id || income_source_id) {
+          throw new ApiError(
+            ErrorCode.VALIDATION_ERROR,
+            'Payoff transactions require from_envelope_id and payee_id'
+          );
+        }
+        // Verify entities exist and belong to the budget
+        if (budgetId) {
+          const { data: envelope } = await this.client
+            .from('envelopes')
+            .select('id, is_active, envelope_type, current_balance')
+            .eq('id', from_envelope_id)
+            .eq('budget_id', budgetId)
+            .single();
+          
+          if (!envelope) {
+            throw new ApiError(ErrorCode.NOT_FOUND, 'Envelope not found or does not belong to this budget');
+          }
+          if (!envelope.is_active) {
+            throw new ApiError(ErrorCode.VALIDATION_ERROR, 'Cannot pay off inactive envelope');
+          }
+          // Payoff should primarily be for debt envelopes
+          if (envelope.envelope_type !== EnvelopeType.DEBT) {
+            throw new ApiError(
+              ErrorCode.VALIDATION_ERROR,
+              'Payoff transactions are intended for debt envelopes'
+            );
+          }
+          if (envelope.current_balance <= 0) {
+            throw new ApiError(
+              ErrorCode.VALIDATION_ERROR,
+              'Cannot pay off envelope with zero or negative balance'
+            );
+          }
+
+          const { data: payee } = await this.client
+            .from('payees')
+            .select('id, is_active')
+            .eq('id', payee_id)
+            .eq('budget_id', budgetId)
+            .single();
+          
+          if (!payee) {
+            throw new ApiError(ErrorCode.NOT_FOUND, 'Payee not found or does not belong to this budget');
+          }
+          if (!payee.is_active) {
+            throw new ApiError(ErrorCode.VALIDATION_ERROR, 'Cannot make payoff to inactive payee');
+          }
+        }
+        break;
+
       case TransactionType.TRANSFER:
         if (!from_envelope_id || !to_envelope_id || payee_id || income_source_id) {
           throw new ApiError(
