@@ -98,7 +98,15 @@ export class CategoryService extends CachedBaseService {
   }
 
   async updateCategory(id: string, updates: CategoryUpdateRequest): Promise<Category> {
-    await this.getCategory(id); // Verify category exists and access
+    const category = await this.getCategory(id); // Verify category exists and access
+
+    // Prevent changing is_system flag on system categories
+    if (category.is_system && updates.is_system === false) {
+      throw new ApiError(
+        ErrorCode.VALIDATION_ERROR,
+        'Cannot remove system flag from system categories'
+      );
+    }
 
     // Validate single-level nesting if parent_id is being changed
     if (updates.parent_id) {
@@ -143,7 +151,15 @@ export class CategoryService extends CachedBaseService {
   }
 
   async deleteCategory(id: string): Promise<void> {
-    await this.getCategory(id); // Verify category exists and access
+    const category = await this.getCategory(id); // Verify category exists and access
+
+    // Check if this is a system category
+    if (category.is_system) {
+      throw new ApiError(
+        ErrorCode.VALIDATION_ERROR,
+        'Cannot delete system categories'
+      );
+    }
 
     // Check if category has subcategories
     const { data: subcategories, error: subError } = await this.client
