@@ -469,12 +469,6 @@ export function validateTransactionRequest(data: any): ValidationResult {
       break;
   }
   
-  // Validate optional category
-  if (data.category_id) {
-    const categoryError = validateUUID(data.category_id, 'category_id', false);
-    if (categoryError) errors.push(categoryError);
-  }
-  
   // Sanitize string fields
   const sanitizedData = {
     ...data,
@@ -543,11 +537,6 @@ export function validateEnvelopeRequest(data: any): ValidationResult {
   if (data.budget_id) {
     const budgetError = validateUUID(data.budget_id, 'budget_id');
     if (budgetError) errors.push(budgetError);
-  }
-  
-  if (data.category_id) {
-    const categoryError = validateUUID(data.category_id, 'category_id', false);
-    if (categoryError) errors.push(categoryError);
   }
   
   if (data.target_amount !== undefined && data.target_amount !== null) {

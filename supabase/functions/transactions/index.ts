@@ -115,9 +115,7 @@ const handler = async (req: Request) => {
       if (params.get('incomeSourceId')) {
         query = query.eq('income_source_id', params.get('incomeSourceId')!)
       }
-      if (params.get('categoryId')) {
-        query = query.eq('category_id', params.get('categoryId')!)
-      }
+      // Category filtering removed - categories are derived from related entities
       if (params.get('isCleared') !== null) {
         const isCleared = params.get('isCleared') === 'true'
         query = query.eq('is_cleared', isCleared)
@@ -174,8 +172,7 @@ const handler = async (req: Request) => {
           from_envelope:envelopes!from_envelope_id(*),
           to_envelope:envelopes!to_envelope_id(*),
           payee:payees!payee_id(*),
-          income_source:income_sources!income_source_id(*),
-          category:categories!category_id(*)
+          income_source:income_sources!income_source_id(*)
         `)
         .eq('id', transactionId)
         .eq('is_deleted', false)
@@ -532,25 +529,7 @@ const handler = async (req: Request) => {
           )
       }
 
-      // Validate category if provided
-      if (body.category_id) {
-        const { data: category, error: categoryError } = await supabaseClient
-          .from('categories')
-          .select('id')
-          .eq('id', body.category_id)
-          .eq('budget_id', budgetId)
-          .single()
-        
-        if (categoryError || !category) {
-          return new Response(
-            JSON.stringify({ error: 'Category not found or does not belong to this budget' }),
-            { 
-              status: 400,
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-            }
-          )
-        }
-      }
+      // Categories are derived from related entities (income_source, envelope, payee)
 
       // Create transaction
       const { data: transaction, error: transactionError } = await supabaseClient
@@ -565,7 +544,6 @@ const handler = async (req: Request) => {
           to_envelope_id: body.to_envelope_id || null,
           payee_id: body.payee_id || null,
           income_source_id: body.income_source_id || null,
-          category_id: body.category_id || null,
           is_cleared: body.is_cleared ?? false,
           is_reconciled: body.is_reconciled ?? false,
           notes: body.notes || null,
@@ -741,7 +719,6 @@ const handler = async (req: Request) => {
       if (body.to_envelope_id !== undefined) updates.to_envelope_id = body.to_envelope_id || null
       if (body.payee_id !== undefined) updates.payee_id = body.payee_id || null
       if (body.income_source_id !== undefined) updates.income_source_id = body.income_source_id || null
-      if (body.category_id !== undefined) updates.category_id = body.category_id || null
       if (body.is_cleared !== undefined) updates.is_cleared = body.is_cleared
       if (body.is_reconciled !== undefined) updates.is_reconciled = body.is_reconciled
       if (body.notes !== undefined) updates.notes = body.notes || null

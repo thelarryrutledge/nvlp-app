@@ -18,7 +18,6 @@ export interface Transaction {
   to_envelope_id?: string;
   payee_id?: string;
   income_source_id?: string;
-  category_id?: string;
   is_cleared: boolean;
   is_reconciled: boolean;
   created_at: string;
@@ -37,7 +36,6 @@ export interface TransactionCreateRequest {
   to_envelope_id?: string;
   payee_id?: string;
   income_source_id?: string;
-  category_id?: string;
   is_cleared?: boolean;
 }
 
@@ -49,7 +47,6 @@ export interface TransactionUpdateRequest {
   to_envelope_id?: string;
   payee_id?: string;
   income_source_id?: string;
-  category_id?: string;
   is_cleared?: boolean;
   is_reconciled?: boolean;
 }
