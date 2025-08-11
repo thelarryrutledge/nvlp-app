@@ -30,7 +30,7 @@ const PATTERNS = {
   currency: /^\d+(\.\d{1,2})?$/,
   date: /^\d{4}-\d{2}-\d{2}$/,
   transactionType: /^(income|expense|transfer|allocation|debt_payment)$/,
-  frequency: /^(weekly|biweekly|monthly|quarterly|yearly|one-time)$/,
+  scheduleType: /^(weekly|biweekly|monthly|semi_monthly|quarterly|yearly|one_time)$/,
   fillType: /^(manual|percentage|fixed_amount)$/,
 };
 
@@ -649,5 +649,224 @@ export function withValidation<T>(
         }
       );
     }
+  };
+}
+
+/**
+ * Validate schedule type
+ */
+export function validateScheduleType(value: any): ValidationError | null {
+  if (!value) {
+    return null; // Schedule type is optional
+  }
+  
+  if (typeof value !== 'string') {
+    return { field: 'schedule_type', message: 'Schedule type must be a string', code: 'INVALID_TYPE' };
+  }
+  
+  if (!PATTERNS.scheduleType.test(value)) {
+    return { 
+      field: 'schedule_type', 
+      message: 'Schedule type must be one of: weekly, biweekly, monthly, semi_monthly, quarterly, yearly, one_time', 
+      code: 'INVALID_VALUE' 
+    };
+  }
+  
+  return null;
+}
+
+/**
+ * Validate schedule configuration based on schedule type
+ */
+export function validateScheduleConfig(scheduleType: string, config: any): ValidationError | null {
+  if (!scheduleType) {
+    return null; // If no schedule type, config should be null
+  }
+  
+  if (!config) {
+    return { 
+      field: 'schedule_config', 
+      message: 'Schedule config is required when schedule_type is provided', 
+      code: 'REQUIRED' 
+    };
+  }
+  
+  if (typeof config !== 'object' || Array.isArray(config)) {
+    return { 
+      field: 'schedule_config', 
+      message: 'Schedule config must be an object', 
+      code: 'INVALID_TYPE' 
+    };
+  }
+  
+  switch (scheduleType) {
+    case 'weekly':
+      if (typeof config.day_of_week !== 'number' || config.day_of_week < 0 || config.day_of_week > 6) {
+        return {
+          field: 'schedule_config.day_of_week',
+          message: 'Weekly schedule requires day_of_week (0-6, where 0=Sunday)',
+          code: 'INVALID_VALUE'
+        };
+      }
+      break;
+      
+    case 'biweekly':
+      if (typeof config.day_of_week !== 'number' || config.day_of_week < 0 || config.day_of_week > 6) {
+        return {
+          field: 'schedule_config.day_of_week',
+          message: 'Biweekly schedule requires day_of_week (0-6, where 0=Sunday)',
+          code: 'INVALID_VALUE'
+        };
+      }
+      if (!config.start_date) {
+        return {
+          field: 'schedule_config.start_date',
+          message: 'Biweekly schedule requires start_date',
+          code: 'REQUIRED'
+        };
+      }
+      const startDateError = validateDate(config.start_date, 'schedule_config.start_date');
+      if (startDateError) return startDateError;
+      break;
+      
+    case 'monthly':
+      if (typeof config.day_of_month !== 'number' || 
+          (config.day_of_month < 1 || config.day_of_month > 31) && config.day_of_month !== -1) {
+        return {
+          field: 'schedule_config.day_of_month',
+          message: 'Monthly schedule requires day_of_month (1-31 or -1 for last day)',
+          code: 'INVALID_VALUE'
+        };
+      }
+      break;
+      
+    case 'semi_monthly':
+      if (!Array.isArray(config.pay_dates) || config.pay_dates.length !== 2) {
+        return {
+          field: 'schedule_config.pay_dates',
+          message: 'Semi-monthly schedule requires pay_dates array with exactly 2 elements',
+          code: 'INVALID_VALUE'
+        };
+      }
+      for (const date of config.pay_dates) {
+        if (typeof date !== 'number' || 
+            (date < 1 || date > 31) && date !== -1) {
+          return {
+            field: 'schedule_config.pay_dates',
+            message: 'Pay dates must be numbers between 1-31 or -1 for last day',
+            code: 'INVALID_VALUE'
+          };
+        }
+      }
+      break;
+      
+    case 'quarterly':
+      if (typeof config.month_of_quarter !== 'number' || 
+          config.month_of_quarter < 1 || config.month_of_quarter > 3) {
+        return {
+          field: 'schedule_config.month_of_quarter',
+          message: 'Quarterly schedule requires month_of_quarter (1-3)',
+          code: 'INVALID_VALUE'
+        };
+      }
+      if (typeof config.day_of_month !== 'number' || 
+          (config.day_of_month < 1 || config.day_of_month > 31) && config.day_of_month !== -1) {
+        return {
+          field: 'schedule_config.day_of_month',
+          message: 'Quarterly schedule requires day_of_month (1-31 or -1 for last day)',
+          code: 'INVALID_VALUE'
+        };
+      }
+      break;
+      
+    case 'yearly':
+      if (typeof config.month !== 'number' || config.month < 1 || config.month > 12) {
+        return {
+          field: 'schedule_config.month',
+          message: 'Yearly schedule requires month (1-12)',
+          code: 'INVALID_VALUE'
+        };
+      }
+      if (typeof config.day_of_month !== 'number' || 
+          (config.day_of_month < 1 || config.day_of_month > 31) && config.day_of_month !== -1) {
+        return {
+          field: 'schedule_config.day_of_month',
+          message: 'Yearly schedule requires day_of_month (1-31 or -1 for last day)',
+          code: 'INVALID_VALUE'
+        };
+      }
+      break;
+      
+    case 'one_time':
+      if (!config.date) {
+        return {
+          field: 'schedule_config.date',
+          message: 'One-time schedule requires date',
+          code: 'REQUIRED'
+        };
+      }
+      const dateError = validateDate(config.date, 'schedule_config.date');
+      if (dateError) return dateError;
+      break;
+      
+    default:
+      return {
+        field: 'schedule_type',
+        message: 'Invalid schedule type',
+        code: 'INVALID_VALUE'
+      };
+  }
+  
+  return null;
+}
+
+/**
+ * Validate income source request
+ */
+export function validateIncomeSourceRequest(data: any): ValidationResult {
+  const errors: ValidationError[] = [];
+  
+  const nameError = validateString(data.name, 'name', { 
+    required: true, 
+    minLength: 1, 
+    maxLength: 100 
+  });
+  if (nameError) errors.push(nameError);
+  
+  const descriptionError = validateString(data.description, 'description', { 
+    required: false, 
+    maxLength: 255 
+  });
+  if (descriptionError) errors.push(descriptionError);
+  
+  if (data.expected_amount !== undefined && data.expected_amount !== null) {
+    const amountError = validateCurrency(data.expected_amount, 'expected_amount', false);
+    if (amountError) errors.push(amountError);
+  }
+  
+  if (data.schedule_type) {
+    const scheduleTypeError = validateScheduleType(data.schedule_type);
+    if (scheduleTypeError) errors.push(scheduleTypeError);
+    
+    const scheduleConfigError = validateScheduleConfig(data.schedule_type, data.schedule_config);
+    if (scheduleConfigError) errors.push(scheduleConfigError);
+  }
+  
+  if (data.next_expected_date) {
+    const dateError = validateDate(data.next_expected_date, 'next_expected_date', false);
+    if (dateError) errors.push(dateError);
+  }
+  
+  // Sanitize string fields
+  const sanitizedData = {
+    ...data,
+    name: data.name ? sanitizeString(data.name) : data.name,
+    description: data.description ? sanitizeString(data.description) : data.description,
+  };
+  
+  return {
+    isValid: errors.length === 0,
+    errors,
+    sanitizedData: errors.length === 0 ? sanitizedData : undefined,
   };
 }

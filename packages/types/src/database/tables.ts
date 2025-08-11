@@ -163,10 +163,12 @@ export interface Database {
         Row: {
           id: string;
           budget_id: string;
+          category_id: string | null;
           name: string;
           description: string | null;
           expected_amount: number | null;
-          frequency_days: number | null;
+          schedule_type: string | null;
+          schedule_config: any | null;
           next_expected_date: string | null;
           is_active: boolean;
           created_at: string;
@@ -175,10 +177,12 @@ export interface Database {
         Insert: {
           id?: string;
           budget_id: string;
+          category_id?: string | null;
           name: string;
           description?: string | null;
           expected_amount?: number | null;
-          frequency_days?: number | null;
+          schedule_type?: string | null;
+          schedule_config?: any | null;
           next_expected_date?: string | null;
           is_active?: boolean;
           created_at?: string;
@@ -188,7 +192,8 @@ export interface Database {
           name?: string;
           description?: string | null;
           expected_amount?: number | null;
-          frequency_days?: number | null;
+          schedule_type?: string | null;
+          schedule_config?: any | null;
           next_expected_date?: string | null;
           is_active?: boolean;
           updated_at?: string;

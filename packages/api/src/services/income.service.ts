@@ -46,7 +46,8 @@ export class IncomeService extends BaseService {
         name: request.name,
         description: request.description,
         expected_amount: request.expected_amount,
-        frequency_days: request.frequency_days,
+        schedule_type: request.schedule_type,
+        schedule_config: request.schedule_config,
         next_expected_date: request.next_expected_date,
       })
       .select()

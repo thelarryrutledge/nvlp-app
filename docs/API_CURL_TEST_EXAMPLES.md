@@ -576,10 +576,31 @@ curl -X DELETE "$SUPABASE_URL/functions/v1/envelopes/$ENVELOPE_ID" \
 
 ## Income Sources
 
+### Schedule Types
+
+The income source system supports the following schedule types:
+
+- **`weekly`**: Every week on a specific day (0=Sunday, 6=Saturday)
+  - Config: `{"day_of_week": 5}` (every Friday)
+- **`biweekly`**: Every two weeks on a specific day
+  - Config: `{"day_of_week": 1, "start_date": "2025-02-03"}` (every other Monday)
+- **`monthly`**: Monthly on a specific date
+  - Config: `{"day_of_month": 15}` (15th of each month)
+  - Config: `{"day_of_month": -1}` (last day of each month)
+- **`semi_monthly`**: Twice per month on specific dates
+  - Config: `{"pay_dates": [1, 15]}` (1st and 15th)
+  - Config: `{"pay_dates": [15, -1]}` (15th and last day)
+- **`quarterly`**: Every 3 months
+  - Config: `{"month_of_quarter": 1, "day_of_month": 15}` (Jan 15, Apr 15, Jul 15, Oct 15)
+- **`yearly`**: Annually on a specific date
+  - Config: `{"month": 4, "day_of_month": 15}` (April 15th each year)
+- **`one_time`**: Single occurrence
+  - Config: `{"date": "2025-03-15"}` (specific date)
+
 ### 1. Create Income Source
 
 ```bash
-# Create recurring income source
+# Create semi-monthly salary (paid on 15th and last day of month)
 curl -X POST "$SUPABASE_URL/rest/v1/income_sources" \
   -H "Authorization: Bearer $USER_ACCESS_TOKEN" \
   -H "apikey: $SUPABASE_ANON_KEY" \
@@ -588,11 +609,84 @@ curl -X POST "$SUPABASE_URL/rest/v1/income_sources" \
   -d '{
     "budget_id": "'$BUDGET_ID'",
     "category_id": "'$INCOME_CATEGORY_ID'",
-    "name": "Monthly Salary",
-    "description": "Primary job income",
-    "expected_amount": 5000.00,
-    "frequency": "monthly",
-    "next_expected_date": "2025-08-15",
+    "name": "Semi-monthly Salary",
+    "description": "Full-time job - paid 15th and last day",
+    "expected_amount": 2500.00,
+    "schedule_type": "semi_monthly",
+    "schedule_config": {"pay_dates": [15, -1]},
+    "next_expected_date": "2025-02-15",
+    "is_active": true
+  }'
+
+# Create weekly freelance income (paid every Friday)
+curl -X POST "$SUPABASE_URL/rest/v1/income_sources" \
+  -H "Authorization: Bearer $USER_ACCESS_TOKEN" \
+  -H "apikey: $SUPABASE_ANON_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Prefer: return=representation" \
+  -d '{
+    "budget_id": "'$BUDGET_ID'",
+    "category_id": "'$INCOME_CATEGORY_ID'",
+    "name": "Weekly Freelance",
+    "description": "Freelance work - paid weekly on Fridays",
+    "expected_amount": 800.00,
+    "schedule_type": "weekly",
+    "schedule_config": {"day_of_week": 5},
+    "next_expected_date": "2025-02-14",
+    "is_active": true
+  }'
+
+# Create monthly income (paid on 1st of each month)
+curl -X POST "$SUPABASE_URL/rest/v1/income_sources" \
+  -H "Authorization: Bearer $USER_ACCESS_TOKEN" \
+  -H "apikey: $SUPABASE_ANON_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Prefer: return=representation" \
+  -d '{
+    "budget_id": "'$BUDGET_ID'",
+    "category_id": "'$INCOME_CATEGORY_ID'",
+    "name": "Monthly Rental Income",
+    "description": "Rental property income",
+    "expected_amount": 1200.00,
+    "schedule_type": "monthly",
+    "schedule_config": {"day_of_month": 1},
+    "next_expected_date": "2025-03-01",
+    "is_active": true
+  }'
+
+# Create one-time income
+curl -X POST "$SUPABASE_URL/rest/v1/income_sources" \
+  -H "Authorization: Bearer $USER_ACCESS_TOKEN" \
+  -H "apikey: $SUPABASE_ANON_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Prefer: return=representation" \
+  -d '{
+    "budget_id": "'$BUDGET_ID'",
+    "category_id": "'$INCOME_CATEGORY_ID'",
+    "name": "Tax Refund",
+    "description": "2024 tax refund",
+    "expected_amount": 1500.00,
+    "schedule_type": "one_time",
+    "schedule_config": {"date": "2025-03-15"},
+    "next_expected_date": "2025-03-15",
+    "is_active": true
+  }'
+
+# Create biweekly income (every other Monday)
+curl -X POST "$SUPABASE_URL/rest/v1/income_sources" \
+  -H "Authorization: Bearer $USER_ACCESS_TOKEN" \
+  -H "apikey: $SUPABASE_ANON_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Prefer: return=representation" \
+  -d '{
+    "budget_id": "'$BUDGET_ID'",
+    "category_id": "'$INCOME_CATEGORY_ID'",
+    "name": "Biweekly Paycheck",
+    "description": "Every other Monday",
+    "expected_amount": 2300.00,
+    "schedule_type": "biweekly",
+    "schedule_config": {"day_of_week": 1, "start_date": "2025-02-03"},
+    "next_expected_date": "2025-02-17",
     "is_active": true
   }'
 ```
