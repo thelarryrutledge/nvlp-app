@@ -3,7 +3,6 @@ export enum TransactionType {
   EXPENSE = 'expense',
   TRANSFER = 'transfer',
   ALLOCATION = 'allocation',
-  DEBT_PAYMENT = 'debt_payment',
   PAYOFF = 'payoff'
 }
 

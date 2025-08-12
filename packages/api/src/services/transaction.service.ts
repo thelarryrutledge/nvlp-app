@@ -439,7 +439,6 @@ export class TransactionService extends BaseService {
         break;
 
       case TransactionType.EXPENSE:
-      case TransactionType.DEBT_PAYMENT:
         if (!from_envelope_id || !payee_id || to_envelope_id || income_source_id) {
           throw new ApiError(
             ErrorCode.VALIDATION_ERROR,
@@ -476,15 +475,6 @@ export class TransactionService extends BaseService {
             throw new ApiError(ErrorCode.VALIDATION_ERROR, 'Cannot make payment to inactive payee');
           }
 
-          // Additional validation for debt payments
-          if (transaction_type === TransactionType.DEBT_PAYMENT) {
-            if (envelope.envelope_type !== EnvelopeType.DEBT) {
-              throw new ApiError(
-                ErrorCode.VALIDATION_ERROR,
-                'Debt payments must be made from debt envelopes'
-              );
-            }
-          }
         }
         break;
 

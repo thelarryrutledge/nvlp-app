@@ -24,30 +24,17 @@ const handler = async (req: Request) => {
     }
 
     const token = authHeader.replace('Bearer ', '')
-
-    // Create Supabase client with the user's token
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false
-        },
-        global: {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      }
-    )
-
-    // Get the current user from the JWT
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser()
-
-    if (userError || !user) {
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    
+    const supabaseClient = createClient(supabaseUrl, supabaseServiceKey)
+    
+    // Verify authentication
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token)
+    
+    if (authError || !user) {
       return new Response(
-        JSON.stringify({ error: 'Invalid or expired token' }),
+        JSON.stringify({ error: 'Invalid authorization token' }),
         { 
           status: 401,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -56,16 +43,23 @@ const handler = async (req: Request) => {
     }
 
     const url = new URL(req.url)
-    const pathParts = url.pathname.split('/').filter(p => p)
+    const params = url.searchParams
+    const budgetId = params.get('budget_id')
     
-    // Handle GET /budgets/{budgetId}/dashboard/summary
-    if (req.method === 'GET' && pathParts.length === 4 && 
-        pathParts[0] === 'budgets' && pathParts[2] === 'dashboard' && pathParts[3] === 'summary') {
-      
-      const budgetId = pathParts[1]
-      
+    if (!budgetId) {
+      return new Response(
+        JSON.stringify({ error: 'budget_id query parameter is required' }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
+    // Handle GET /dashboard?budget_id={budgetId}
+    if (req.method === 'GET') {
       // Verify budget access
-      const { error: budgetError } = await supabaseClient
+      const { data: budget, error: budgetError } = await supabaseClient
         .from('budgets')
         .select('id, available_amount')
         .eq('id', budgetId)
@@ -85,128 +79,59 @@ const handler = async (req: Request) => {
         throw budgetError
       }
 
-      // Use SQL for complex dashboard calculations
-      const { data: dashboardData, error: dashboardError } = await supabaseClient
-        .rpc('get_dashboard_summary', {
-          p_budget_id: budgetId
+      // Get budget summary using the existing function
+      const { data: summaryData, error: summaryError } = await supabaseClient
+        .rpc('get_budget_summary', {
+          budget_id_param: budgetId
         })
 
-      if (dashboardError) {
-        throw dashboardError
-      }
-
-      return new Response(
-        JSON.stringify({ dashboard: dashboardData }),
-        { 
-          status: 200,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      )
-    }
-
-    // Handle GET /budgets/{budgetId}/dashboard/envelope-performance
-    if (req.method === 'GET' && pathParts.length === 4 && 
-        pathParts[0] === 'budgets' && pathParts[2] === 'dashboard' && pathParts[3] === 'envelope-performance') {
-      
-      const budgetId = pathParts[1]
-      const params = url.searchParams
-      const months = parseInt(params.get('months') || '6')
-      
-      // Verify budget access
-      const { error: budgetError } = await supabaseClient
-        .from('budgets')
-        .select('id')
-        .eq('id', budgetId)
-        .eq('user_id', user.id)
-        .single()
-
-      if (budgetError) {
-        if (budgetError.code === 'PGRST116') {
-          return new Response(
-            JSON.stringify({ error: 'Budget not found or access denied' }),
-            { 
-              status: 404,
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-            }
-          )
-        }
-        throw budgetError
-      }
-
-      // Complex envelope performance analysis
-      const { data: performanceData, error: performanceError } = await supabaseClient
-        .rpc('get_envelope_performance', {
-          p_budget_id: budgetId,
-          p_months: months
-        })
-
-      if (performanceError) {
-        throw performanceError
-      }
-
-      return new Response(
-        JSON.stringify({ performance: performanceData }),
-        { 
-          status: 200,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      )
-    }
-
-    // Handle GET /budgets/{budgetId}/dashboard/spending-insights
-    if (req.method === 'GET' && pathParts.length === 4 && 
-        pathParts[0] === 'budgets' && pathParts[2] === 'dashboard' && pathParts[3] === 'spending-insights') {
-      
-      const budgetId = pathParts[1]
-      const params = url.searchParams
-      const startDate = params.get('startDate')
-      const endDate = params.get('endDate')
-      
-      if (!startDate || !endDate) {
+      if (summaryError) {
         return new Response(
-          JSON.stringify({ error: 'startDate and endDate query parameters are required' }),
+          JSON.stringify({ error: summaryError.message }),
           { 
-            status: 400,
+            status: 500,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           }
         )
       }
-      
-      // Verify budget access
-      const { error: budgetError } = await supabaseClient
-        .from('budgets')
-        .select('id')
-        .eq('id', budgetId)
-        .eq('user_id', user.id)
-        .single()
 
-      if (budgetError) {
-        if (budgetError.code === 'PGRST116') {
-          return new Response(
-            JSON.stringify({ error: 'Budget not found or access denied' }),
-            { 
-              status: 404,
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-            }
-          )
-        }
-        throw budgetError
+      // Get envelope data
+      const { data: envelopes, error: envelopeError } = await supabaseClient
+        .from('envelopes')
+        .select('*')
+        .eq('budget_id', budgetId)
+        .eq('is_active', true)
+        .order('display_order', { ascending: true })
+
+      if (envelopeError) {
+        throw envelopeError
       }
 
-      // Advanced spending pattern analysis
-      const { data: insightsData, error: insightsError } = await supabaseClient
-        .rpc('get_spending_insights', {
-          p_budget_id: budgetId,
-          p_start_date: startDate,
-          p_end_date: endDate
-        })
+      // Get recent transactions
+      const { data: recentTransactions, error: transactionError } = await supabaseClient
+        .from('transactions')
+        .select(`
+          *,
+          from_envelope:envelopes!from_envelope_id(name),
+          to_envelope:envelopes!to_envelope_id(name),
+          payee:payees!payee_id(name),
+          income_source:income_sources!income_source_id(name)
+        `)
+        .eq('budget_id', budgetId)
+        .eq('is_deleted', false)
+        .order('transaction_date', { ascending: false })
+        .limit(10)
 
-      if (insightsError) {
-        throw insightsError
+      if (transactionError) {
+        throw transactionError
       }
 
       return new Response(
-        JSON.stringify({ insights: insightsData }),
+        JSON.stringify({
+          budget_summary: summaryData,
+          envelopes: envelopes,
+          recent_transactions: recentTransactions
+        }),
         { 
           status: 200,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -214,155 +139,11 @@ const handler = async (req: Request) => {
       )
     }
 
-    // Handle GET /budgets/{budgetId}/dashboard/budget-health
-    if (req.method === 'GET' && pathParts.length === 4 && 
-        pathParts[0] === 'budgets' && pathParts[2] === 'dashboard' && pathParts[3] === 'budget-health') {
-      
-      const budgetId = pathParts[1]
-      
-      // Verify budget access
-      const { error: budgetError } = await supabaseClient
-        .from('budgets')
-        .select('id')
-        .eq('id', budgetId)
-        .eq('user_id', user.id)
-        .single()
-
-      if (budgetError) {
-        if (budgetError.code === 'PGRST116') {
-          return new Response(
-            JSON.stringify({ error: 'Budget not found or access denied' }),
-            { 
-              status: 404,
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-            }
-          )
-        }
-        throw budgetError
-      }
-
-      // Calculate budget health metrics
-      const { data: healthData, error: healthError } = await supabaseClient
-        .rpc('get_budget_health_metrics', {
-          p_budget_id: budgetId
-        })
-
-      if (healthError) {
-        throw healthError
-      }
-
-      return new Response(
-        JSON.stringify({ health: healthData }),
-        { 
-          status: 200,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      )
-    }
-
-    // Handle GET /budgets/{budgetId}/dashboard/cash-flow-forecast
-    if (req.method === 'GET' && pathParts.length === 4 && 
-        pathParts[0] === 'budgets' && pathParts[2] === 'dashboard' && pathParts[3] === 'cash-flow-forecast') {
-      
-      const budgetId = pathParts[1]
-      const params = url.searchParams
-      const months = parseInt(params.get('months') || '3')
-      
-      // Verify budget access
-      const { error: budgetError } = await supabaseClient
-        .from('budgets')
-        .select('id')
-        .eq('id', budgetId)
-        .eq('user_id', user.id)
-        .single()
-
-      if (budgetError) {
-        if (budgetError.code === 'PGRST116') {
-          return new Response(
-            JSON.stringify({ error: 'Budget not found or access denied' }),
-            { 
-              status: 404,
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-            }
-          )
-        }
-        throw budgetError
-      }
-
-      // Generate cash flow forecast based on historical patterns
-      const { data: forecastData, error: forecastError } = await supabaseClient
-        .rpc('get_cash_flow_forecast', {
-          p_budget_id: budgetId,
-          p_forecast_months: months
-        })
-
-      if (forecastError) {
-        throw forecastError
-      }
-
-      return new Response(
-        JSON.stringify({ forecast: forecastData }),
-        { 
-          status: 200,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      )
-    }
-
-    // Handle GET /budgets/{budgetId}/dashboard/category-variance
-    if (req.method === 'GET' && pathParts.length === 4 && 
-        pathParts[0] === 'budgets' && pathParts[2] === 'dashboard' && pathParts[3] === 'category-variance') {
-      
-      const budgetId = pathParts[1]
-      const params = url.searchParams
-      const months = parseInt(params.get('months') || '3')
-      
-      // Verify budget access
-      const { error: budgetError } = await supabaseClient
-        .from('budgets')
-        .select('id')
-        .eq('id', budgetId)
-        .eq('user_id', user.id)
-        .single()
-
-      if (budgetError) {
-        if (budgetError.code === 'PGRST116') {
-          return new Response(
-            JSON.stringify({ error: 'Budget not found or access denied' }),
-            { 
-              status: 404,
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-            }
-          )
-        }  
-        throw budgetError
-      }
-
-      // Analyze variance between envelope targets and actual spending
-      const { data: varianceData, error: varianceError } = await supabaseClient
-        .rpc('get_category_variance_analysis', {
-          p_budget_id: budgetId,
-          p_analysis_months: months
-        })
-
-      if (varianceError) {
-        throw varianceError
-      }
-
-      return new Response(
-        JSON.stringify({ variance: varianceData }),
-        { 
-          status: 200,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      )
-    }
-
-    // Method/path not found
+    // Method not found
     return new Response(
-      JSON.stringify({ error: 'Not Found' }),
+      JSON.stringify({ error: 'Method not allowed' }),
       { 
-        status: 404,
+        status: 405,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     )

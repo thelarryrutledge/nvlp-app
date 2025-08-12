@@ -29,7 +29,7 @@ const PATTERNS = {
   alphanumeric: /^[a-zA-Z0-9\s]+$/,
   currency: /^\d+(\.\d{1,2})?$/,
   date: /^\d{4}-\d{2}-\d{2}$/,
-  transactionType: /^(income|expense|transfer|allocation|debt_payment)$/,
+  transactionType: /^(income|expense|transfer|allocation|payoff)$/,
   scheduleType: /^(weekly|biweekly|monthly|semi_monthly|quarterly|yearly|one_time)$/,
   fillType: /^(manual|percentage|fixed_amount)$/,
 };
@@ -359,7 +359,7 @@ export function validateTransactionType(value: any): ValidationError | null {
   if (!PATTERNS.transactionType.test(value)) {
     return { 
       field: 'transaction_type', 
-      message: 'Transaction type must be one of: income, expense, transfer, allocation, debt_payment', 
+      message: 'Transaction type must be one of: income, expense, transfer, allocation, payoff', 
       code: 'INVALID_VALUE' 
     };
   }
@@ -411,14 +411,14 @@ export function validateTransactionRequest(data: any): ValidationResult {
       break;
       
     case 'expense':
-    case 'debt_payment':
+    case 'payoff':
       const fromEnvelopeError = validateUUID(data.from_envelope_id, 'from_envelope_id');
       if (fromEnvelopeError) errors.push(fromEnvelopeError);
       
       const payeeError = validateUUID(data.payee_id, 'payee_id');
       if (payeeError) errors.push(payeeError);
       
-      // Expense/debt transactions should not have income source or to_envelope
+      // Expense/payoff transactions should not have income source or to_envelope
       if (data.income_source_id || data.to_envelope_id) {
         errors.push({
           field: 'transaction_type',

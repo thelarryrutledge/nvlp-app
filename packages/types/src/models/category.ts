@@ -1,8 +1,7 @@
 export enum CategoryType {
   INCOME = 'income',
   EXPENSE = 'expense',
-  TRANSFER = 'transfer',
-  DEBT_PAYMENT = 'debt_payment'
+  TRANSFER = 'transfer'
 }
 
 export interface Category {
