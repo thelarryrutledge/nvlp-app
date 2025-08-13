@@ -19,7 +19,11 @@ Implementation plan for enhanced security features including PIN/biometric authe
   # Changed in Supabase Dashboard: Authentication → Settings
   # Email OTP Expiration: 86400 seconds → 900 seconds (15 minutes)
   ```
-- [ ] Test magic link expiry timing
+- [x] Test magic link expiry timing
+  ```
+  # Verified: JWT tokens now expire in 15 minutes (was 60 minutes)
+  # Tested token: issued 00:20:13 → expires 00:35:13 (15 min lifetime)
+  ```
 - [ ] Configure email templates for new device notifications
 
 ### 1.3 JWT Signing Keys Migration (NEW - Enhanced Security)
