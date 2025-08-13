@@ -497,7 +497,7 @@ export class NotificationService extends BaseService {
 - [x] 2.1.3: Add SESSION_INVALIDATED error code to BaseService
 
 ### Phase 2.2: API Service Layer
-- [ ] 2.2.1: Create DeviceService in packages/api
+- [x] 2.2.1: Create DeviceService in packages/api
 - [ ] 2.2.2: Add session validation middleware (using Supabase auth.getUser())
 - [ ] ~~2.2.3: Implement asymmetric JWT verification using JWKS~~ (Not needed - Supabase handles this)
 - [ ] 2.2.4: Update BaseService with session validation

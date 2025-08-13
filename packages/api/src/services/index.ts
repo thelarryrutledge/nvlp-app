@@ -8,3 +8,4 @@ export * from './income.service';
 export * from './payee.service';
 export * from './category.service';
 export * from './auth.service';
+export * from './device.service';
