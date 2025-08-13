@@ -14,14 +14,41 @@ Implementation plan for enhanced security features including PIN/biometric authe
 - [x] Helper functions: `is_session_invalidated()`, `invalidate_sessions()`, `register_device()`
 
 ### 1.2 Supabase Configuration
-- [ ] Reduce magic link token expiry to 15 minutes (from 1 hour)
-  ```toml
-  # supabase/config.toml
-  [auth]
-  email_otp_expiry = 900  # 15 minutes in seconds
+- [x] Reduce magic link token expiry to 15 minutes (from 1 hour)
+  ```
+  # Changed in Supabase Dashboard: Authentication → Settings
+  # Email OTP Expiration: 86400 seconds → 900 seconds (15 minutes)
   ```
 - [ ] Test magic link expiry timing
 - [ ] Configure email templates for new device notifications
+
+### 1.3 JWT Signing Keys Migration (NEW - Enhanced Security)
+- [ ] Migrate from symmetric JWT secrets to asymmetric JWT signing keys
+- [ ] Benefits:
+  - Edge-based token verification without Auth server dependency
+  - Improved security with public/private key cryptography
+  - Safer key rotation and revocation
+  - Better performance for distributed validation
+- [ ] Implementation steps:
+  ```typescript
+  // 1. Generate new standby key pair in Supabase dashboard
+  // 2. Update token verification to use JWKS endpoint
+  import { createRemoteJWKSet, jwtVerify } from 'jose'
+  
+  const SUPABASE_JWT_ISSUER = `${process.env.SUPABASE_URL}/auth/v1`
+  const SUPABASE_JWT_KEYS = createRemoteJWKSet(
+    new URL(`${SUPABASE_JWT_ISSUER}/.well-known/jwks.json`)
+  )
+  
+  export async function verifySupabaseJWT(token: string) {
+    return jwtVerify(token, SUPABASE_JWT_KEYS, { 
+      issuer: SUPABASE_JWT_ISSUER 
+    })
+  }
+  ```
+- [ ] Update Edge Functions to use asymmetric verification
+- [ ] Test token verification at edge locations
+- [ ] Schedule migration before October 2025 deadline
 
 ---
 
@@ -84,17 +111,65 @@ interface DeviceRegistrationResult {
 ### 2.2 Session Validation Middleware
 Create `packages/api/src/middleware/session-validation.ts`:
 ```typescript
+import { createRemoteJWKSet, jwtVerify } from 'jose'
+
+// Setup JWKS for asymmetric JWT verification
+const SUPABASE_URL = process.env.SUPABASE_URL!
+const SUPABASE_JWT_ISSUER = `${SUPABASE_URL}/auth/v1`
+const SUPABASE_JWT_KEYS = createRemoteJWKSet(
+  new URL(`${SUPABASE_JWT_ISSUER}/.well-known/jwks.json`)
+)
+
 export const sessionValidationMiddleware = async (
   supabaseClient: any,
   headers: Record<string, string>
-): Promise<{ isValid: boolean; error?: string }> => {
+): Promise<{ isValid: boolean; error?: string; code?: string }> => {
   const deviceId = headers['x-device-id']
+  const authHeader = headers['authorization']
   
   if (!deviceId) {
     return { isValid: false, error: 'Device ID required' }
   }
   
-  // Get current user
+  // Verify JWT token using asymmetric keys (enhanced security)
+  if (authHeader?.startsWith('Bearer ')) {
+    const token = authHeader.substring(7)
+    try {
+      // Verify token with JWKS (no network call to auth server needed)
+      const { payload } = await jwtVerify(token, SUPABASE_JWT_KEYS, {
+        issuer: SUPABASE_JWT_ISSUER,
+        audience: 'authenticated'
+      })
+      
+      // Token is valid, extract user ID from payload
+      const userId = payload.sub
+      if (!userId) {
+        return { isValid: false, error: 'Invalid token payload' }
+      }
+      
+      // Check session invalidation using the verified user ID
+      const { data: isInvalidated, error } = await supabaseClient.rpc(
+        'is_session_invalidated',
+        { p_user_id: userId, p_device_id: deviceId }
+      )
+      
+      if (error) {
+        console.error('Session validation error:', error)
+        return { isValid: false, error: 'Session validation failed' }
+      }
+      
+      if (isInvalidated) {
+        return { isValid: false, error: 'Session invalidated', code: 'SESSION_INVALIDATED' }
+      }
+      
+      return { isValid: true, userId }
+    } catch (jwtError) {
+      console.error('JWT verification failed:', jwtError)
+      return { isValid: false, error: 'Invalid or expired token' }
+    }
+  }
+  
+  // Fallback to traditional auth.getUser() if no Bearer token
   const { data: { user }, error: userError } = await supabaseClient.auth.getUser()
   if (userError || !user) {
     return { isValid: false, error: 'Invalid authentication' }
@@ -451,13 +526,15 @@ export class NotificationService extends BaseService {
 
 ### Backend API Changes
 - [ ] Create DeviceService in packages/api
-- [ ] Add session validation middleware  
+- [ ] Add session validation middleware with JWT verification
+- [ ] Implement asymmetric JWT verification using JWKS
 - [ ] Update BaseService with session validation
 - [ ] Create device-management Edge Function
 - [ ] Update all existing Edge Functions
 - [ ] Add SESSION_INVALIDATED error code
 - [ ] Create email notification system
 - [ ] Add device management API endpoints
+- [ ] Install 'jose' package for JWT verification
 
 ### Client Package Changes  
 - [ ] Create DeviceService in packages/client
@@ -470,8 +547,10 @@ export class NotificationService extends BaseService {
 ### Database & Config
 - [ ] Apply device tracking migration ✅
 - [ ] Configure shorter magic link expiry
+- [ ] Migrate to JWT signing keys in Supabase dashboard
 - [ ] Set up email templates
 - [ ] Configure cleanup jobs for old sessions
+- [ ] Configure JWKS endpoint caching
 
 ### Testing
 - [ ] Unit tests for all new services
