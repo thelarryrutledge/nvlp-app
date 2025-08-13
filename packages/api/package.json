@@ -18,6 +18,7 @@
   "dependencies": {
     "@nvlp/types": "workspace:*",
     "@supabase/supabase-js": "^2.39.3",
+    "jose": "^6.0.12",
     "lru-cache": "^11.1.0"
   },
   "devDependencies": {

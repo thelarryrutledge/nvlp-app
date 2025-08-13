@@ -32,6 +32,9 @@ importers:
       '@supabase/supabase-js':
         specifier: ^2.39.3
         version: 2.52.1
+      jose:
+        specifier: ^6.0.12
+        version: 6.0.12
       lru-cache:
         specifier: ^11.1.0
         version: 11.1.0
@@ -2532,6 +2535,10 @@ packages:
       - supports-color
       - ts-node
     dev: true
+
+  /jose@6.0.12:
+    resolution: {integrity: sha512-T8xypXs8CpmiIi78k0E+Lk7T2zlK4zDyg+o1CZ4AkOHgDg98ogdP2BeZ61lTFKFyoEwJ9RgAgN+SdM3iPgNonQ==}
+    dev: false
 
   /js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}

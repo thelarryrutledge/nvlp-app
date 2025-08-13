@@ -6,3 +6,4 @@ export * from './income';
 export * from './payee';
 export * from './category';
 export * from './currency';
+export * from './device';

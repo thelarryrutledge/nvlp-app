@@ -539,39 +539,41 @@ export class NotificationService extends BaseService {
 
 ## Implementation Checklist
 
-### Backend API Changes
-- [ ] Create DeviceService in packages/api
-- [ ] Add session validation middleware with JWT verification
-- [ ] Implement asymmetric JWT verification using JWKS
-- [ ] Update BaseService with session validation
-- [ ] Create device-management Edge Function
-- [ ] Update all existing Edge Functions
-- [ ] Add SESSION_INVALIDATED error code
-- [ ] Create email notification system
-- [ ] Add device management API endpoints
-- [ ] Install 'jose' package for JWT verification
+### Phase 2.1: Core Types & Infrastructure ✅ COMPLETED
+- [x] 2.1.1: Add device management types to packages/types
+- [x] 2.1.2: Install 'jose' package for JWT verification
+- [x] 2.1.3: Add SESSION_INVALIDATED error code to BaseService
 
-### Client Package Changes  
-- [ ] Create DeviceService in packages/client
-- [ ] Update ApiClient with device ID header
-- [ ] Add SessionInvalidatedError handling
-- [ ] Update main NVLPClient class
-- [ ] Add device management types to packages/types
-- [ ] Handle session invalidation events
+### Phase 2.2: API Service Layer
+- [ ] 2.2.1: Create DeviceService in packages/api
+- [ ] 2.2.2: Add session validation middleware with JWT verification
+- [ ] 2.2.3: Implement asymmetric JWT verification using JWKS
+- [ ] 2.2.4: Update BaseService with session validation
+- [ ] 2.2.5: Create email notification system for new devices
 
-### Database & Config
-- [ ] Apply device tracking migration ✅
-- [ ] Configure shorter magic link expiry
-- [ ] Migrate to JWT signing keys in Supabase dashboard
-- [ ] Set up email templates
-- [ ] Configure cleanup jobs for old sessions
-- [ ] Configure JWKS endpoint caching
+### Phase 2.3: Edge Functions
+- [ ] 2.3.1: Create device-management Edge Function
+- [ ] 2.3.2: Update all existing Edge Functions with session validation
+- [ ] 2.3.3: Deploy all functions with --no-verify-jwt flag
 
-### Testing
-- [ ] Unit tests for all new services
-- [ ] Integration tests for device flows
-- [ ] Security validation tests
-- [ ] Email notification tests
+### Phase 2.4: Client Package Updates  
+- [ ] 2.4.1: Create DeviceService in packages/client
+- [ ] 2.4.2: Update ApiClient with device ID header
+- [ ] 2.4.3: Add SessionInvalidatedError handling
+- [ ] 2.4.4: Update main NVLPClient class
+- [ ] 2.4.5: Handle session invalidation events
+
+### Phase 2.5: Configuration & Cleanup
+- [ ] 2.5.1: Configure JWKS endpoint caching
+- [ ] 2.5.2: Configure cleanup jobs for old sessions
+- [ ] 2.5.3: Verify email templates are working
+
+### Phase 2.6: Testing Infrastructure
+- [ ] 2.6.1: Create unit tests for DeviceService
+- [ ] 2.6.2: Create integration tests for device flows
+- [ ] 2.6.3: Create security validation test scripts
+- [ ] 2.6.4: Create cURL test scripts for device management
+- [ ] 2.6.5: Add device management to run-all-crud.sh
 
 ---
 
