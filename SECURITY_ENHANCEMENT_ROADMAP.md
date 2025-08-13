@@ -499,8 +499,8 @@ export class NotificationService extends BaseService {
 ### Phase 2.2: API Service Layer
 - [x] 2.2.1: Create DeviceService in packages/api
 - [x] 2.2.2: Add session validation middleware (using Supabase auth.getUser())
-- [ ] ~~2.2.3: Implement asymmetric JWT verification using JWKS~~ (Not needed - Supabase handles this)
-- [ ] 2.2.4: Update BaseService with session validation
+- [x] ~~2.2.3: Implement asymmetric JWT verification using JWKS~~ (Not needed - Supabase handles this)
+- [x] 2.2.4: Update BaseService with session validation
 - [ ] 2.2.5: Create email notification system for new devices
 
 ### Phase 2.3: Edge Functions

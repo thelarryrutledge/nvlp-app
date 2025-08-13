@@ -2,6 +2,31 @@ import { BaseService } from './base.service';
 import { Envelope, EnvelopeCreateRequest, EnvelopeUpdateRequest, EnvelopeReorderRequest, EnvelopeType, ApiError, ErrorCode } from '@nvlp/types';
 
 export class EnvelopeService extends BaseService {
+  
+  /**
+   * Example of using session validation for device-aware operations
+   * This method requires device ID header and validates the session
+   */
+  async listEnvelopesWithDeviceValidation(budgetId: string, headers: Record<string, string>): Promise<Envelope[]> {
+    return this.withRetry(async () => {
+      return this.withSessionValidation(headers, async (userId) => {
+        // Verify budget access using the validated user ID
+        await this.verifyBudgetAccess(budgetId);
+
+        const { data, error } = await this.client
+          .from('envelopes')
+          .select('*')
+          .eq('budget_id', budgetId)
+          .order('name', { ascending: true });
+
+        if (error) {
+          this.handleError(error);
+        }
+
+        return data as Envelope[];
+      });
+    });
+  }
   async listEnvelopes(budgetId: string): Promise<Envelope[]> {
     await this.verifyBudgetAccess(budgetId);
 

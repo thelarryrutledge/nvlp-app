@@ -1,5 +1,6 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import { Database, ApiError, ErrorCode } from '@nvlp/types';
+import { sessionValidationMiddleware, SessionValidationResult } from '../middleware/session-validation';
 
 export abstract class BaseService {
   protected client: SupabaseClient<Database>;
@@ -20,6 +21,61 @@ export abstract class BaseService {
     }
 
     return user.id;
+  }
+
+  /**
+   * Validate session with device ID checking
+   * Use this for operations that require device-aware authentication
+   */
+  protected async validateSession(headers: Record<string, string>): Promise<SessionValidationResult> {
+    const result = await sessionValidationMiddleware(this.client, headers);
+    
+    if (!result.isValid) {
+      // Map specific validation errors to appropriate ApiError codes
+      let errorCode: ErrorCode;
+      
+      switch (result.code) {
+        case 'MISSING_DEVICE_ID':
+          errorCode = ErrorCode.MISSING_DEVICE_ID;
+          break;
+        case 'INVALID_AUTH':
+          errorCode = ErrorCode.INVALID_AUTH;
+          break;
+        case 'SESSION_INVALIDATED':
+          errorCode = ErrorCode.SESSION_INVALIDATED;
+          break;
+        case 'VALIDATION_ERROR':
+          errorCode = ErrorCode.VALIDATION_ERROR;
+          break;
+        default:
+          errorCode = ErrorCode.UNAUTHORIZED;
+      }
+      
+      throw new ApiError(errorCode, result.error || 'Session validation failed');
+    }
+    
+    return result;
+  }
+
+  /**
+   * Enhanced getCurrentUserId that includes session validation
+   * Use this for device-aware operations
+   */
+  protected async getCurrentUserIdWithValidation(headers: Record<string, string>): Promise<string> {
+    const validation = await this.validateSession(headers);
+    return validation.userId!;
+  }
+
+  /**
+   * Wrapper for operations that require session validation
+   * Automatically validates session and passes user ID to the operation
+   */
+  protected async withSessionValidation<T>(
+    headers: Record<string, string>,
+    operation: (userId: string) => Promise<T>
+  ): Promise<T> {
+    const validation = await this.validateSession(headers);
+    return await operation(validation.userId!);
   }
 
   protected async withTokenRefresh<T>(
@@ -124,7 +180,14 @@ export abstract class BaseService {
         // Don't retry on certain errors
         if (
           error instanceof ApiError && 
-          [ErrorCode.NOT_FOUND, ErrorCode.VALIDATION_ERROR, ErrorCode.INVALID_REQUEST].includes(error.code)
+          [
+            ErrorCode.NOT_FOUND, 
+            ErrorCode.VALIDATION_ERROR, 
+            ErrorCode.INVALID_REQUEST,
+            ErrorCode.SESSION_INVALIDATED,
+            ErrorCode.MISSING_DEVICE_ID,
+            ErrorCode.INVALID_AUTH
+          ].includes(error.code)
         ) {
           throw error;
         }
