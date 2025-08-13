@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign in to NVLP</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #1F2029;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #FFFFFF;
+        }
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 1px solid #E8E9ED;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            color: #6A31F6;
+            margin-bottom: 10px;
+        }
+        .welcome-box {
+            background-color: #EAE8FF;
+            border: 1px solid #6A31F6;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .welcome-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1F2029;
+            margin-bottom: 15px;
+        }
+        .signin-button {
+            display: inline-block;
+            background-color: #6A31F6;
+            color: #FFFFFF !important;
+            text-decoration: none;
+            padding: 16px 32px;
+            border-radius: 8px;
+            font-weight: 700;
+            margin: 20px 0;
+            font-size: 16px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 4px rgba(106, 49, 246, 0.2);
+            transition: all 0.2s ease;
+        }
+        .signin-button:hover {
+            background-color: #5C1FE2;
+            color: #FFFFFF !important;
+            box-shadow: 0 4px 8px rgba(106, 49, 246, 0.3);
+        }
+        .security-notice {
+            background-color: #E6F6F4;
+            border: 1px solid #009883;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+        .security-notice strong {
+            color: #1F2029;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #E8E9ED;
+            text-align: center;
+            color: #7E808F;
+            font-size: 14px;
+        }
+        .alternative-link {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #F8F8F8;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #7E808F;
+            word-break: break-all;
+        }
+        .alternative-link strong {
+            color: #1F2029;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="https://nvlp.app/assets/logo/FullLogo_Transparent_NoBuffer.png" alt="NVLP Logo" style="max-height: 60px; margin-bottom: 10px;">
+        <p>Virtual Envelope Budgeting</p>
+    </div>
+
+    <div class="welcome-box">
+        <div class="welcome-title">🔐 Sign in to your NVLP account</div>
+        <p>Click the button below to securely access your budgets and envelopes.</p>
+        
+        <a href="{{ .ConfirmationURL }}" class="signin-button">Sign In Securely</a>
+        
+        <p style="margin-top: 20px; font-size: 14px; color: #7E808F;">
+            This secure link will expire in 15 minutes for your protection.
+        </p>
+    </div>
+    
+    <div class="security-notice">
+        <strong>🛡️ Security Notice:</strong><br>
+        This email was sent because someone requested access to your NVLP account. If you didn't request this, you can safely ignore this email.
+    </div>
+
+    <div class="alternative-link">
+        <strong>Having trouble with the button?</strong><br>
+        Copy and paste this link into your browser:<br>
+        {{ .ConfirmationURL }}
+    </div>
+
+    <div class="footer">
+        <p>This secure sign-in link was generated automatically.</p>
+        <p>If you have questions about accessing your account, please contact our support team.</p>
+        <p><strong>The NVLP Team</strong></p>
+        <p style="font-size: 12px; margin-top: 20px;">
+            NVLP - Virtual Envelope Budgeting System<br>
+            Secure. Simple. Smart budgeting.
+        </p>
+    </div>
+</body>
+</html>
