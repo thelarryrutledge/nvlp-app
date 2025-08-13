@@ -126,71 +126,23 @@ interface DeviceRegistrationResult {
 ### 2.2 Session Validation Middleware
 Create `packages/api/src/middleware/session-validation.ts`:
 ```typescript
-import { createRemoteJWKSet, jwtVerify } from 'jose'
-
-// Setup JWKS for asymmetric JWT verification
-const SUPABASE_URL = process.env.SUPABASE_URL!
-const SUPABASE_JWT_ISSUER = `${SUPABASE_URL}/auth/v1`
-const SUPABASE_JWT_KEYS = createRemoteJWKSet(
-  new URL(`${SUPABASE_JWT_ISSUER}/.well-known/jwks.json`)
-)
-
 export const sessionValidationMiddleware = async (
   supabaseClient: any,
   headers: Record<string, string>
-): Promise<{ isValid: boolean; error?: string; code?: string }> => {
+): Promise<{ isValid: boolean; error?: string; code?: string; userId?: string }> => {
   const deviceId = headers['x-device-id']
-  const authHeader = headers['authorization']
   
   if (!deviceId) {
     return { isValid: false, error: 'Device ID required' }
   }
   
-  // Verify JWT token using asymmetric keys (enhanced security)
-  if (authHeader?.startsWith('Bearer ')) {
-    const token = authHeader.substring(7)
-    try {
-      // Verify token with JWKS (no network call to auth server needed)
-      const { payload } = await jwtVerify(token, SUPABASE_JWT_KEYS, {
-        issuer: SUPABASE_JWT_ISSUER,
-        audience: 'authenticated'
-      })
-      
-      // Token is valid, extract user ID from payload
-      const userId = payload.sub
-      if (!userId) {
-        return { isValid: false, error: 'Invalid token payload' }
-      }
-      
-      // Check session invalidation using the verified user ID
-      const { data: isInvalidated, error } = await supabaseClient.rpc(
-        'is_session_invalidated',
-        { p_user_id: userId, p_device_id: deviceId }
-      )
-      
-      if (error) {
-        console.error('Session validation error:', error)
-        return { isValid: false, error: 'Session validation failed' }
-      }
-      
-      if (isInvalidated) {
-        return { isValid: false, error: 'Session invalidated', code: 'SESSION_INVALIDATED' }
-      }
-      
-      return { isValid: true, userId }
-    } catch (jwtError) {
-      console.error('JWT verification failed:', jwtError)
-      return { isValid: false, error: 'Invalid or expired token' }
-    }
-  }
-  
-  // Fallback to traditional auth.getUser() if no Bearer token
+  // Use Supabase's built-in JWT verification (handles asymmetric keys automatically)
   const { data: { user }, error: userError } = await supabaseClient.auth.getUser()
   if (userError || !user) {
     return { isValid: false, error: 'Invalid authentication' }
   }
   
-  // Check session invalidation
+  // Check session invalidation using database function
   const { data: isInvalidated, error } = await supabaseClient.rpc(
     'is_session_invalidated',
     { p_user_id: user.id, p_device_id: deviceId }
@@ -205,7 +157,7 @@ export const sessionValidationMiddleware = async (
     return { isValid: false, error: 'Session invalidated', code: 'SESSION_INVALIDATED' }
   }
   
-  return { isValid: true }
+  return { isValid: true, userId: user.id }
 }
 ```
 
@@ -541,13 +493,13 @@ export class NotificationService extends BaseService {
 
 ### Phase 2.1: Core Types & Infrastructure ✅ COMPLETED
 - [x] 2.1.1: Add device management types to packages/types
-- [x] 2.1.2: Install 'jose' package for JWT verification
+- [x] ~~2.1.2: Install 'jose' package for JWT verification~~ (Not needed - Supabase handles JWT verification)
 - [x] 2.1.3: Add SESSION_INVALIDATED error code to BaseService
 
 ### Phase 2.2: API Service Layer
 - [ ] 2.2.1: Create DeviceService in packages/api
-- [ ] 2.2.2: Add session validation middleware with JWT verification
-- [ ] 2.2.3: Implement asymmetric JWT verification using JWKS
+- [ ] 2.2.2: Add session validation middleware (using Supabase auth.getUser())
+- [ ] ~~2.2.3: Implement asymmetric JWT verification using JWKS~~ (Not needed - Supabase handles this)
 - [ ] 2.2.4: Update BaseService with session validation
 - [ ] 2.2.5: Create email notification system for new devices
 
