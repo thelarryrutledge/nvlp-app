@@ -1,0 +1,39 @@
+NVLP - New Device Sign-in Detected
+========================================
+
+Hi {{user_name}},
+
+We noticed a new sign-in to your NVLP account from a device we haven't seen before.
+
+SIGN-IN DETAILS:
+- Device: {{device_name}}
+- Time: {{signin_time}}
+- Location: {{location}}
+- IP Address: {{ip_address}}
+
+WAS THIS YOU?
+
+✅ If this was you:
+No action is needed. Your account is secure and this device has been registered.
+
+⚠️ If this wasn't you:
+Please take immediate action to secure your account.
+
+TO SECURE YOUR ACCOUNT:
+1. Open the NVLP app on a trusted device
+2. Go to Settings → Security → Active Sessions
+3. Review all active devices and sign out any unknown devices
+4. Consider changing your email account password
+5. Enable additional security measures if available
+
+You can manage your active sessions at: {{app_url}}/settings/security
+
+This email was sent automatically to protect your NVLP account.
+If you have questions about this alert, please contact our support team.
+
+Best regards,
+The NVLP Team
+
+---
+This email was sent to {{user_email}} because it's associated with your NVLP account.
+NVLP - Virtual Envelope Budgeting System

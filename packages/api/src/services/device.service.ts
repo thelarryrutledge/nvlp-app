@@ -1,4 +1,5 @@
 import { BaseService } from './base.service';
+import { NotificationService } from './notification.service';
 import { 
   Device, 
   DeviceRegisterRequest, 
@@ -6,14 +7,22 @@ import {
   DeviceRegistrationResult, 
   DeviceSecurityStatus,
   SessionInvalidationRequest,
+  DeviceLocation,
   ApiError,
   ErrorCode
 } from '@nvlp/types';
 
 export class DeviceService extends BaseService {
+  private notificationService: NotificationService;
+
+  constructor(client: any) {
+    super(client);
+    this.notificationService = new NotificationService(client);
+  }
   
   /**
    * Register a new device or update existing device info
+   * Automatically sends notification email for new devices
    */
   async registerDevice(deviceInfo: DeviceRegisterRequest): Promise<DeviceRegistrationResult> {
     return this.withRetry(async () => {
@@ -39,11 +48,25 @@ export class DeviceService extends BaseService {
       }
 
       const result = data[0];
-      return {
+      const registrationResult: DeviceRegistrationResult = {
         is_new_device: result.is_new_device,
         device: result.device_record,
-        requires_notification: result.is_new_device // Send notification for new devices
+        requires_notification: result.is_new_device
       };
+
+      // Send notification for new devices (fire-and-forget)
+      if (result.is_new_device) {
+        this.sendNewDeviceNotification(userId, result.device_record, {
+          country: deviceInfo.location_country,
+          city: deviceInfo.location_city,
+          ip_address: deviceInfo.ip_address
+        }).catch(error => {
+          // Log error but don't fail the registration
+          console.error('Failed to send new device notification:', error);
+        });
+      }
+
+      return registrationResult;
     });
   }
 
@@ -297,5 +320,21 @@ export class DeviceService extends BaseService {
         this.handleError(error);
       }
     });
+  }
+
+  /**
+   * Send new device notification (private helper)
+   */
+  private async sendNewDeviceNotification(
+    userId: string, 
+    device: Device, 
+    location?: DeviceLocation
+  ): Promise<void> {
+    try {
+      await this.notificationService.sendNewDeviceAlert(userId, device, location);
+    } catch (error) {
+      console.error('Error sending device notification:', error);
+      // Don't re-throw - notification failure shouldn't break device registration
+    }
   }
 }
