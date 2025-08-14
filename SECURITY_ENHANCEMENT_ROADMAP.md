@@ -505,7 +505,7 @@ export class NotificationService extends BaseService {
 
 ### Phase 2.3: Edge Functions
 - [x] 2.3.1: Create device-management Edge Function
-- [ ] 2.3.2: Update all existing Edge Functions with session validation
+- [x] 2.3.2: Update all existing Edge Functions with session validation
 - [ ] 2.3.3: Deploy all functions with --no-verify-jwt flag
 
 ### Phase 2.4: Client Package Updates  

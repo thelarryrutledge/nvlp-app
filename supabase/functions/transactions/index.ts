@@ -3,6 +3,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts'
 import { withSecurity } from '../_shared/security-headers.ts'
 import { withRateLimit } from '../_shared/rate-limiter.ts'
+import { sessionValidationMiddleware } from '../_shared/session-validation.ts'
 import { 
   validateTransactionRequest, 
   createValidationErrorResponse 
@@ -41,6 +42,25 @@ const handler = async (req: Request) => {
         JSON.stringify({ error: 'Invalid authorization token' }),
         { 
           status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
+    // Add session validation
+    const sessionValidation = await sessionValidationMiddleware(supabaseClient, {
+      'x-device-id': req.headers.get('x-device-id') || ''
+    })
+    
+    if (!sessionValidation.isValid) {
+      const statusCode = sessionValidation.code === 'SESSION_INVALIDATED' ? 401 : 403
+      return new Response(
+        JSON.stringify({ 
+          error: sessionValidation.error,
+          code: sessionValidation.code 
+        }),
+        { 
+          status: statusCode,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )

@@ -1,6 +1,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts'
+import { sessionValidationMiddleware } from '../_shared/session-validation.ts'
 
 serve(async (req) => {
   // Handle CORS
@@ -48,6 +49,25 @@ serve(async (req) => {
         JSON.stringify({ error: 'Invalid or expired token' }),
         { 
           status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
+    // Add session validation
+    const sessionValidation = await sessionValidationMiddleware(supabaseClient, {
+      'x-device-id': req.headers.get('x-device-id') || ''
+    })
+    
+    if (!sessionValidation.isValid) {
+      const statusCode = sessionValidation.code === 'SESSION_INVALIDATED' ? 401 : 403
+      return new Response(
+        JSON.stringify({ 
+          error: sessionValidation.error,
+          code: sessionValidation.code 
+        }),
+        { 
+          status: statusCode,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
