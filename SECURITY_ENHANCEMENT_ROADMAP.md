@@ -506,10 +506,10 @@ export class NotificationService extends BaseService {
 ### Phase 2.3: Edge Functions
 - [x] 2.3.1: Create device-management Edge Function
 - [x] 2.3.2: Update all existing Edge Functions with session validation
-- [ ] 2.3.3: Deploy all functions with --no-verify-jwt flag
+- [x] 2.3.3: Deploy all functions with --no-verify-jwt flag
 
 ### Phase 2.4: Client Package Updates  
-- [ ] 2.4.1: Create DeviceService in packages/client
+- [x] 2.4.1: Create DeviceService in packages/client
 - [ ] 2.4.2: Update ApiClient with device ID header
 - [ ] 2.4.3: Add SessionInvalidatedError handling
 - [ ] 2.4.4: Update main NVLPClient class

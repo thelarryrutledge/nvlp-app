@@ -4,6 +4,7 @@
 
 import { Session } from '@supabase/supabase-js';
 import { HttpClient, HttpClientConfig, TokenProvider, HttpError, OfflineQueueConfig } from './http-client';
+import { DeviceService } from './services/device.service';
 
 /**
  * Authenticated PostgREST query builder that works with the unified client
@@ -283,6 +284,9 @@ export class NVLPClient {
   private sessionProvider?: SessionProvider;
   private unsubscribeFromSession?: () => void;
 
+  // Services
+  public readonly device: DeviceService;
+
   constructor(config: NVLPClientConfig) {
     this.config = config;
     this.sessionProvider = config.sessionProvider;
@@ -304,6 +308,9 @@ export class NVLPClient {
     }
 
     this.httpClient = new HttpClient(httpConfig);
+
+    // Initialize services
+    this.device = new DeviceService(this.httpClient);
 
     // Set up session change listener for PostgREST calls
     if (this.sessionProvider) {

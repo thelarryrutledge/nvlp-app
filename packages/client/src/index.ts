@@ -71,5 +71,8 @@ export type {
   SessionProvider,
 } from './authenticated-postgrest-client';
 
+// Services
+export { DeviceService } from './services';
+
 // Re-export Database type for convenience
 export type { Database } from '@nvlp/types';
