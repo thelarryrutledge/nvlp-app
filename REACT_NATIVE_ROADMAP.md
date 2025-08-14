@@ -244,6 +244,20 @@ Build a pure React Native mobile app for NVLP that provides a native mobile expe
 - [ ] Update API client to include device ID in headers
 - [ ] Implement session invalidation error handling
 
+### 8.1.1 API Integration (completed endpoints available)
+- [ ] Integrate with `/functions/v1/device-management` endpoints:
+  - POST `/register` - Device registration with email notifications
+  - GET `/list` - Get user's active devices with details
+  - DELETE `/:deviceId` - Sign out specific device
+  - POST `/signout-all` - Sign out all other devices
+- [ ] Integrate with enhanced auth system:
+  - POST `/functions/v1/auth-magic-link` - Enhanced magic link with beautiful emails
+  - Handle rate limiting and security headers from all endpoints
+- [ ] Implement @nvlp/client package integration:
+  - Use DeviceService class from client package
+  - Handle SessionInvalidatedError responses
+  - Implement event-driven session management
+
 ### 8.2 Security Settings UI
 - [ ] Create SecuritySettingsScreen component
 - [ ] Build ActiveSessionsScreen with FlatList
@@ -267,6 +281,27 @@ Build a pure React Native mobile app for NVLP that provides a native mobile expe
 - [ ] Create device trust indicators in UI
 - [ ] Add last login information display
 - [ ] Implement security tips/recommendations screen
+
+### 8.5 Enhanced Email Integration (from completed API)
+- [ ] Handle enhanced email template system
+- [ ] Display device registration email confirmations
+- [ ] Show email notification preferences in settings
+- [ ] Handle magic link authentication with enhanced templates
+- [ ] Add email delivery status indicators
+
+### 8.6 Advanced Session Management (from completed API)
+- [ ] Implement session invalidation event handling (SESSION_INVALIDATED)
+- [ ] Add automatic session refresh with device validation
+- [ ] Handle rate limiting responses from auth endpoints
+- [ ] Implement device cleanup notifications (180+ day inactive devices)
+- [ ] Add session security analytics (login patterns, device changes)
+
+### 8.7 Device Security Analytics
+- [ ] Show device security score/status
+- [ ] Display login history with location and device details
+- [ ] Add suspicious activity alerts (multiple failed logins, new locations)
+- [ ] Implement device trust scoring (new vs trusted devices)
+- [ ] Show security recommendations based on device usage patterns
 
 ## Phase 9: Native Platform Features (Week 9)
 
@@ -326,6 +361,14 @@ Build a pure React Native mobile app for NVLP that provides a native mobile expe
 - [ ] Integration tests for API calls
 - [ ] E2E tests with Detox
 - [ ] Manual testing checklist
+
+### 10.1.1 Device Management Testing (infrastructure available)
+- [ ] Use existing email testing scripts (`scripts/test-email-templates.sh`)
+- [ ] Test device registration with notification verification
+- [ ] Test session invalidation scenarios
+- [ ] Verify enhanced email templates render correctly on devices
+- [ ] Use existing cleanup job testing for data validation
+- [ ] Integration testing with @nvlp/client package SessionInvalidatedError handling
 
 ### 10.2 Build & Deploy
 - [ ] Configure production builds
