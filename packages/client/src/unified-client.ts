@@ -285,6 +285,7 @@ export class NVLPClient {
   private httpClient: HttpClient;
   private sessionProvider?: SessionProvider;
   private unsubscribeFromSession?: () => void;
+  private eventListeners: Map<string, Array<(...args: any[]) => void>> = new Map();
 
   // Services
   public readonly device: DeviceService;
@@ -314,6 +315,9 @@ export class NVLPClient {
 
     // Initialize services
     this.device = new DeviceService(this.httpClient);
+
+    // Handle session invalidation globally
+    this.httpClient.on('sessionInvalidated', this.handleSessionInvalidated.bind(this));
 
     // Set up session change listener for PostgREST calls
     if (this.sessionProvider) {
@@ -368,6 +372,59 @@ export class NVLPClient {
    */
   setDeviceId(deviceId: string): void {
     this.httpClient.setDeviceId(deviceId);
+  }
+
+  /**
+   * Add event listener
+   */
+  on(event: string, listener: (...args: any[]) => void): void {
+    if (!this.eventListeners.has(event)) {
+      this.eventListeners.set(event, []);
+    }
+    this.eventListeners.get(event)!.push(listener);
+  }
+
+  /**
+   * Remove event listener
+   */
+  off(event: string, listener: (...args: any[]) => void): void {
+    const listeners = this.eventListeners.get(event);
+    if (listeners) {
+      const index = listeners.indexOf(listener);
+      if (index > -1) {
+        listeners.splice(index, 1);
+      }
+    }
+  }
+
+  /**
+   * Emit event
+   */
+  private emit(event: string, ...args: any[]): void {
+    const listeners = this.eventListeners.get(event);
+    if (listeners) {
+      listeners.forEach(listener => listener(...args));
+    }
+  }
+
+  /**
+   * Handle session invalidation
+   */
+  private handleSessionInvalidated(error: string): void {
+    // Clear local auth state if session provider is available
+    if (this.sessionProvider) {
+      // Note: Different session providers may have different sign out methods
+      // This is a best effort approach
+      try {
+        (this.sessionProvider as any).signOut?.();
+      } catch (signOutError) {
+        // If signOut fails, continue - the session is still invalidated server-side
+        console.warn('Failed to clear local session:', signOutError);
+      }
+    }
+    
+    // Emit event for UI to handle
+    this.emit('sessionInvalidated', error);
   }
 
   // HTTP API Methods (for Edge Functions)

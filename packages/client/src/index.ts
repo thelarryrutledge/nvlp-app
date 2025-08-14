@@ -16,6 +16,7 @@ export {
   HttpError,
   NetworkError,
   TimeoutError,
+  SessionInvalidatedError,
   createHttpClient,
 } from './http-client';
 

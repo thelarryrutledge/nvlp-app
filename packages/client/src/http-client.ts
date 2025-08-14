@@ -85,6 +85,14 @@ export class TimeoutError extends Error {
   }
 }
 
+export class SessionInvalidatedError extends Error {
+  code = 'SESSION_INVALIDATED'
+  constructor(message: string) {
+    super(message)
+    this.name = 'SessionInvalidatedError'
+  }
+}
+
 /**
  * Default in-memory storage for offline queue
  */
@@ -342,6 +350,7 @@ export class HttpClient {
   private config: HttpClientConfig;
   private defaultRetryOptions: RetryOptions;
   private offlineQueue?: OfflineQueue;
+  private eventListeners: Map<string, Array<(...args: any[]) => void>> = new Map();
 
   constructor(config: HttpClientConfig) {
     this.config = config;
@@ -580,6 +589,19 @@ export class HttpClient {
       });
 
       if (!response.ok) {
+        // Check for session invalidation before throwing generic error
+        if (response.status === 401) {
+          try {
+            const errorData = await response.json() as any;
+            if (errorData && errorData.code === 'SESSION_INVALIDATED') {
+              // Emit event for session invalidation
+              this.emit('sessionInvalidated', errorData.error || 'Session invalidated');
+              throw new SessionInvalidatedError(errorData.error || 'Session invalidated');
+            }
+          } catch (jsonError) {
+            // If we can't parse JSON, continue with normal error handling
+          }
+        }
         throw new HttpError(response);
       }
 
@@ -618,6 +640,39 @@ export class HttpClient {
     };
 
     return withRetry(operation, finalRetryOptions);
+  }
+
+  /**
+   * Add event listener
+   */
+  on(event: string, listener: (...args: any[]) => void): void {
+    if (!this.eventListeners.has(event)) {
+      this.eventListeners.set(event, []);
+    }
+    this.eventListeners.get(event)!.push(listener);
+  }
+
+  /**
+   * Remove event listener
+   */
+  off(event: string, listener: (...args: any[]) => void): void {
+    const listeners = this.eventListeners.get(event);
+    if (listeners) {
+      const index = listeners.indexOf(listener);
+      if (index > -1) {
+        listeners.splice(index, 1);
+      }
+    }
+  }
+
+  /**
+   * Emit event
+   */
+  private emit(event: string, ...args: any[]): void {
+    const listeners = this.eventListeners.get(event);
+    if (listeners) {
+      listeners.forEach(listener => listener(...args));
+    }
   }
 
   /**
