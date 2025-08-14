@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Device Sign-in - NVLP</title>
+    <!--[if mso]>
+    <noscript>
+        <xml>
+            <o:OfficeDocumentSettings>
+                <o:PixelsPerInch>96</o:PixelsPerInch>
+            </o:OfficeDocumentSettings>
+        </xml>
+    </noscript>
+    <![endif]-->
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'Inter', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.4;
+            color: #1F2029;
+            background: linear-gradient(135deg, #F8F8F8 0%, #F5F5F7 100%);
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        /* Container structure */
+        .email-wrapper {
+            width: 100%;
+            background: linear-gradient(135deg, #F8F8F8 0%, #F5F5F7 100%);
+            padding: 48px 20px;
+        }
+        
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #FFFFFF;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0px 4px 40px rgba(0, 0, 0, 0.08);
+        }
+        
+        /* Header with gradient */
+        .header {
+            background: linear-gradient(135deg, #7C56FE 0%, #6A31F6 100%);
+            padding: 40px 32px 32px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -25%;
+            width: 100%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            transform: rotate(45deg);
+        }
+        
+        .logo-container {
+            position: relative;
+            z-index: 1;
+            margin-bottom: 16px;
+        }
+        
+        .logo {
+            height: 48px;
+            width: auto;
+            filter: brightness(0) invert(1);
+        }
+        
+        .header-title {
+            color: #FFFFFF;
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            margin: 0;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header-subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            font-weight: 400;
+            margin-top: 4px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Alert section */
+        .alert-section {
+            padding: 32px;
+            border-bottom: 1px solid #E8E9ED;
+        }
+        
+        .alert-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #FEF5EA 0%, #FEF0DF 100%);
+            border: 1px solid #F89E2B;
+            color: #DF8E27;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+        
+        .greeting {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1F2029;
+            margin-bottom: 8px;
+        }
+        
+        .alert-message {
+            font-size: 15px;
+            color: #7E808F;
+            line-height: 1.5;
+        }
+        
+        /* Device info card */
+        .device-section {
+            padding: 32px;
+        }
+        
+        .device-card {
+            background: linear-gradient(135deg, #F8F8F8 0%, #F5F5F7 100%);
+            border-radius: 16px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .device-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #6A31F6 0%, #9A85FF 100%);
+        }
+        
+        .device-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .device-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #6A31F6 0%, #7C56FE 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 16px;
+            box-shadow: 0px 4px 20px rgba(106, 49, 246, 0.25);
+        }
+        
+        .device-icon svg {
+            width: 24px;
+            height: 24px;
+            fill: #FFFFFF;
+        }
+        
+        .device-title {
+            flex: 1;
+        }
+        
+        .device-name {
+            font-size: 17px;
+            font-weight: 600;
+            color: #1F2029;
+            margin-bottom: 2px;
+        }
+        
+        .device-type {
+            font-size: 13px;
+            color: #ADAEB8;
+        }
+        
+        .device-details {
+            display: grid;
+            gap: 12px;
+        }
+        
+        .detail-row {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: #FFFFFF;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+        
+        .detail-icon {
+            width: 32px;
+            height: 32px;
+            background: #EAE8FF;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        
+        .detail-icon svg {
+            width: 16px;
+            height: 16px;
+            fill: #6A31F6;
+        }
+        
+        .detail-content {
+            flex: 1;
+        }
+        
+        .detail-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #ADAEB8;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+        
+        .detail-value {
+            font-size: 15px;
+            font-weight: 500;
+            color: #1F2029;
+        }
+        
+        /* Action buttons section */
+        .action-section {
+            padding: 0 32px 32px;
+        }
+        
+        .action-card {
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        
+        .action-card.safe {
+            background: linear-gradient(135deg, #E6F6F4 0%, #D9F2EF 100%);
+            border: 1px solid #00A991;
+        }
+        
+        .action-card.warning {
+            background: linear-gradient(135deg, #FAE8E8 0%, #F8DCDC 100%);
+            border: 1px solid #CD1616;
+        }
+        
+        .action-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .action-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 8px;
+        }
+        
+        .action-icon.safe {
+            fill: #009883;
+        }
+        
+        .action-icon.warning {
+            fill: #B91414;
+        }
+        
+        .action-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1F2029;
+        }
+        
+        .action-text {
+            font-size: 14px;
+            color: #545666;
+            line-height: 1.5;
+        }
+        
+        .steps-list {
+            margin-top: 16px;
+            padding-left: 20px;
+        }
+        
+        .steps-list li {
+            font-size: 14px;
+            color: #545666;
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        
+        /* CTA Button */
+        .cta-section {
+            padding: 0 32px 32px;
+            text-align: center;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #6A31F6 0%, #7C56FE 100%);
+            color: #FFFFFF;
+            text-decoration: none;
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            box-shadow: 0px 4px 20px rgba(106, 49, 246, 0.25);
+            transition: all 0.2s ease;
+        }
+        
+        .cta-button:hover {
+            box-shadow: 0px 4px 30px rgba(106, 49, 246, 0.35);
+            transform: translateY(-1px);
+        }
+        
+        /* Footer */
+        .footer {
+            background: #F8F8F8;
+            padding: 32px;
+            text-align: center;
+        }
+        
+        .footer-text {
+            font-size: 13px;
+            color: #ADAEB8;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+        
+        .footer-links {
+            margin-bottom: 16px;
+        }
+        
+        .footer-link {
+            display: inline-block;
+            color: #6A31F6;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            margin: 0 12px;
+        }
+        
+        .footer-divider {
+            width: 40px;
+            height: 2px;
+            background: #E8E9ED;
+            margin: 20px auto;
+        }
+        
+        .footer-brand {
+            font-size: 14px;
+            font-weight: 600;
+            color: #7E808F;
+            margin-bottom: 4px;
+        }
+        
+        .footer-tagline {
+            font-size: 12px;
+            color: #ADAEB8;
+        }
+        
+        .footer-copyright {
+            font-size: 11px;
+            color: #C2C3CC;
+            margin-top: 16px;
+        }
+        
+        /* Mobile responsiveness */
+        @media only screen and (max-width: 600px) {
+            .email-wrapper {
+                padding: 20px 12px;
+            }
+            
+            .header {
+                padding: 32px 20px 24px;
+            }
+            
+            .alert-section,
+            .device-section,
+            .action-section,
+            .cta-section {
+                padding-left: 20px;
+                padding-right: 20px;
+            }
+            
+            .device-card {
+                padding: 20px;
+            }
+            
+            .detail-row {
+                padding: 10px;
+            }
+        }
+        
+        /* Dark mode support for modern clients */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: #1F2029;
+            }
+            
+            .email-wrapper {
+                background: linear-gradient(135deg, #1F2029 0%, #383A47 100%);
+            }
+            
+            .email-container {
+                background: #000000;
+                box-shadow: 0px 4px 40px rgba(0, 0, 0, 0.4);
+            }
+            
+            .greeting,
+            .device-name,
+            .detail-value,
+            .action-title {
+                color: #FFFFFF;
+            }
+            
+            .alert-message,
+            .device-type,
+            .action-text,
+            .steps-list li {
+                color: #ADAEB8;
+            }
+            
+            .device-card {
+                background: linear-gradient(135deg, #1F2029 0%, #383A47 100%);
+            }
+            
+            .detail-row {
+                background: #1F2029;
+            }
+            
+            .footer {
+                background: #1F2029;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-wrapper">
+        <div class="email-container">
+            <!-- Header -->
+            <div class="header">
+                <div class="logo-container">
+                    <img src="https://nvlp.app/assets/logo/FullLogo_Transparent_NoBuffer.png" alt="NVLP" class="logo">
+                </div>
+                <h1 class="header-title">Security Alert</h1>
+                <p class="header-subtitle">New device sign-in detected</p>
+            </div>
+            
+            <!-- Alert Section -->
+            <div class="alert-section">
+                <span class="alert-badge">🔐 Security Notice</span>
+                <h2 class="greeting">Hi {{user_name}},</h2>
+                <p class="alert-message">
+                    We noticed a new sign-in to your NVLP account from a device we haven't seen before. 
+                    We're letting you know to keep your account secure.
+                </p>
+            </div>
+            
+            <!-- Device Information -->
+            <div class="device-section">
+                <div class="device-card">
+                    <div class="device-header">
+                        <div class="device-icon">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M17 2H7C5.9 2 5 2.9 5 4V20C5 21.1 5.9 22 7 22H17C18.1 22 19 21.1 19 20V4C19 2.9 18.1 2 17 2ZM12 20C11.45 20 11 19.55 11 19C11 18.45 11.45 18 12 18C12.55 18 13 18.45 13 19C13 19.55 12.55 20 12 20ZM17 16H7V4H17V16Z"/>
+                            </svg>
+                        </div>
+                        <div class="device-title">
+                            <div class="device-name">{{device_name}}</div>
+                            <div class="device-type">New Device</div>
+                        </div>
+                    </div>
+                    
+                    <div class="device-details">
+                        <div class="detail-row">
+                            <div class="detail-icon">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+                                </svg>
+                            </div>
+                            <div class="detail-content">
+                                <div class="detail-label">Time</div>
+                                <div class="detail-value">{{signin_time}}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-row">
+                            <div class="detail-icon">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                                </svg>
+                            </div>
+                            <div class="detail-content">
+                                <div class="detail-label">Location</div>
+                                <div class="detail-value">{{location}}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-row">
+                            <div class="detail-icon">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+                                </svg>
+                            </div>
+                            <div class="detail-content">
+                                <div class="detail-label">IP Address</div>
+                                <div class="detail-value">{{ip_address}}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action Cards -->
+            <div class="action-section">
+                <div class="action-card safe">
+                    <div class="action-header">
+                        <svg class="action-icon safe" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/>
+                        </svg>
+                        <div class="action-title">If this was you</div>
+                    </div>
+                    <p class="action-text">
+                        Great! No action needed. Your device has been registered and you can continue using NVLP securely.
+                    </p>
+                </div>
+                
+                <div class="action-card warning">
+                    <div class="action-header">
+                        <svg class="action-icon warning" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+                        </svg>
+                        <div class="action-title">If this wasn't you</div>
+                    </div>
+                    <p class="action-text">
+                        Take immediate action to secure your account:
+                    </p>
+                    <ol class="steps-list">
+                        <li>Click the button below to manage your devices</li>
+                        <li>Sign out the unknown device immediately</li>
+                        <li>Change your email password</li>
+                        <li>Review recent account activity</li>
+                    </ol>
+                </div>
+            </div>
+            
+            <!-- CTA Button -->
+            <div class="cta-section">
+                <a href="{{app_url}}/settings/security" class="cta-button">Manage Active Devices</a>
+            </div>
+            
+            <!-- Footer -->
+            <div class="footer">
+                <p class="footer-text">
+                    This security alert was sent to protect your NVLP account. We take your privacy seriously and will never share your information.
+                </p>
+                
+                <div class="footer-links">
+                    <a href="{{app_url}}/help" class="footer-link">Help Center</a>
+                    <a href="{{app_url}}/security" class="footer-link">Security</a>
+                    <a href="{{app_url}}/privacy" class="footer-link">Privacy</a>
+                </div>
+                
+                <div class="footer-divider"></div>
+                
+                <div class="footer-brand">NVLP</div>
+                <div class="footer-tagline">Virtual Envelope Budgeting</div>
+                
+                <p class="footer-copyright">
+                    © 2025 NVLP. All rights reserved.<br>
+                    This email was sent to {{user_email}}
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

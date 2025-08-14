@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign in to NVLP</title>
+    <!--[if mso]>
+    <noscript>
+        <xml>
+            <o:OfficeDocumentSettings>
+                <o:PixelsPerInch>96</o:PixelsPerInch>
+            </o:OfficeDocumentSettings>
+        </xml>
+    </noscript>
+    <![endif]-->
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'Inter', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.4;
+            color: #1F2029;
+            background: linear-gradient(135deg, #F8F8F8 0%, #F5F5F7 100%);
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        /* Container structure */
+        .email-wrapper {
+            width: 100%;
+            background: linear-gradient(135deg, #F8F8F8 0%, #F5F5F7 100%);
+            padding: 48px 20px;
+        }
+        
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #FFFFFF;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0px 4px 40px rgba(0, 0, 0, 0.08);
+        }
+        
+        /* Header with gradient */
+        .header {
+            background: linear-gradient(135deg, #7C56FE 0%, #6A31F6 100%);
+            padding: 40px 32px 32px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -25%;
+            width: 100%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            transform: rotate(45deg);
+        }
+        
+        .logo-container {
+            position: relative;
+            z-index: 1;
+            margin-bottom: 16px;
+        }
+        
+        .logo {
+            height: 48px;
+            width: auto;
+            filter: brightness(0) invert(1);
+        }
+        
+        .header-title {
+            color: #FFFFFF;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin: 0;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header-subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            font-weight: 400;
+            margin-top: 4px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Main content section */
+        .content-section {
+            padding: 40px 32px;
+        }
+        
+        .greeting {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1F2029;
+            margin-bottom: 12px;
+        }
+        
+        .message {
+            font-size: 15px;
+            color: #7E808F;
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+        
+        /* Magic link button */
+        .magic-link-container {
+            text-align: center;
+            margin: 40px 0;
+        }
+        
+        .magic-link-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #6A31F6 0%, #7C56FE 100%);
+            color: #FFFFFF;
+            text-decoration: none;
+            padding: 16px 48px;
+            border-radius: 14px;
+            font-size: 17px;
+            font-weight: 600;
+            box-shadow: 0px 4px 24px rgba(106, 49, 246, 0.3);
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .magic-link-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .magic-link-button:hover {
+            box-shadow: 0px 4px 32px rgba(106, 49, 246, 0.4);
+            transform: translateY(-1px);
+        }
+        
+        .magic-link-button:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        /* Security info card */
+        .security-card {
+            background: linear-gradient(135deg, #F8F8F8 0%, #F5F5F7 100%);
+            border-radius: 16px;
+            padding: 24px;
+            margin: 32px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .security-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #00A991 0%, #00CDB7 100%);
+        }
+        
+        .security-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .security-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #E6F6F4 0%, #D9F2EF 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+        }
+        
+        .security-icon svg {
+            width: 20px;
+            height: 20px;
+            fill: #009883;
+        }
+        
+        .security-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1F2029;
+        }
+        
+        .security-content {
+            font-size: 14px;
+            color: #545666;
+            line-height: 1.6;
+        }
+        
+        .security-list {
+            margin-top: 12px;
+            padding-left: 20px;
+        }
+        
+        .security-list li {
+            margin: 8px 0;
+            color: #545666;
+            font-size: 14px;
+        }
+        
+        /* Alternative access section */
+        .alternative-section {
+            padding: 24px 32px;
+            background: #F8F8F8;
+            border-top: 1px solid #E8E9ED;
+        }
+        
+        .alternative-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #7E808F;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        
+        .link-copy-box {
+            background: #FFFFFF;
+            border: 1px solid #E8E9ED;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 12px 0;
+            word-break: break-all;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+            font-size: 13px;
+            color: #6A31F6;
+            position: relative;
+        }
+        
+        .copy-hint {
+            position: absolute;
+            top: -8px;
+            right: 16px;
+            background: #FFFFFF;
+            padding: 0 8px;
+            font-size: 11px;
+            color: #ADAEB8;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'Inter', Roboto, Oxygen, Ubuntu, sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        
+        .expiry-notice {
+            display: inline-block;
+            background: linear-gradient(135deg, #FEF5EA 0%, #FEF0DF 100%);
+            border: 1px solid #F89E2B;
+            color: #DF8E27;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            margin-top: 16px;
+        }
+        
+        /* Features grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin: 32px 0;
+        }
+        
+        .feature-card {
+            background: #FFFFFF;
+            border: 1px solid #E8E9ED;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+        
+        .feature-card:hover {
+            box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+        
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #EAE8FF 0%, #DDD9FF 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+        }
+        
+        .feature-icon svg {
+            width: 24px;
+            height: 24px;
+            fill: #6A31F6;
+        }
+        
+        .feature-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1F2029;
+            margin-bottom: 4px;
+        }
+        
+        .feature-desc {
+            font-size: 12px;
+            color: #ADAEB8;
+            line-height: 1.4;
+        }
+        
+        /* Footer */
+        .footer {
+            background: #F8F8F8;
+            padding: 32px;
+            text-align: center;
+        }
+        
+        .footer-text {
+            font-size: 13px;
+            color: #ADAEB8;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+        
+        .footer-links {
+            margin-bottom: 16px;
+        }
+        
+        .footer-link {
+            display: inline-block;
+            color: #6A31F6;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            margin: 0 12px;
+        }
+        
+        .footer-divider {
+            width: 40px;
+            height: 2px;
+            background: #E8E9ED;
+            margin: 20px auto;
+        }
+        
+        .footer-brand {
+            font-size: 14px;
+            font-weight: 600;
+            color: #7E808F;
+            margin-bottom: 4px;
+        }
+        
+        .footer-tagline {
+            font-size: 12px;
+            color: #ADAEB8;
+        }
+        
+        .footer-copyright {
+            font-size: 11px;
+            color: #C2C3CC;
+            margin-top: 16px;
+        }
+        
+        /* Mobile responsiveness */
+        @media only screen and (max-width: 600px) {
+            .email-wrapper {
+                padding: 20px 12px;
+            }
+            
+            .header {
+                padding: 32px 20px 24px;
+            }
+            
+            .content-section,
+            .alternative-section {
+                padding-left: 20px;
+                padding-right: 20px;
+            }
+            
+            .magic-link-button {
+                padding: 14px 32px;
+                font-size: 16px;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .security-card {
+                padding: 20px;
+            }
+        }
+        
+        /* Dark mode support for modern clients */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: #1F2029;
+            }
+            
+            .email-wrapper {
+                background: linear-gradient(135deg, #1F2029 0%, #383A47 100%);
+            }
+            
+            .email-container {
+                background: #000000;
+                box-shadow: 0px 4px 40px rgba(0, 0, 0, 0.4);
+            }
+            
+            .greeting,
+            .security-title,
+            .feature-title {
+                color: #FFFFFF;
+            }
+            
+            .message,
+            .security-content,
+            .security-list li,
+            .feature-desc {
+                color: #ADAEB8;
+            }
+            
+            .security-card {
+                background: linear-gradient(135deg, #1F2029 0%, #383A47 100%);
+            }
+            
+            .feature-card {
+                background: #1F2029;
+                border-color: #383A47;
+            }
+            
+            .alternative-section,
+            .footer {
+                background: #1F2029;
+            }
+            
+            .link-copy-box {
+                background: #383A47;
+                border-color: #545666;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-wrapper">
+        <div class="email-container">
+            <!-- Header -->
+            <div class="header">
+                <div class="logo-container">
+                    <img src="https://nvlp.app/assets/logo/FullLogo_Transparent_NoBuffer.png" alt="NVLP" class="logo">
+                </div>
+                <h1 class="header-title">Welcome Back!</h1>
+                <p class="header-subtitle">Sign in to your NVLP account</p>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="content-section">
+                <h2 class="greeting">Hi {{user_name}},</h2>
+                <p class="message">
+                    You requested a magic link to sign in to your NVLP account. Click the button below to securely access your virtual envelope budgeting dashboard.
+                </p>
+                
+                <!-- Magic Link Button -->
+                <div class="magic-link-container">
+                    <a href="{{magic_link}}" class="magic-link-button">
+                        ✨ Sign in to NVLP
+                    </a>
+                </div>
+                
+                <!-- Security Info -->
+                <div class="security-card">
+                    <div class="security-header">
+                        <div class="security-icon">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+                            </svg>
+                        </div>
+                        <div class="security-title">This link is secure</div>
+                    </div>
+                    <div class="security-content">
+                        Your magic link is encrypted and unique to your account:
+                        <ul class="security-list">
+                            <li>One-time use only</li>
+                            <li>Expires in 60 minutes</li>
+                            <li>Tied to your email address</li>
+                            <li>Cannot be forwarded or reused</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Features Grid -->
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M21 8.5c0-.8-.7-1.5-1.5-1.5H14c-.4 0-.7.2-1 .4l-1.5 1.6H3c-.6 0-1 .4-1 1v9c0 .6.4 1 1 1h12.5l4.5-4.5V8.5z"/>
+                            </svg>
+                        </div>
+                        <div class="feature-title">Virtual Envelopes</div>
+                        <div class="feature-desc">Organize your money</div>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                            </svg>
+                        </div>
+                        <div class="feature-title">Budget Tracking</div>
+                        <div class="feature-desc">Stay on top of spending</div>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/>
+                            </svg>
+                        </div>
+                        <div class="feature-title">Monthly Planning</div>
+                        <div class="feature-desc">Plan ahead with ease</div>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
+                            </svg>
+                        </div>
+                        <div class="feature-title">Goal Tracking</div>
+                        <div class="feature-desc">Achieve your targets</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Alternative Access -->
+            <div class="alternative-section">
+                <div class="alternative-title">Can't click the button?</div>
+                <p class="security-content" style="margin-bottom: 12px;">
+                    Copy and paste this link into your browser:
+                </p>
+                <div class="link-copy-box">
+                    <span class="copy-hint">Copy Link</span>
+                    {{magic_link}}
+                </div>
+                <span class="expiry-notice">⏱️ Expires in 60 minutes</span>
+            </div>
+            
+            <!-- Footer -->
+            <div class="footer">
+                <p class="footer-text">
+                    If you didn't request this email, you can safely ignore it. The link will expire automatically and no one can access your account without clicking it.
+                </p>
+                
+                <div class="footer-links">
+                    <a href="{{app_url}}/help" class="footer-link">Help Center</a>
+                    <a href="{{app_url}}/security" class="footer-link">Security</a>
+                    <a href="{{app_url}}/privacy" class="footer-link">Privacy</a>
+                </div>
+                
+                <div class="footer-divider"></div>
+                
+                <div class="footer-brand">NVLP</div>
+                <div class="footer-tagline">Virtual Envelope Budgeting</div>
+                
+                <p class="footer-copyright">
+                    © 2025 NVLP. All rights reserved.<br>
+                    This email was sent to {{user_email}}
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

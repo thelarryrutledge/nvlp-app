@@ -59,12 +59,12 @@ const handler = async (req: Request) => {
       }
     )
 
-    // Send magic link
-    const { error } = await supabaseClient.auth.signInWithOtp({
+    // Generate magic link using Supabase Admin API
+    const { data, error } = await supabaseClient.auth.admin.generateLink({
+      type: 'magiclink',
       email,
       options: {
-        emailRedirectTo: redirectTo,
-        // If no redirectTo is provided, Supabase will use its default success page
+        redirectTo: redirectTo || 'https://nvlp.app/auth/callback'
       }
     })
 
@@ -85,6 +85,183 @@ const handler = async (req: Request) => {
         JSON.stringify({ error: error.message }),
         { 
           status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
+    // Now send our custom email with the magic link
+    const resendApiKey = Deno.env.get('RESEND_API_KEY')
+    
+    if (!resendApiKey) {
+      console.error('RESEND_API_KEY environment variable not set')
+      return new Response(
+        JSON.stringify({ error: 'Email service not configured' }),
+        { 
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
+    // Enhanced magic link template (inline)
+    const htmlTemplate = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign in to NVLP</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'Inter', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.4;
+            color: #1F2029;
+            background: linear-gradient(135deg, #F8F8F8 0%, #F5F5F7 100%);
+            margin: 0;
+            padding: 0;
+        }
+        .email-wrapper {
+            width: 100%;
+            background: linear-gradient(135deg, #F8F8F8 0%, #F5F5F7 100%);
+            padding: 48px 20px;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #FFFFFF;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0px 4px 40px rgba(0, 0, 0, 0.08);
+        }
+        .header {
+            background: linear-gradient(135deg, #7C56FE 0%, #6A31F6 100%);
+            padding: 24px 32px 20px;
+            text-align: center;
+            color: #FFFFFF;
+        }
+        .header img {
+            height: 32px;
+            filter: brightness(0) invert(1);
+            margin-bottom: 16px;
+        }
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0 0 4px;
+            letter-spacing: -0.5px;
+        }
+        .content-section {
+            padding: 40px 32px;
+        }
+        .greeting {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1F2029;
+            margin-bottom: 12px;
+        }
+        .message {
+            font-size: 15px;
+            color: #7E808F;
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+        .magic-link-container {
+            text-align: center;
+            margin: 40px 0;
+        }
+        .magic-link-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #6A31F6 0%, #7C56FE 100%);
+            color: #FFFFFF !important;
+            text-decoration: none;
+            padding: 16px 48px;
+            border-radius: 14px;
+            font-size: 17px;
+            font-weight: 600;
+            box-shadow: 0px 4px 24px rgba(106, 49, 246, 0.3);
+        }
+        .footer {
+            background: #F8F8F8;
+            padding: 32px;
+            text-align: center;
+            color: #ADAEB8;
+            font-size: 13px;
+        }
+        .link-copy {
+            background: #FFFFFF;
+            border: 1px solid #E8E9ED;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 24px 0;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 13px;
+            color: #6A31F6;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-wrapper">
+        <div class="email-container">
+            <div class="header">
+                <img src="https://nvlp.app/assets/logo/FullLogo_Transparent_NoBuffer.png" alt="NVLP">
+                <h1>Welcome Back!</h1>
+                <p>Sign in to your NVLP account</p>
+            </div>
+            
+            <div class="content-section">
+                <h2 class="greeting">Hi {{user_name}},</h2>
+                <p class="message">
+                    You requested a magic link to sign in to your NVLP account. Click the button below to securely access your virtual envelope budgeting dashboard.
+                </p>
+                
+                <div class="magic-link-container">
+                    <a href="{{magic_link}}" class="magic-link-button">Sign in to NVLP</a>
+                </div>
+                
+                <p style="font-size: 14px; color: #7E808F; margin-bottom: 12px;">Can't click the button? Copy and paste this link into your browser:</p>
+                <div class="link-copy">{{magic_link}}</div>
+            </div>
+            
+            <div class="footer">
+                <p>If you didn't request this email, you can safely ignore it. The link will expire automatically.</p>
+                <p style="margin-top: 16px;">© 2025 NVLP - Virtual Envelope Budgeting<br>This email was sent to {{user_email}}</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>`
+
+    // Replace template variables
+    const processedHtml = htmlTemplate
+      .replace(/{{user_name}}/g, email.split('@')[0]) // Use email prefix as name fallback
+      .replace(/{{user_email}}/g, email)
+      .replace(/{{magic_link}}/g, data.properties?.action_link || '')
+      .replace(/{{app_url}}/g, 'https://nvlp.app')
+
+    // Send email using Resend
+    const emailResponse = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${resendApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'NVLP <noreply@nvlp.app>',
+        to: [email],
+        subject: 'Sign in to your NVLP account',
+        html: processedHtml,
+      }),
+    })
+
+    if (!emailResponse.ok) {
+      const errorData = await emailResponse.json() as { message?: string }
+      console.error('Resend API error:', errorData)
+      return new Response(
+        JSON.stringify({ error: 'Failed to send email' }),
+        { 
+          status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
