@@ -227,6 +227,8 @@ export interface NVLPClientConfig {
   sessionProvider?: SessionProvider;
   /** Offline queue configuration */
   offlineQueue?: OfflineQueueConfig;
+  /** Device ID for session validation (auto-generated if not provided) */
+  deviceId?: string;
 }
 
 /**
@@ -300,6 +302,7 @@ export class NVLPClient {
         ...config.headers,
       },
       offlineQueue: config.offlineQueue,
+      deviceId: config.deviceId,
     };
 
     // Add token provider if session provider is available
@@ -351,6 +354,20 @@ export class NVLPClient {
       this.unsubscribeFromSession();
       this.unsubscribeFromSession = undefined;
     }
+  }
+
+  /**
+   * Get the current device ID
+   */
+  getDeviceId(): string {
+    return this.httpClient.getOrCreateDeviceId();
+  }
+
+  /**
+   * Set a new device ID
+   */
+  setDeviceId(deviceId: string): void {
+    this.httpClient.setDeviceId(deviceId);
   }
 
   // HTTP API Methods (for Edge Functions)

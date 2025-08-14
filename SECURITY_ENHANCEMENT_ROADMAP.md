@@ -510,7 +510,7 @@ export class NotificationService extends BaseService {
 
 ### Phase 2.4: Client Package Updates  
 - [x] 2.4.1: Create DeviceService in packages/client
-- [ ] 2.4.2: Update ApiClient with device ID header
+- [x] 2.4.2: Update ApiClient with device ID header
 - [ ] 2.4.3: Add SessionInvalidatedError handling
 - [ ] 2.4.4: Update main NVLPClient class
 - [ ] 2.4.5: Handle session invalidation events

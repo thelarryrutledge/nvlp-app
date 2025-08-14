@@ -47,6 +47,7 @@ export interface HttpClientConfig {
   retryOptions?: RetryOptions;
   tokenProvider?: TokenProvider;
   offlineQueue?: OfflineQueueConfig;
+  deviceId?: string;
 }
 
 export interface RequestConfig extends Omit<RequestInit, 'body' | 'headers'> {
@@ -385,6 +386,54 @@ export class HttpClient {
   }
 
   /**
+   * Set device ID for all requests
+   */
+  setDeviceId(deviceId: string): void {
+    this.config.deviceId = deviceId;
+  }
+
+  /**
+   * Get current device ID
+   */
+  getDeviceId(): string | undefined {
+    return this.config.deviceId;
+  }
+
+  /**
+   * Generate and set a new device ID if one doesn't exist
+   */
+  getOrCreateDeviceId(): string {
+    if (!this.config.deviceId) {
+      // For web: use localStorage + crypto.randomUUID()
+      // For React Native: this should be overridden with platform-specific logic
+      this.config.deviceId = this.generateDeviceId();
+    }
+    return this.config.deviceId;
+  }
+
+  /**
+   * Generate a new device ID
+   */
+  private generateDeviceId(): string {
+    // Check if running in browser environment
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const stored = window.localStorage.getItem('nvlp_device_id');
+      if (stored) return stored;
+      
+      // Generate new device ID
+      const deviceId = typeof window.crypto !== 'undefined' && window.crypto.randomUUID
+        ? window.crypto.randomUUID()
+        : 'device-' + Date.now() + '-' + Math.random().toString(36).substring(2);
+      
+      window.localStorage.setItem('nvlp_device_id', deviceId);
+      return deviceId;
+    } else {
+      // Fallback for Node.js or other environments
+      return 'device-' + Date.now() + '-' + Math.random().toString(36).substring(2);
+    }
+  }
+
+  /**
    * Set token provider for automatic token refresh
    */
   setTokenProvider(tokenProvider: TokenProvider): void {
@@ -504,6 +553,12 @@ export class HttpClient {
         ...this.config.defaultHeaders,
         ...headers,
       };
+
+      // Add device ID header automatically if available
+      const deviceId = this.getOrCreateDeviceId();
+      if (deviceId) {
+        finalHeaders['X-Device-ID'] = deviceId;
+      }
 
       // Add token if available and requested
       if (includeToken && this.config.tokenProvider) {
