@@ -1,0 +1,143 @@
+name: Database Cleanup Jobs
+
+on:
+  # Run daily at 2 AM UTC
+  schedule:
+    - cron: '0 2 * * *'
+  
+  # Allow manual triggering
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Run in dry-run mode (no actual cleanup)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+env:
+  SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+  SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+jobs:
+  cleanup:
+    name: Run Database Cleanup
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Validate environment
+        run: |
+          if [ -z "$SUPABASE_URL" ]; then
+            echo "❌ SUPABASE_URL secret is not set"
+            exit 1
+          fi
+          
+          if [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+            echo "❌ SUPABASE_SERVICE_ROLE_KEY secret is not set"
+            exit 1
+          fi
+          
+          echo "✅ Environment validated"
+      
+      - name: Run cleanup jobs
+        id: cleanup
+        run: |
+          echo "🧹 Starting database cleanup..."
+          
+          # Determine if this is a dry run
+          DRY_RUN="${{ github.event.inputs.dry_run || 'false' }}"
+          
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "🔍 Running in dry-run mode"
+            PAYLOAD='{"dry_run": true, "manual": true}'
+          else
+            echo "🚀 Running actual cleanup"
+            PAYLOAD='{"manual": false}'
+          fi
+          
+          # Make the cleanup request
+          RESPONSE=$(curl -s -X POST \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            -d "$PAYLOAD" \
+            "$SUPABASE_URL/functions/v1/cleanup-jobs")
+          
+          echo "Response: $RESPONSE"
+          
+          # Check if the request was successful
+          if echo "$RESPONSE" | jq -e '.success == true' > /dev/null; then
+            echo "✅ Cleanup completed successfully"
+            
+            # Extract summary information
+            RECORDS_CLEANED=$(echo "$RESPONSE" | jq -r '.summary.total_records_cleaned // 0')
+            EXECUTION_TIME=$(echo "$RESPONSE" | jq -r '.summary.total_execution_time_ms // 0')
+            SUCCESSFUL_JOBS=$(echo "$RESPONSE" | jq -r '.summary.successful_jobs // 0')
+            FAILED_JOBS=$(echo "$RESPONSE" | jq -r '.summary.failed_jobs // 0')
+            
+            echo "📊 Summary:"
+            echo "   Records cleaned: $RECORDS_CLEANED"
+            echo "   Execution time: ${EXECUTION_TIME}ms"
+            echo "   Successful jobs: $SUCCESSFUL_JOBS"
+            echo "   Failed jobs: $FAILED_JOBS"
+            
+            # Set outputs for later steps
+            echo "records_cleaned=$RECORDS_CLEANED" >> $GITHUB_OUTPUT
+            echo "execution_time=$EXECUTION_TIME" >> $GITHUB_OUTPUT
+            echo "successful_jobs=$SUCCESSFUL_JOBS" >> $GITHUB_OUTPUT
+            echo "failed_jobs=$FAILED_JOBS" >> $GITHUB_OUTPUT
+            
+            if [ "$FAILED_JOBS" -gt 0 ]; then
+              echo "⚠️ Some cleanup jobs failed"
+              exit 1
+            fi
+          else
+            echo "❌ Cleanup failed"
+            echo "$RESPONSE" | jq -r '.error // .message // "Unknown error"'
+            exit 1
+          fi
+        
+      - name: Create cleanup summary
+        if: always()
+        run: |
+          echo "## 🧹 Database Cleanup Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ steps.cleanup.outcome }}" = "success" ]; then
+            echo "✅ **Status**: Successful" >> $GITHUB_STEP_SUMMARY
+            echo "📊 **Records Cleaned**: ${{ steps.cleanup.outputs.records_cleaned }}" >> $GITHUB_STEP_SUMMARY
+            echo "⏱️ **Execution Time**: ${{ steps.cleanup.outputs.execution_time }}ms" >> $GITHUB_STEP_SUMMARY
+            echo "✅ **Successful Jobs**: ${{ steps.cleanup.outputs.successful_jobs }}" >> $GITHUB_STEP_SUMMARY
+            
+            if [ "${{ steps.cleanup.outputs.failed_jobs }}" -gt 0 ]; then
+              echo "❌ **Failed Jobs**: ${{ steps.cleanup.outputs.failed_jobs }}" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "❌ **Status**: Failed" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Please check the logs above for error details." >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Run Type**: ${{ github.event.inputs.dry_run == 'true' && 'Dry Run' || 'Actual Cleanup' }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Triggered**: ${{ github.event_name == 'schedule' && 'Automatically (scheduled)' || 'Manually' }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Timestamp**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "🚨 Database cleanup failed!"
+          echo "This requires immediate attention to prevent data accumulation."
+          echo "Please check the logs and ensure the Edge Function is properly deployed."
+          
+          # In a real setup, you might want to send notifications here:
+          # - Slack webhook
+          # - Email notification
+          # - PagerDuty alert
+          # - Discord webhook
+          # etc.
