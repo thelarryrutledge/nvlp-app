@@ -154,7 +154,6 @@ async function handleRegisterDevice(
 
   // Call the register_device database function
   const { data, error } = await supabaseClient.rpc('register_device', {
-    p_user_id: userId,
     p_device_id: device_id,
     p_device_fingerprint: device_fingerprint,
     p_device_name: device_name,
@@ -526,7 +525,7 @@ async function handleSendNotification(
 }
 
 async function sendNewDeviceNotification(
-  supabaseClient: any,
+  _supabaseClient: any,
   userId: string,
   device: any
 ) {
