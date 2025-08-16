@@ -20,7 +20,7 @@ Build a pure React Native mobile app for NVLP that provides a native mobile expe
 
 ### 1.1 Project Initialization
 - [x] Initialize React Native CLI project in monorepo (`npx react-native init`)
-- [ ] Configure TypeScript with shared types from @nvlp/types
+- [x] Configure TypeScript with shared types from @nvlp/types
 - [ ] Set up ESLint, Prettier with monorepo config
 - [ ] Configure Metro bundler for monorepo support
 - [ ] Set up iOS (CocoaPods) and Android (Gradle) configurations
