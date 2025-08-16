@@ -24,7 +24,7 @@ Build a pure React Native mobile app for NVLP that provides a native mobile expe
 - [x] Set up ESLint, Prettier with monorepo config
 - [x] Configure Metro bundler for monorepo support
 - [x] Set up iOS (CocoaPods) and Android (Gradle) configurations
-- [ ] Configure Flipper for debugging
+- [x] Configure Flipper for debugging
 
 ### 1.2 Native Dependencies Setup
 - [ ] Install & link react-navigation and dependencies

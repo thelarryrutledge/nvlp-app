@@ -7,9 +7,13 @@
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "start": "react-native start",
+    "start:reset": "react-native start --reset-cache",
     "test": "jest",
     "type-check": "tsc --noEmit",
-    "clean": "rm -rf node_modules ios/build android/build android/app/build"
+    "clean": "rm -rf node_modules ios/build android/build android/app/build",
+    "debug:ios": "react-native run-ios --configuration Debug",
+    "debug:android": "react-native run-android --variant=debug",
+    "devtools": "npx react-devtools"
   },
   "dependencies": {
     "react": "19.1.0",
@@ -37,6 +41,7 @@
     "eslint": "^8.19.0",
     "jest": "^29.6.3",
     "prettier": "2.8.8",
+    "react-devtools": "^4.28.5",
     "react-test-renderer": "19.1.0",
     "typescript": "^5.8.3"
   },
