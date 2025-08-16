@@ -1,4 +1,4 @@
-import { User, Budget, Envelope, Transaction } from '@nvlp/types';
+import { User, Budget } from '@nvlp/types';
 
 const testUser: User = {
   id: '123',
@@ -8,7 +8,7 @@ const testUser: User = {
   default_currency: 'USD',
   default_budget_id: '456',
   created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString()
+  updated_at: new Date().toISOString(),
 };
 
 const testBudget: Budget = {
@@ -17,10 +17,10 @@ const testBudget: Budget = {
   name: 'Test Budget',
   description: 'Test budget description',
   currency: 'USD',
-  available_amount: 1000.00,
+  available_amount: 1000.0,
   is_active: true,
   created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString()
+  updated_at: new Date().toISOString(),
 };
 
 export { testUser, testBudget };
