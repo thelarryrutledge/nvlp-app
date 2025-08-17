@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { env } from '../config/env';
 import { useMagicLink } from '../hooks/useMagicLink';
+import SupabaseAuthClient from '../services/supabaseClient';
 
 /**
  * Development panel for magic link testing
@@ -18,13 +19,32 @@ import { useMagicLink } from '../hooks/useMagicLink';
 export const MagicLinkTestPanel: React.FC = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [testUrl, setTestUrl] = useState('');
+  const [testEmail, setTestEmail] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const magicLink = useMagicLink({
-    onMagicLink: (data) => {
+    onMagicLink: async (data) => {
       Alert.alert(
         'Magic Link Received',
         `Access token: ${data.access_token ? 'YES' : 'NO'}\nType: ${data.type || 'unknown'}\nExpires in: ${data.expires_in || 'unknown'}`
       );
+
+      // If we have tokens, try to establish session
+      if (data.access_token && data.refresh_token) {
+        const result = await SupabaseAuthClient.exchangeCodeForSession(
+          data.access_token,
+          data.refresh_token
+        );
+        
+        if (result.success) {
+          Alert.alert(
+            'Authentication Success',
+            `Welcome ${result.user?.email}!\nSession established successfully.`
+          );
+        } else {
+          Alert.alert('Session Error', result.error);
+        }
+      }
     },
     onError: (error) => {
       Alert.alert('Magic Link Error', error);
@@ -79,6 +99,70 @@ export const MagicLinkTestPanel: React.FC = () => {
     Alert.alert('Success', 'Magic link data cleared');
   };
 
+  const handleSendMagicLink = async () => {
+    if (!testEmail.trim()) {
+      Alert.alert('Error', 'Please enter an email address');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const result = await SupabaseAuthClient.sendMagicLink(testEmail);
+      
+      if (result.success) {
+        Alert.alert(
+          'Magic Link Sent!',
+          `Check your email (${testEmail}) for the magic link.\n\nAfter receiving the email:\n1. Copy the magic link URL\n2. Open Safari on the simulator\n3. Paste and navigate to the URL\n4. The app should open automatically`,
+          [{ text: 'OK' }]
+        );
+      } else {
+        Alert.alert('Error', result.error || 'Failed to send magic link');
+      }
+    } catch (error) {
+      Alert.alert('Error', `Failed to send magic link: ${error}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCheckSession = async () => {
+    setIsLoading(true);
+    try {
+      const result = await SupabaseAuthClient.getCurrentSession();
+      
+      if (result.success && result.session) {
+        Alert.alert(
+          'Current Session',
+          `User: ${result.session.user?.email}\nExpires: ${new Date(result.session.expires_at! * 1000).toLocaleString()}`,
+          [{ text: 'OK' }]
+        );
+      } else {
+        Alert.alert('No Session', 'No active session found');
+      }
+    } catch (error) {
+      Alert.alert('Error', `Failed to check session: ${error}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    setIsLoading(true);
+    try {
+      const result = await SupabaseAuthClient.signOut();
+      
+      if (result.success) {
+        Alert.alert('Signed Out', 'You have been signed out successfully');
+      } else {
+        Alert.alert('Error', result.error || 'Failed to sign out');
+      }
+    } catch (error) {
+      Alert.alert('Error', `Failed to sign out: ${error}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const sampleUrls = [
     `${env.DEEP_LINK_SCHEME}://auth/callback#access_token=sample_token&refresh_token=sample_refresh&expires_in=3600&token_type=bearer&type=magiclink`,
     `${env.DEEP_LINK_SCHEME}://auth/callback#error=access_denied&error_description=User%20cancelled`,
@@ -109,8 +193,37 @@ export const MagicLinkTestPanel: React.FC = () => {
       {isExpanded && (
         <ScrollView style={styles.content}>
           <Text style={styles.subtitle}>
-            Test magic link deep linking and URL parsing
+            Test magic link authentication end-to-end
           </Text>
+
+          {/* Magic Link Request */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Send Magic Link</Text>
+            
+            <TextInput
+              style={styles.textInput}
+              value={testEmail}
+              onChangeText={setTestEmail}
+              placeholder="Enter your email address..."
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+
+            <TouchableOpacity
+              style={[styles.button, styles.primaryButton, isLoading && styles.buttonDisabled]}
+              onPress={handleSendMagicLink}
+              disabled={isLoading}
+            >
+              <Text style={styles.buttonText}>
+                {isLoading ? 'Sending...' : '📧 Send Magic Link'}
+              </Text>
+            </TouchableOpacity>
+
+            <Text style={styles.instructionText}>
+              💡 After sending, check your email and copy the magic link URL to test the deep linking flow
+            </Text>
+          </View>
 
           {/* Configuration Status */}
           <View style={styles.section}>
@@ -167,9 +280,34 @@ export const MagicLinkTestPanel: React.FC = () => {
             ))}
           </View>
 
+          {/* Session Management */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Session Management</Text>
+            
+            <TouchableOpacity
+              style={[styles.button, styles.infoButton, isLoading && styles.buttonDisabled]}
+              onPress={handleCheckSession}
+              disabled={isLoading}
+            >
+              <Text style={styles.buttonText}>
+                {isLoading ? 'Checking...' : '🔍 Check Current Session'}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.button, styles.clearButton, isLoading && styles.buttonDisabled]}
+              onPress={handleSignOut}
+              disabled={isLoading}
+            >
+              <Text style={styles.buttonText}>
+                {isLoading ? 'Signing Out...' : '🚪 Sign Out'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
           {/* Actions */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Actions</Text>
+            <Text style={styles.sectionTitle}>Debug Actions</Text>
             
             <TouchableOpacity
               style={[styles.button, styles.infoButton]}
@@ -230,18 +368,24 @@ export const MagicLinkTestPanel: React.FC = () => {
 
           {/* Instructions */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Instructions</Text>
+            <Text style={styles.sectionTitle}>End-to-End Testing Instructions</Text>
             <Text style={styles.instructionText}>
-              1. Configure DEEP_LINK_SCHEME in environment variables
+              1. Enter your email and tap "Send Magic Link"
             </Text>
             <Text style={styles.instructionText}>
-              2. Set up Supabase magic link redirect URL to your app scheme
+              2. Check your email for the magic link message
             </Text>
             <Text style={styles.instructionText}>
-              3. Test URL parsing with sample URLs above
+              3. Copy the magic link URL from the email
             </Text>
             <Text style={styles.instructionText}>
-              4. Use a real magic link from Supabase to test end-to-end
+              4. Open Safari on the simulator and paste the URL
+            </Text>
+            <Text style={styles.instructionText}>
+              5. The app should open and authenticate automatically
+            </Text>
+            <Text style={styles.instructionText}>
+              6. Use "Check Current Session" to verify authentication
             </Text>
           </View>
         </ScrollView>
@@ -368,6 +512,9 @@ const styles = StyleSheet.create({
   },
   clearButton: {
     backgroundColor: '#ffc107',
+  },
+  buttonDisabled: {
+    opacity: 0.6,
   },
   buttonText: {
     color: '#fff',
