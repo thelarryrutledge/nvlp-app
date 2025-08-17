@@ -10,7 +10,11 @@
     "type-check": "pnpm -r type-check",
     "lint": "pnpm -r lint",
     "format": "pnpm -r exec prettier --write \"src/**/*.{ts,tsx,js,jsx,json}\"",
-    "clean": "pnpm -r clean && rimraf node_modules"
+    "clean": "pnpm -r clean && rimraf node_modules",
+    "mobile:ios": "pnpm --filter @nvlp/mobile ios",
+    "mobile:android": "pnpm --filter @nvlp/mobile android",
+    "mobile:start": "pnpm --filter @nvlp/mobile start",
+    "mobile:start:reset": "pnpm --filter @nvlp/mobile start:reset"
   },
   "devDependencies": {
     "@supabase/supabase-js": "^2.39.3",
