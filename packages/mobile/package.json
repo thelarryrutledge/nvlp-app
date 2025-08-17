@@ -16,6 +16,7 @@
     "devtools": "npx react-devtools"
   },
   "dependencies": {
+    "@nvlp/client": "workspace:*",
     "@nvlp/types": "workspace:*",
     "@react-native-async-storage/async-storage": "^2.2.0",
     "@react-native/new-app-screen": "0.81.0",
@@ -24,6 +25,7 @@
     "@react-navigation/stack": "^7.0.5",
     "react": "19.1.0",
     "react-native": "0.81.0",
+    "react-native-config": "^1.5.6",
     "react-native-gesture-handler": "^2.25.0",
     "react-native-keychain": "^10.0.0",
     "react-native-safe-area-context": "^5.5.2",

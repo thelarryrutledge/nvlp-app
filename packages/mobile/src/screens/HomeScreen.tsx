@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import SecureStorageService from '../services/secureStorage';
 import LocalStorageService, { DEFAULT_USER_PREFERENCES } from '../services/localStorage';
+import ApiClientService from '../services/apiClient';
 // Temporarily disabled until reanimated is fixed
 // import AnimatedCard from '../components/AnimatedCard';
 // import AnimationShowcase from '../components/AnimationShowcase';
@@ -14,10 +15,12 @@ const HomeScreen = () => {
     secureData?: string;
     asyncData?: string;
   }>({});
+  const [apiClientStatus, setApiClientStatus] = useState<string>('Not initialized');
 
   useEffect(() => {
     checkBiometricAvailability();
     loadStoredData();
+    initializeApiClient();
   }, []);
 
   const checkBiometricAvailability = async () => {
@@ -41,6 +44,24 @@ const HomeScreen = () => {
       });
     } catch (error) {
       console.error('Error loading stored data:', error);
+    }
+  };
+
+  const initializeApiClient = async () => {
+    try {
+      setApiClientStatus('Initializing...');
+      
+      // Initialize the API client with test configuration
+      await ApiClientService.initialize({
+        supabaseUrl: 'https://placeholder.supabase.co',
+        supabaseAnonKey: 'placeholder-anon-key',
+      });
+      
+      const isAuth = await ApiClientService.isAuthenticated();
+      setApiClientStatus(isAuth ? 'Initialized & Authenticated' : 'Initialized (Not authenticated)');
+    } catch (error) {
+      console.error('Failed to initialize API client:', error);
+      setApiClientStatus(`Error: ${error}`);
     }
   };
 
@@ -112,6 +133,40 @@ const HomeScreen = () => {
     }
   };
 
+  const testApiClient = async () => {
+    try {
+      const client = ApiClientService.getClient();
+      const isAuth = await ApiClientService.isAuthenticated();
+      
+      if (!isAuth) {
+        Alert.alert(
+          'API Client Test',
+          '✅ Client initialized successfully!\n\n' +
+          'Status: Ready for authentication\n' +
+          'Next step: Authenticate user to test API calls\n\n' +
+          'The client is configured with:\n' +
+          '• Secure token storage\n' +
+          '• Offline queue support\n' +
+          '• React Native error handling\n' +
+          '• Device ID tracking'
+        );
+      } else {
+        // If authenticated, we could test actual API calls here
+        Alert.alert(
+          'API Client Test',
+          '✅ Client authenticated and ready!\n\n' +
+          'Ready to make authenticated API calls to:\n' +
+          '• Budgets\n' +
+          '• Envelopes\n' +
+          '• Transactions\n' +
+          '• Dashboard data'
+        );
+      }
+    } catch (error) {
+      Alert.alert('API Client Error', `Failed to test client: ${error}`);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
@@ -171,6 +226,32 @@ const HomeScreen = () => {
           <TouchableOpacity style={[styles.testButton, styles.asyncButton]} onPress={testAsyncStorage}>
             <Icon name="archive-outline" size={20} color="#fff" />
             <Text style={styles.testButtonText}>Save Preferences</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.apiSection}>
+          <Text style={styles.sectionTitle}>🌐 API Client Integration</Text>
+          <Text style={styles.biometricInfo}>Status: {apiClientStatus}</Text>
+          
+          <View style={styles.storedDataSection}>
+            <Text style={styles.storedDataTitle}>⚙️ Client Features:</Text>
+            <Text style={styles.storedDataText}>
+              🔐 Secure token management with keychain
+            </Text>
+            <Text style={styles.storedDataText}>
+              📱 React Native offline queue support
+            </Text>
+            <Text style={styles.storedDataText}>
+              🔄 Automatic session refresh handling
+            </Text>
+            <Text style={styles.storedDataText}>
+              📊 Device ID tracking for sessions
+            </Text>
+          </View>
+          
+          <TouchableOpacity style={[styles.testButton, styles.apiButton]} onPress={testApiClient}>
+            <Icon name="cloud-outline" size={20} color="#fff" />
+            <Text style={styles.testButtonText}>Test API Client</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -290,6 +371,24 @@ const styles = StyleSheet.create({
   },
   asyncButton: {
     backgroundColor: '#34C759',
+    marginTop: 8,
+  },
+  apiSection: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 20,
+    margin: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  apiButton: {
+    backgroundColor: '#FF9500',
     marginTop: 8,
   },
   storedDataSection: {
