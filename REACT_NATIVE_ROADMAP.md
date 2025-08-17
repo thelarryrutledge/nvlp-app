@@ -36,7 +36,7 @@ Build a pure React Native mobile app for NVLP that provides a native mobile expe
 
 ### 1.3 Core Infrastructure
 - [x] Implement secure token storage (react-native-keychain)
-- [ ] Set up AsyncStorage for general data persistence
+- [x] Set up AsyncStorage for general data persistence
 - [ ] Create API client wrapper using @nvlp/client
 - [ ] Configure react-native-config for environment variables
 - [ ] Implement global error boundary
