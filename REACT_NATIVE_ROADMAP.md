@@ -27,7 +27,7 @@ Build a pure React Native mobile app for NVLP that provides a native mobile expe
 - [x] Configure Flipper for debugging
 
 ### 1.2 Native Dependencies Setup
-- [ ] Install & link react-navigation and dependencies
+- [x] Install & link react-navigation and dependencies
 - [ ] Set up react-native-gesture-handler
 - [ ] Configure react-native-reanimated
 - [ ] Install react-native-safe-area-context
