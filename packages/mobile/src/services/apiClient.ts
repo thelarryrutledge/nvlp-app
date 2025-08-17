@@ -16,6 +16,7 @@ import { Session } from '@supabase/supabase-js';
 import SecureStorageService, { AuthTokens } from './secureStorage';
 import LocalStorageService from './localStorage';
 import { env, validateEnv } from '../config/env';
+import reactotron from '../config/reactotron';
 
 /**
  * React Native Session Provider that integrates with our secure storage
@@ -168,6 +169,9 @@ export class ApiClientService {
       return this.instance;
     }
 
+    // Log initialization to Reactotron
+    reactotron.log('🔌 Initializing API Client...');
+
     // Create session provider
     this.sessionProvider = new ReactNativeSessionProvider();
 
@@ -217,6 +221,20 @@ export class ApiClientService {
 
     // Set up error handling for session invalidation
     this.setupErrorHandling();
+
+    // Log successful initialization to Reactotron
+    reactotron.log('✅ API Client initialized successfully');
+    reactotron.display({
+      name: '🔌 API Client Config',
+      value: {
+        supabaseUrl: defaultConfig.supabaseUrl,
+        hasAnonKey: !!defaultConfig.supabaseAnonKey,
+        deviceId: defaultConfig.deviceId,
+        timeout: defaultConfig.timeout,
+        offlineQueueEnabled: defaultConfig.offlineQueue?.enabled,
+      },
+      preview: 'API Client Configuration',
+    });
 
     return this.instance;
   }

@@ -1,6 +1,7 @@
 import { ErrorInfo } from 'react';
 import { env } from '../config/env';
 import LocalStorageService from './localStorage';
+import reactotron from '../config/reactotron';
 
 export interface ErrorReport {
   id: string;
@@ -197,6 +198,19 @@ class ErrorHandlingService {
     // Log to console based on config
     if (this.shouldLog('error')) {
       console.error(`[ErrorHandling] ${report.isFatal ? 'FATAL' : 'ERROR'}:`, report);
+    }
+
+    // Log to Reactotron in development
+    if (reactotron.isAvailable()) {
+      reactotron.error(
+        `${report.isFatal ? '💀 FATAL ERROR' : '🐛 ERROR'}: ${report.error.message}`,
+        new Error(report.error.message)
+      );
+      reactotron.display({
+        name: '🚨 Error Report',
+        value: report,
+        preview: `${report.isFatal ? 'FATAL' : 'ERROR'}: ${report.error.message}`,
+      });
     }
 
     // Add to local queue

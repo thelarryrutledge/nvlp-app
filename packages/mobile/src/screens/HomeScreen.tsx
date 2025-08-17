@@ -6,6 +6,7 @@ import SecureStorageService from '../services/secureStorage';
 import LocalStorageService, { DEFAULT_USER_PREFERENCES } from '../services/localStorage';
 import ApiClientService from '../services/apiClient';
 import ErrorTestComponent from '../components/ErrorTestComponent';
+import ReactotronDevPanel from '../components/ReactotronDevPanel';
 // Temporarily disabled until reanimated is fixed
 // import AnimatedCard from '../components/AnimatedCard';
 // import AnimationShowcase from '../components/AnimationShowcase';
@@ -258,6 +259,9 @@ const HomeScreen = () => {
 
         {/* Error Testing Component - only shows in development */}
         <ErrorTestComponent />
+
+        {/* Reactotron Development Panel - only shows in development */}
+        <ReactotronDevPanel />
       </ScrollView>
     </SafeAreaView>
   );
