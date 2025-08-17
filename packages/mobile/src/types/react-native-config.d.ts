@@ -9,6 +9,8 @@ declare module 'react-native-config' {
     APP_ENV?: string;
     DEEP_LINK_SCHEME?: string;
     DEEP_LINK_DOMAIN?: string;
+    OAUTH_GOOGLE_CLIENT_ID?: string;
+    OAUTH_APPLE_SERVICE_ID?: string;
   }
 
   export const Config: NativeConfig;

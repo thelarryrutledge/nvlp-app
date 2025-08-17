@@ -10,6 +10,8 @@ export interface EnvConfig {
   APP_ENV: string;
   DEEP_LINK_SCHEME: string;
   DEEP_LINK_DOMAIN: string;
+  OAUTH_GOOGLE_CLIENT_ID: string;
+  OAUTH_APPLE_SERVICE_ID: string;
 }
 
 // Type-safe environment configuration
@@ -23,6 +25,8 @@ export const env: EnvConfig = {
   APP_ENV: Config.APP_ENV || 'development',
   DEEP_LINK_SCHEME: Config.DEEP_LINK_SCHEME || 'nvlp',
   DEEP_LINK_DOMAIN: Config.DEEP_LINK_DOMAIN || 'nvlp.app',
+  OAUTH_GOOGLE_CLIENT_ID: Config.OAUTH_GOOGLE_CLIENT_ID || '',
+  OAUTH_APPLE_SERVICE_ID: Config.OAUTH_APPLE_SERVICE_ID || '',
 };
 
 // Validate required environment variables

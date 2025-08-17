@@ -121,6 +121,9 @@ importers:
       react-native:
         specifier: 0.81.0
         version: 0.81.0(@babel/core@7.28.3)(@react-native-community/cli@20.0.0(typescript@5.9.2))(@react-native/metro-config@0.81.0(@babel/core@7.28.3))(@types/react@19.1.10)(react@19.1.0)
+      react-native-app-auth:
+        specifier: ^8.0.3
+        version: 8.0.3(react-native@0.81.0(@babel/core@7.28.3)(@react-native-community/cli@20.0.0(typescript@5.9.2))(@react-native/metro-config@0.81.0(@babel/core@7.28.3))(@types/react@19.1.10)(react@19.1.0))
       react-native-config:
         specifier: ^1.5.6
         version: 1.5.6
@@ -3812,6 +3815,14 @@ packages:
 
   react-is@19.1.1:
     resolution: {integrity: sha512-tr41fA15Vn8p4X9ntI+yCyeGSf1TlYaY5vlTZfQmeLBrFo3psOPX6HhTDnFNL9uj3EhP0KAQ80cugCl4b4BERA==}
+
+  react-native-app-auth@8.0.3:
+    resolution: {integrity: sha512-x5OhxjlMDRcHRYVWAGh7u+ExQ/fTGBn3tMoHDopez/GPMSgcEqzvsSDrtM85DlG+eL79lSQSJ+X/wt/DPiUZKg==}
+    peerDependencies:
+      react-native: '>=0.63.0'
+
+  react-native-base64@0.0.2:
+    resolution: {integrity: sha512-Fu/J1a2y0X22EJDWqJR2oEa1fpP4gTFjYxk8ElJdt1Yak3HOXmFJ7EohLVHU2DaQkgmKfw8qb7u/48gpzveRbg==}
 
   react-native-config@1.5.6:
     resolution: {integrity: sha512-UB3LEco0FGGbbGvS+DfH2VmGKiP/y5C2MkmfBmfsIaxHSbM1KOTMKYG7YRf6xFhZbJ/01BedHG7SIny5i7N9BQ==}
@@ -9259,6 +9270,14 @@ snapshots:
   react-is@18.3.1: {}
 
   react-is@19.1.1: {}
+
+  react-native-app-auth@8.0.3(react-native@0.81.0(@babel/core@7.28.3)(@react-native-community/cli@20.0.0(typescript@5.9.2))(@react-native/metro-config@0.81.0(@babel/core@7.28.3))(@types/react@19.1.10)(react@19.1.0)):
+    dependencies:
+      invariant: 2.2.4
+      react-native: 0.81.0(@babel/core@7.28.3)(@react-native-community/cli@20.0.0(typescript@5.9.2))(@react-native/metro-config@0.81.0(@babel/core@7.28.3))(@types/react@19.1.10)(react@19.1.0)
+      react-native-base64: 0.0.2
+
+  react-native-base64@0.0.2: {}
 
   react-native-config@1.5.6: {}
 

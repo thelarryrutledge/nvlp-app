@@ -43,7 +43,7 @@ Build a pure React Native mobile app for NVLP that provides a native mobile expe
 - [x] Set up Reactotron for development debugging
 
 ### 1.4 Authentication Foundation
-- [ ] Install react-native-app-auth for OAuth flows
+- [x] Install react-native-app-auth for OAuth flows
 - [ ] Configure deep linking (iOS Universal Links, Android App Links)
 - [ ] Set up react-native-inappbrowser-reborn for magic link flow
 - [ ] Create auth state management with persistence

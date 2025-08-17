@@ -7,6 +7,7 @@ import LocalStorageService, { DEFAULT_USER_PREFERENCES } from '../services/local
 import ApiClientService from '../services/apiClient';
 import ErrorTestComponent from '../components/ErrorTestComponent';
 import ReactotronDevPanel from '../components/ReactotronDevPanel';
+import OAuthTestPanel from '../components/OAuthTestPanel';
 // Temporarily disabled until reanimated is fixed
 // import AnimatedCard from '../components/AnimatedCard';
 // import AnimationShowcase from '../components/AnimationShowcase';
@@ -262,6 +263,9 @@ const HomeScreen = () => {
 
         {/* Reactotron Development Panel - only shows in development */}
         <ReactotronDevPanel />
+
+        {/* OAuth Testing Panel - only shows in development */}
+        <OAuthTestPanel />
       </ScrollView>
     </SafeAreaView>
   );
