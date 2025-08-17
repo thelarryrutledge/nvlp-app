@@ -28,7 +28,7 @@ Build a pure React Native mobile app for NVLP that provides a native mobile expe
 
 ### 1.2 Native Dependencies Setup
 - [x] Install & link react-navigation and dependencies
-- [ ] Set up react-native-gesture-handler
+- [x] Set up react-native-gesture-handler
 - [ ] Configure react-native-reanimated
 - [ ] Install react-native-safe-area-context
 - [ ] Set up react-native-screens for native navigation

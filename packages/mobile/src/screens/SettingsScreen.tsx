@@ -1,17 +1,22 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import SimpleGestureTest from '../components/SimpleGestureTest';
 
 const SettingsScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>Settings</Text>
-        <Text style={styles.description}>
-          Configure your app preferences, security settings, and account
-          options.
-        </Text>
-      </View>
+      <ScrollView>
+        <View style={styles.content}>
+          <Text style={styles.title}>Settings</Text>
+          <Text style={styles.description}>
+            Configure your app preferences, security settings, and account
+            options.
+          </Text>
+        </View>
+        <View style={styles.divider} />
+        <SimpleGestureTest />
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -22,7 +27,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
   },
   content: {
-    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
@@ -38,6 +42,12 @@ const styles = StyleSheet.create({
     color: '#888',
     textAlign: 'center',
     lineHeight: 24,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#ddd',
+    marginVertical: 20,
+    marginHorizontal: 20,
   },
 });
 
