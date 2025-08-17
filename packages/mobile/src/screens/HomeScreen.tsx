@@ -1,8 +1,9 @@
 import React from 'react';
 import { ScrollView, View, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import AnimatedCard from '../components/AnimatedCard';
-import AnimationShowcase from '../components/AnimationShowcase';
+// Temporarily disabled until reanimated is fixed
+// import AnimatedCard from '../components/AnimatedCard';
+// import AnimationShowcase from '../components/AnimationShowcase';
 
 const HomeScreen = () => {
   return (
@@ -13,13 +14,12 @@ const HomeScreen = () => {
           <Text style={styles.subtitle}>Virtual Envelope Budgeting</Text>
         </View>
         
-        <AnimatedCard
-          title="Welcome to NVLP"
-          subtitle="Your personal finance dashboard with smooth animations"
-          onPress={() => {
-            // Card press handler
-          }}
-        />
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Welcome to NVLP</Text>
+          <Text style={styles.cardSubtitle}>
+            Your personal finance dashboard
+          </Text>
+        </View>
         
         <View style={styles.content}>
           <Text style={styles.description}>
@@ -28,7 +28,17 @@ const HomeScreen = () => {
           </Text>
         </View>
 
-        <AnimationShowcase />
+        <View style={styles.placeholderBox}>
+          <Text style={styles.placeholderText}>
+            📊 Budget Overview Coming Soon
+          </Text>
+        </View>
+        
+        <View style={styles.placeholderBox}>
+          <Text style={styles.placeholderText}>
+            💳 Recent Transactions Coming Soon
+          </Text>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -63,6 +73,44 @@ const styles = StyleSheet.create({
     color: '#888',
     textAlign: 'center',
     lineHeight: 24,
+  },
+  card: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 20,
+    margin: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  cardTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 8,
+  },
+  cardSubtitle: {
+    fontSize: 16,
+    color: '#666',
+  },
+  placeholderBox: {
+    backgroundColor: 'white',
+    borderRadius: 8,
+    padding: 30,
+    margin: 16,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderStyle: 'dashed',
+  },
+  placeholderText: {
+    fontSize: 16,
+    color: '#999',
   },
 });
 
