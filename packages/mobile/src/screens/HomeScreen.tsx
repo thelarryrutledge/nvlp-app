@@ -1,18 +1,35 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { ScrollView, View, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import AnimatedCard from '../components/AnimatedCard';
+import AnimationShowcase from '../components/AnimationShowcase';
 
 const HomeScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>NVLP Dashboard</Text>
-        <Text style={styles.subtitle}>Virtual Envelope Budgeting</Text>
-        <Text style={styles.description}>
-          Welcome to your personal finance dashboard. Here you'll see your
-          budget overview, recent transactions, and account summaries.
-        </Text>
-      </View>
+      <ScrollView>
+        <View style={styles.header}>
+          <Text style={styles.title}>NVLP Dashboard</Text>
+          <Text style={styles.subtitle}>Virtual Envelope Budgeting</Text>
+        </View>
+        
+        <AnimatedCard
+          title="Welcome to NVLP"
+          subtitle="Your personal finance dashboard with smooth animations"
+          onPress={() => {
+            // Card press handler
+          }}
+        />
+        
+        <View style={styles.content}>
+          <Text style={styles.description}>
+            Welcome to your personal finance dashboard. Here you'll see your
+            budget overview, recent transactions, and account summaries.
+          </Text>
+        </View>
+
+        <AnimationShowcase />
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -22,9 +39,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f5f5f5',
   },
+  header: {
+    alignItems: 'center',
+    paddingTop: 20,
+    paddingBottom: 10,
+  },
   content: {
-    flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
   },
@@ -37,7 +57,6 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 18,
     color: '#666',
-    marginBottom: 20,
   },
   description: {
     fontSize: 16,

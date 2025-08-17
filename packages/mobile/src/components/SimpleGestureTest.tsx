@@ -5,7 +5,6 @@ import {
   TapGestureHandler,
   State,
   LongPressGestureHandler,
-  StateChangeEvent,
   HandlerStateChangeEvent,
 } from 'react-native-gesture-handler';
 
