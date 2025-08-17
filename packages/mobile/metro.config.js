@@ -19,6 +19,8 @@ const config = {
       '@nvlp/types': path.resolve(workspaceRoot, 'packages/types'),
       '@nvlp/api': path.resolve(workspaceRoot, 'packages/api'),
     },
+    // Ensure vector icons can be resolved
+    platforms: ['ios', 'android', 'native', 'web'],
   },
 };
 
