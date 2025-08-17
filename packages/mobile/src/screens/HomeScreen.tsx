@@ -5,6 +5,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import SecureStorageService from '../services/secureStorage';
 import LocalStorageService, { DEFAULT_USER_PREFERENCES } from '../services/localStorage';
 import ApiClientService from '../services/apiClient';
+import ErrorTestComponent from '../components/ErrorTestComponent';
 // Temporarily disabled until reanimated is fixed
 // import AnimatedCard from '../components/AnimatedCard';
 // import AnimationShowcase from '../components/AnimationShowcase';
@@ -254,6 +255,9 @@ const HomeScreen = () => {
             <Text style={styles.testButtonText}>Test API Client</Text>
           </TouchableOpacity>
         </View>
+
+        {/* Error Testing Component - only shows in development */}
+        <ErrorTestComponent />
       </ScrollView>
     </SafeAreaView>
   );

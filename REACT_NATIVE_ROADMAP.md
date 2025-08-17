@@ -39,7 +39,7 @@ Build a pure React Native mobile app for NVLP that provides a native mobile expe
 - [x] Set up AsyncStorage for general data persistence
 - [x] Create API client wrapper using @nvlp/client
 - [x] Configure react-native-config for environment variables
-- [ ] Implement global error boundary
+- [x] Implement global error boundary
 - [ ] Set up Reactotron for development debugging
 
 ### 1.4 Authentication Foundation
