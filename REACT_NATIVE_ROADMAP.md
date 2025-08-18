@@ -51,22 +51,24 @@ Build a pure React Native mobile app for NVLP that provides a native mobile expe
 - [x] Create MagicLinkTestPanel for development testing
 - [x] Create auth state management with persistence
 
-### 1.5 Enhanced Security Layer (PIN/Biometric)
-- [ ] Install react-native-biometrics for Face ID/Touch ID/Fingerprint
-- [ ] Install react-native-keychain for secure PIN storage
-- [ ] Create PIN setup flow (4-6 digit PIN)
-- [ ] Implement PIN entry screen with custom keypad
-- [ ] Add biometric authentication option
-- [ ] Create security settings screen (enable/disable PIN, biometric, change PIN)
-- [ ] Implement app lock on background/foreground transitions
-- [ ] Add auto-lock timer settings (immediate, 1 min, 5 min, etc.)
-- [ ] Create "forgot PIN" flow (requires new magic link)
-- [ ] Add failed attempt limiting with exponential backoff
+### 1.5 Enhanced Security Layer (PIN/Biometric) [SKIPPED - Post-MVP]
+**Decision**: Skipped for MVP. Magic link + device management provides sufficient security for non-financial data. Can revisit if users request it or if we add bank account connections in the future.
+
+- [ ] ~~Install react-native-biometrics for Face ID/Touch ID/Fingerprint~~
+- [ ] ~~Install react-native-keychain for secure PIN storage~~
+- [ ] ~~Create PIN setup flow (4-6 digit PIN)~~
+- [ ] ~~Implement PIN entry screen with custom keypad~~
+- [ ] ~~Add biometric authentication option~~
+- [ ] ~~Create security settings screen (enable/disable PIN, biometric, change PIN)~~
+- [ ] ~~Implement app lock on background/foreground transitions~~
+- [ ] ~~Add auto-lock timer settings (immediate, 1 min, 5 min, etc.)~~
+- [ ] ~~Create "forgot PIN" flow (requires new magic link)~~
+- [ ] ~~Add failed attempt limiting with exponential backoff~~
 
 ### 1.6 Trusted Device Management
-- [ ] Install react-native-device-info for device fingerprinting
-- [ ] Install react-native-get-random-values for UUID generation
-- [ ] Create device utilities (generate device ID, fingerprint, device info)
+- [x] Install react-native-device-info for device fingerprinting
+- [x] Install react-native-get-random-values for UUID generation
+- [x] Create device utilities (generate device ID, fingerprint, device info)
 - [ ] Implement device registration on successful magic link auth
 - [ ] Add device ID to API client headers (X-Device-ID)
 - [ ] Handle SESSION_INVALIDATED error responses from API
