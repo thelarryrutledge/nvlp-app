@@ -2,6 +2,9 @@
  * @format
  */
 
+// Import polyfills first to prevent conflicts
+import './src/config/polyfills';
+
 // Initialize Reactotron as early as possible (development only)
 import './src/config/reactotronInit';
 

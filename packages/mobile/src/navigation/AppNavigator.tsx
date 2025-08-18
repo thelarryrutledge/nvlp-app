@@ -2,8 +2,10 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
+import { useAuthContext } from '../contexts/AuthContext';
 
-// Placeholder screens
+// Screens
+import LoginScreen from '../screens/LoginScreen';
 import HomeScreen from '../screens/HomeScreen';
 import BudgetScreen from '../screens/BudgetScreen';
 import TransactionScreen from '../screens/TransactionScreen';
@@ -17,6 +19,7 @@ export type RootTabParamList = {
 };
 
 export type RootStackParamList = {
+  Login: undefined;
   Main: undefined;
   TransactionDetail: { transactionId: string };
   EnvelopeDetail: { envelopeId: string };
@@ -69,14 +72,38 @@ const MainTabNavigator = () => {
 };
 
 const AppNavigator = () => {
+  const { isAuthenticated, isInitialized } = useAuthContext();
+
+  // Don't render navigation until auth is initialized
+  if (!isInitialized) {
+    return null;
+  }
+
   return (
     <NavigationContainer>
-      <Stack.Navigator>
-        <Stack.Screen
-          name="Main"
-          component={MainTabNavigator}
-          options={{ headerShown: false }}
-        />
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        {!isAuthenticated ? (
+          // Auth Stack
+          <Stack.Screen
+            name="Login"
+            component={LoginScreen}
+            options={{ 
+              headerShown: true,
+              title: 'Sign In',
+              headerStyle: {
+                backgroundColor: '#007AFF',
+              },
+              headerTintColor: '#FFF',
+            }}
+          />
+        ) : (
+          // Main App Stack
+          <Stack.Screen
+            name="Main"
+            component={MainTabNavigator}
+            options={{ headerShown: false }}
+          />
+        )}
       </Stack.Navigator>
     </NavigationContainer>
   );

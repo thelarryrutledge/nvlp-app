@@ -39,57 +39,44 @@
             margin-bottom: 2rem;
             opacity: 0.9;
         }
-        .token-container {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin: 1rem 0;
-            text-align: left;
-        }
-        .token-label {
-            font-size: 0.9rem;
-            opacity: 0.8;
-            margin-bottom: 0.5rem;
-        }
-        .token-value {
-            font-family: monospace;
-            font-size: 0.85rem;
-            word-break: break-all;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 0.5rem;
-            border-radius: 4px;
-            margin-bottom: 1rem;
-            cursor: pointer;
-            position: relative;
-        }
-        .token-value:hover {
-            background: rgba(0, 0, 0, 0.4);
-        }
-        .copy-hint {
-            font-size: 0.75rem;
-            opacity: 0.6;
-            text-align: center;
-            margin-top: 1rem;
-        }
         .error {
             color: #ef4444;
             font-size: 1.2rem;
         }
-        .copied {
-            position: absolute;
-            right: 0.5rem;
-            top: 50%;
-            transform: translateY(-50%);
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #4ade80;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 1rem auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .open-app-button {
             background: #4ade80;
             color: #000;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            opacity: 0;
-            transition: opacity 0.3s;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 1rem;
+            transition: background 0.3s;
+            text-decoration: none;
+            display: inline-block;
         }
-        .copied.show {
-            opacity: 1;
+        .open-app-button:hover {
+            background: #22c55e;
+        }
+        .instructions {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 1rem;
         }
     </style>
 </head>
@@ -97,48 +84,15 @@
     <div class="container">
         <div class="logo">NVLP</div>
         <div id="content">
-            <div class="message">Processing authentication...</div>
+            <div class="spinner"></div>
+            <div class="message">Validating...</div>
         </div>
     </div>
 
     <script>
-        function copyToClipboard(text, element) {
-            navigator.clipboard.writeText(text).then(() => {
-                const copied = element.querySelector('.copied');
-                copied.classList.add('show');
-                setTimeout(() => copied.classList.remove('show'), 2000);
-            });
-        }
-
-        function displayTokens(accessToken, refreshToken) {
-            const content = document.getElementById('content');
-            content.innerHTML = `
-                <div class="success">✓ Email Verified Successfully!</div>
-                <div class="message">Your authentication tokens are below. Save them for API testing:</div>
-                
-                <div class="token-container">
-                    <div class="token-label">Access Token:</div>
-                    <div class="token-value" onclick="copyToClipboard('${accessToken}', this)">
-                        ${accessToken}
-                        <span class="copied">Copied!</span>
-                    </div>
-                    
-                    <div class="token-label">Refresh Token:</div>
-                    <div class="token-value" onclick="copyToClipboard('${refreshToken}', this)">
-                        ${refreshToken}
-                        <span class="copied">Copied!</span>
-                    </div>
-                </div>
-                
-                <div class="copy-hint">Click on a token to copy it to clipboard</div>
-                
-                <div style="margin-top: 2rem; font-size: 0.9rem; opacity: 0.8;">
-                    Save these tokens using:<br>
-                    <code style="background: rgba(0,0,0,0.3); padding: 0.25rem 0.5rem; border-radius: 4px;">
-                        node save-tokens.js &lt;access_token&gt; &lt;refresh_token&gt;
-                    </code>
-                </div>
-            `;
+        function isMobileDevice() {
+            return /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); // iPad Pro detection
         }
 
         function displayError(message) {
@@ -149,26 +103,56 @@
             `;
         }
 
-        // Extract tokens from URL
-        const hash = window.location.hash.substring(1);
-        const params = new URLSearchParams(hash);
-        const accessToken = params.get('access_token');
-        const refreshToken = params.get('refresh_token');
-        const error = params.get('error');
-        const errorDescription = params.get('error_description');
-
-        if (error) {
-            displayError(errorDescription || 'An error occurred during authentication');
-        } else if (accessToken && refreshToken) {
-            displayTokens(accessToken, refreshToken);
+        function displaySuccess() {
+            const content = document.getElementById('content');
+            const isMobile = isMobileDevice();
             
-            // Log to console for easy access
-            console.log('Authentication successful!');
-            console.log('Access Token:', accessToken);
-            console.log('Refresh Token:', refreshToken);
-        } else {
-            displayError('No authentication tokens found. The link may be invalid or expired.');
+            if (isMobile) {
+                content.innerHTML = `
+                    <div class="success">✓ Authentication Successful</div>
+                    <div class="message">Opening NVLP app...</div>
+                    <div class="instructions">If the app doesn't open automatically, tap the button below:</div>
+                    <a href="nvlp://auth/callback${window.location.hash}" class="open-app-button">Open NVLP App</a>
+                `;
+            } else {
+                content.innerHTML = `
+                    <div class="success">✓ Authentication Successful</div>
+                    <div class="message">Please open the NVLP app to continue</div>
+                    <div class="instructions">Your authentication is complete. Switch to your mobile device and open the NVLP app to continue.</div>
+                `;
+            }
         }
+
+        function processAuthentication() {
+            // Extract data from URL
+            const hash = window.location.hash.substring(1);
+            const params = new URLSearchParams(hash);
+            const error = params.get('error');
+            const errorDescription = params.get('error_description');
+            const accessToken = params.get('access_token');
+
+            // Show validation state briefly
+            setTimeout(() => {
+                if (error) {
+                    displayError(errorDescription || 'An error occurred during authentication');
+                } else if (accessToken) {
+                    displaySuccess();
+                    
+                    // On mobile, automatically try to launch the app after showing success
+                    if (isMobileDevice()) {
+                        setTimeout(() => {
+                            const deepLinkUrl = `nvlp://auth/callback${window.location.hash}`;
+                            window.location.href = deepLinkUrl;
+                        }, 1500); // Wait 1.5 seconds to show success message
+                    }
+                } else {
+                    displayError('No authentication data found. The link may be invalid or expired.');
+                }
+            }, 1000); // Show "Validating..." for 1 second
+        }
+
+        // Start the authentication process
+        processAuthentication();
     </script>
 </body>
 </html>

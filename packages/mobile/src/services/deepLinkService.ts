@@ -48,12 +48,6 @@ class DeepLinkService {
     }
 
     try {
-      // Set up default magic link handler
-      this.registerHandler('auth', {
-        scheme: 'auth',
-        handler: this.handleMagicLink.bind(this),
-      });
-
       // Check if app was opened with a deep link
       const initialUrl = await Linking.getInitialURL();
       if (initialUrl) {
@@ -62,12 +56,15 @@ class DeepLinkService {
       }
 
       // Listen for incoming deep links while app is running
+      console.log('🔗 Setting up deep link event listener...');
       const linkingSubscription = Linking.addEventListener('url', (event) => {
+        console.log('📱 Deep link event received:', event.url);
         reactotron.log('📱 Received deep link:', event.url);
         this.handleURL(event.url);
       });
 
       this.isInitialized = true;
+      console.log('✅ Deep link service initialized successfully');
       reactotron.log('🔗 Deep link service initialized');
 
       // Store subscription for cleanup (you could add a cleanup method)
@@ -102,19 +99,31 @@ class DeepLinkService {
    */
   private async handleURL(url: string): Promise<void> {
     try {
-      const parsedUrl = new URL(url);
-      const scheme = parsedUrl.pathname.split('/')[1]; // e.g., "auth" from "nvlp://auth/callback"
+      console.log('🔗 DeepLinkService.handleURL called with:', url);
       
+      // For nvlp://auth/callback, "auth" is the hostname and "/callback" is the path
+      // We want to use "auth" as our scheme identifier
+      const parsedUrl = new URL(url);
+      const scheme = parsedUrl.hostname || parsedUrl.host; // Use hostname which is "auth"
+      
+      console.log(`🔗 URL hostname: ${parsedUrl.hostname}`);
+      console.log(`🔗 URL pathname: ${parsedUrl.pathname}`);
+      console.log(`🔗 Processing deep link scheme: ${scheme}`);
+      console.log(`🔗 Available handlers:`, Array.from(this.handlers.keys()));
       reactotron.log(`🔗 Processing deep link: ${scheme}`);
 
       const handler = this.handlers.get(scheme);
       if (handler) {
+        console.log(`🔗 Found handler for scheme: ${scheme}`);
         const magicLinkData = this.parseMagicLinkData(url);
+        console.log(`🔗 Parsed magic link data:`, magicLinkData);
         await handler.handler(url, magicLinkData);
       } else {
+        console.error(`🔗 No handler found for scheme: ${scheme}`);
         reactotron.warn(`🔗 No handler found for scheme: ${scheme}`);
       }
     } catch (error) {
+      console.error('Failed to handle deep link:', error);
       reactotron.error('Failed to handle deep link:', error as Error);
       ErrorHandlingService.reportError(
         error as Error,

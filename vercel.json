@@ -1,5 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "echo 'No build needed for static files'",
+  "outputDirectory": "public",
   "rewrites": [
     {
       "source": "/auth/callback",

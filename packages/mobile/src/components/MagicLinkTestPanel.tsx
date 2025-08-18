@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -21,6 +21,8 @@ export const MagicLinkTestPanel: React.FC = () => {
   const [testUrl, setTestUrl] = useState('');
   const [testEmail, setTestEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [currentSession, setCurrentSession] = useState<any>(null);
+  const [sessionChecked, setSessionChecked] = useState(false);
 
   const magicLink = useMagicLink({
     onMagicLink: async (data) => {
@@ -41,6 +43,8 @@ export const MagicLinkTestPanel: React.FC = () => {
             'Authentication Success',
             `Welcome ${result.user?.email}!\nSession established successfully.`
           );
+          // Automatically refresh session status
+          checkSessionStatus();
         } else {
           Alert.alert('Session Error', result.error);
         }
@@ -50,6 +54,27 @@ export const MagicLinkTestPanel: React.FC = () => {
       Alert.alert('Magic Link Error', error);
     },
   });
+
+  // Check session status function
+  const checkSessionStatus = async () => {
+    try {
+      const result = await SupabaseAuthClient.getCurrentSession();
+      if (result.success && result.session) {
+        setCurrentSession(result.session);
+      } else {
+        setCurrentSession(null);
+      }
+      setSessionChecked(true);
+    } catch (error) {
+      setCurrentSession(null);
+      setSessionChecked(true);
+    }
+  };
+
+  // Check session status on component mount
+  useEffect(() => {
+    checkSessionStatus();
+  }, []);
 
   // Only show in development
   if (env.NODE_ENV !== 'development') {
@@ -153,6 +178,8 @@ export const MagicLinkTestPanel: React.FC = () => {
       
       if (result.success) {
         Alert.alert('Signed Out', 'You have been signed out successfully');
+        // Refresh session status after sign out
+        checkSessionStatus();
       } else {
         Alert.alert('Error', result.error || 'Failed to sign out');
       }
@@ -183,6 +210,9 @@ export const MagicLinkTestPanel: React.FC = () => {
         <View style={styles.statusContainer}>
           <Text style={styles.statusText}>
             {config.isValid ? '🟢' : '🔴'} {magicLink.isReady ? 'Ready' : 'Not Ready'}
+          </Text>
+          <Text style={styles.statusText}>
+            {sessionChecked ? (currentSession ? '🟢 Auth' : '🔴 No Auth') : '⏳ Checking...'}
           </Text>
           <Text style={styles.expandIcon}>
             {isExpanded ? '▼' : '▶'}
@@ -244,6 +274,43 @@ export const MagicLinkTestPanel: React.FC = () => {
             <Text style={styles.infoText}>
               Redirect URL: {magicLink.getRedirectURL()}
             </Text>
+          </View>
+
+          {/* Authentication Status */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Authentication Status</Text>
+            {sessionChecked ? (
+              <View style={[
+                styles.statusIndicator,
+                currentSession ? styles.statusValid : styles.statusInvalid
+              ]}>
+                <Text style={styles.statusLabel}>
+                  {currentSession ? '✅ Authenticated' : '❌ Not Authenticated'}
+                </Text>
+                {currentSession && (
+                  <>
+                    <Text style={styles.infoText}>
+                      User: {currentSession.user?.email}
+                    </Text>
+                    <Text style={styles.infoText}>
+                      Expires: {new Date(currentSession.expires_at * 1000).toLocaleString()}
+                    </Text>
+                    <Text style={styles.infoText}>
+                      Session ID: {currentSession.user?.id?.substring(0, 8)}...
+                    </Text>
+                  </>
+                )}
+              </View>
+            ) : (
+              <Text style={styles.infoText}>Checking authentication status...</Text>
+            )}
+            
+            <TouchableOpacity
+              style={[styles.button, styles.infoButton]}
+              onPress={checkSessionStatus}
+            >
+              <Text style={styles.buttonText}>🔄 Refresh Status</Text>
+            </TouchableOpacity>
           </View>
 
           {/* Test Magic Link */}

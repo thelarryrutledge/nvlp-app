@@ -22,7 +22,7 @@
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
         
-        <!-- OAuth Redirect Intent Filter for react-native-app-auth -->
+        <!-- Deep Link Intent Filter for Magic Link Authentication -->
         <intent-filter android:autoVerify="true">
             <action android:name="android.intent.action.VIEW" />
             <category android:name="android.intent.category.DEFAULT" />

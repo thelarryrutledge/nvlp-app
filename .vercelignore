@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+packages/*/node_modules/
+
+# Build outputs
+packages/mobile/
+packages/api/
+packages/types/
+supabase/
+
+# Development files
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+test-logs/
+
+# Cache
+.next/
+.vercel/
+.cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary
+tmp/
+temp/

@@ -21,31 +21,38 @@ class SupabaseAuthClient {
   }
 
   /**
-   * Send magic link to user's email
+   * Send magic link to user's email using custom Edge Function
    */
   async sendMagicLink(email: string): Promise<{ success: boolean; error?: string }> {
     try {
-      reactotron.log('📧 Sending magic link to:', email);
+      reactotron.log('📧 Sending enhanced magic link to:', email);
 
       const redirectUrl = `${env.DEEP_LINK_SCHEME}://auth/callback`;
-      
-      const { error } = await this.client.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: redirectUrl,
+      reactotron.log('🔗 Using redirect URL:', redirectUrl);
+
+      // Use the custom Edge Function for enhanced magic link emails
+      const { data, error } = await this.client.functions.invoke('auth-magic-link', {
+        body: { 
+          email,
+          redirectTo: redirectUrl // Pass the mobile deep link URL
         },
       });
 
       if (error) {
-        reactotron.error('Magic link error:', error);
+        reactotron.error('Enhanced magic link error:', error);
         return { success: false, error: error.message };
       }
 
-      reactotron.log('✅ Magic link sent successfully');
+      if (data?.error) {
+        reactotron.error('Enhanced magic link response error:', data.error);
+        return { success: false, error: data.error };
+      }
+
+      reactotron.log('✅ Enhanced magic link sent successfully');
       return { success: true };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      reactotron.error('Magic link request failed:', error);
+      reactotron.error('Enhanced magic link request failed:', error);
       return { success: false, error: errorMessage };
     }
   }

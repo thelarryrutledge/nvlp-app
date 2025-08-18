@@ -115,6 +115,9 @@ importers:
       '@react-navigation/stack':
         specifier: ^7.0.5
         version: 7.4.7(4b7955c64acc44aa3bc215023f13511e)
+      '@supabase/supabase-js':
+        specifier: ^2.55.0
+        version: 2.55.0
       react:
         specifier: 19.1.0
         version: 19.1.0
@@ -136,9 +139,15 @@ importers:
       react-native-screens:
         specifier: ^4.6.0
         version: 4.14.1(react-native@0.81.0(@babel/core@7.28.3)(@react-native-community/cli@20.0.0(typescript@5.9.2))(@react-native/metro-config@0.81.0(@babel/core@7.28.3))(@types/react@19.1.10)(react@19.1.0))(react@19.1.0)
+      react-native-url-polyfill:
+        specifier: ^2.0.0
+        version: 2.0.0(react-native@0.81.0(@babel/core@7.28.3)(@react-native-community/cli@20.0.0(typescript@5.9.2))(@react-native/metro-config@0.81.0(@babel/core@7.28.3))(@types/react@19.1.10)(react@19.1.0))
       react-native-vector-icons:
         specifier: ^10.3.0
         version: 10.3.0
+      zustand:
+        specifier: ^5.0.7
+        version: 5.0.7(@types/react@19.1.10)(react@19.1.0)(use-sync-external-store@1.5.0(react@19.1.0))
     devDependencies:
       '@babel/core':
         specifier: ^7.25.2
@@ -3849,6 +3858,11 @@ packages:
       react: '*'
       react-native: '*'
 
+  react-native-url-polyfill@2.0.0:
+    resolution: {integrity: sha512-My330Do7/DvKnEvwQc0WdcBnFPploYKp9CYlefDXzIdEaA+PAhDYllkvGeEroEzvc4Kzzj2O4yVdz8v6fjRvhA==}
+    peerDependencies:
+      react-native: '*'
+
   react-native-vector-icons@10.3.0:
     resolution: {integrity: sha512-IFQ0RE57819hOUdFvgK4FowM5aMXg7C7XKsuGLevqXkkIJatc3QopN0wYrb2IrzUgmdpfP+QVIbI3S6h7M0btw==}
     deprecated: react-native-vector-icons package has moved to a new model of per-icon-family packages. See the https://github.com/oblador/react-native-vector-icons/blob/master/MIGRATION.md on how to migrate
@@ -4519,8 +4533,16 @@ packages:
   webidl-conversions@3.0.1:
     resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}
 
+  webidl-conversions@5.0.0:
+    resolution: {integrity: sha512-VlZwKPCkYKxQgeSbH5EyngOmRp7Ww7I9rQLERETtf5ofd9pGeswWiOtogpEO850jziPRarreGxn5QIiTqpb2wA==}
+    engines: {node: '>=8'}
+
   whatwg-fetch@3.6.20:
     resolution: {integrity: sha512-EqhiFU6daOA8kpjOWTL0olhVOF3i7OrFzSYiGsEMB8GcXS+RrzauAERX65xMeNWVqxA6HXH2m69Z9LaKKdisfg==}
+
+  whatwg-url-without-unicode@8.0.0-3:
+    resolution: {integrity: sha512-HoKuzZrUlgpz35YO27XgD28uh/WJH4B0+3ttFqRo//lmq+9T/mIOJ6kqmINI9HpUpz1imRC/nR/lxKpJiv0uig==}
+    engines: {node: '>=10'}
 
   whatwg-url@5.0.0:
     resolution: {integrity: sha512-saE57nupxk6v3HY35+jzBwYa0rKSy0XR8JSxZPwgLr7ys0IBzhGviA1/TUGJLmSVqs8pb9AnvICXEuOHLprYTw==}
@@ -4673,6 +4695,24 @@ packages:
   yocto-queue@0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
+
+  zustand@5.0.7:
+    resolution: {integrity: sha512-Ot6uqHDW/O2VdYsKLLU8GQu8sCOM1LcoE8RwvLv9uuRT9s6SOHCKs0ZEOhxg+I1Ld+A1Q5lwx+UlKXXUoCZITg==}
+    engines: {node: '>=12.20.0'}
+    peerDependencies:
+      '@types/react': '>=18.0.0'
+      immer: '>=9.0.6'
+      react: '>=18.0.0'
+      use-sync-external-store: '>=1.2.0'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+      immer:
+        optional: true
+      react:
+        optional: true
+      use-sync-external-store:
+        optional: true
 
 snapshots:
 
@@ -9290,6 +9330,11 @@ snapshots:
       react-native-is-edge-to-edge: 1.2.1(react-native@0.81.0(@babel/core@7.28.3)(@react-native-community/cli@20.0.0(typescript@5.9.2))(@react-native/metro-config@0.81.0(@babel/core@7.28.3))(@types/react@19.1.10)(react@19.1.0))(react@19.1.0)
       warn-once: 0.1.1
 
+  react-native-url-polyfill@2.0.0(react-native@0.81.0(@babel/core@7.28.3)(@react-native-community/cli@20.0.0(typescript@5.9.2))(@react-native/metro-config@0.81.0(@babel/core@7.28.3))(@types/react@19.1.10)(react@19.1.0)):
+    dependencies:
+      react-native: 0.81.0(@babel/core@7.28.3)(@react-native-community/cli@20.0.0(typescript@5.9.2))(@react-native/metro-config@0.81.0(@babel/core@7.28.3))(@types/react@19.1.10)(react@19.1.0)
+      whatwg-url-without-unicode: 8.0.0-3
+
   react-native-vector-icons@10.3.0:
     dependencies:
       prop-types: 15.8.1
@@ -10029,7 +10074,15 @@ snapshots:
 
   webidl-conversions@3.0.1: {}
 
+  webidl-conversions@5.0.0: {}
+
   whatwg-fetch@3.6.20: {}
+
+  whatwg-url-without-unicode@8.0.0-3:
+    dependencies:
+      buffer: 5.7.1
+      punycode: 2.3.1
+      webidl-conversions: 5.0.0
 
   whatwg-url@5.0.0:
     dependencies:
@@ -10195,3 +10248,9 @@ snapshots:
       fd-slicer: 1.1.0
 
   yocto-queue@0.1.0: {}
+
+  zustand@5.0.7(@types/react@19.1.10)(react@19.1.0)(use-sync-external-store@1.5.0(react@19.1.0)):
+    optionalDependencies:
+      '@types/react': 19.1.10
+      react: 19.1.0
+      use-sync-external-store: 1.5.0(react@19.1.0)

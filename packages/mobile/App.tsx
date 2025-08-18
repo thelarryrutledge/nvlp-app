@@ -12,6 +12,7 @@ import { validateEnv } from './src/config/env';
 import ErrorBoundary from './src/components/ErrorBoundary';
 import { useGlobalErrorHandler } from './src/hooks/useGlobalErrorHandler';
 import ErrorHandlingService from './src/services/errorHandlingService';
+import { AuthProvider } from './src/contexts/AuthContext';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -31,11 +32,14 @@ function App() {
     validateEnv();
   }, []);
 
+
   return (
     <ErrorBoundary>
       <SafeAreaProvider>
-        <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-        <AppNavigator />
+        <AuthProvider autoInitialize={true} showAlerts={true}>
+          <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+          <AppNavigator />
+        </AuthProvider>
       </SafeAreaProvider>
     </ErrorBoundary>
   );

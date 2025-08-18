@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Alert } from 'react-native';
 import DeepLinkService, { MagicLinkData } from '../services/deepLinkService';
 import reactotron from '../config/reactotron';
@@ -35,6 +35,18 @@ export const useMagicLink = (options: UseMagicLinkOptions = {}) => {
     error: null,
   });
 
+  // Use refs to store latest callback functions to avoid stale closures
+  const onMagicLinkRef = useRef(onMagicLink);
+  const onErrorRef = useRef(onError);
+  const showAlertsRef = useRef(showAlerts);
+  
+  // Update refs when props change
+  useEffect(() => {
+    onMagicLinkRef.current = onMagicLink;
+    onErrorRef.current = onError;
+    showAlertsRef.current = showAlerts;
+  });
+
   /**
    * Initialize deep link service
    */
@@ -61,11 +73,11 @@ export const useMagicLink = (options: UseMagicLinkOptions = {}) => {
               error: errorMessage,
             }));
 
-            if (onError) {
-              onError(errorMessage);
+            if (onErrorRef.current) {
+              onErrorRef.current(errorMessage);
             }
 
-            if (showAlerts) {
+            if (showAlertsRef.current) {
               Alert.alert(
                 'Authentication Error',
                 errorMessage,
@@ -77,11 +89,11 @@ export const useMagicLink = (options: UseMagicLinkOptions = {}) => {
 
           // Handle successful authentication
           if (data.access_token) {
-            if (onMagicLink) {
-              onMagicLink(data);
+            if (onMagicLinkRef.current) {
+              onMagicLinkRef.current(data);
             }
 
-            if (showAlerts) {
+            if (showAlertsRef.current) {
               Alert.alert(
                 'Authentication Successful',
                 'You have been successfully authenticated!',
@@ -110,13 +122,13 @@ export const useMagicLink = (options: UseMagicLinkOptions = {}) => {
         error: errorMessage,
       }));
 
-      if (onError) {
-        onError(errorMessage);
+      if (onErrorRef.current) {
+        onErrorRef.current(errorMessage);
       }
 
       reactotron.error('Magic link hook initialization failed:', error as Error);
     }
-  }, [onMagicLink, onError, showAlerts]);
+  }, []); // Stable callback using refs
 
   /**
    * Clean up handler
@@ -177,7 +189,7 @@ export const useMagicLink = (options: UseMagicLinkOptions = {}) => {
 
     // Cleanup on unmount
     return cleanup;
-  }, [autoInitialize, initialize, cleanup]);
+  }, [autoInitialize, initialize, cleanup]); // Now these are stable callbacks
 
   return {
     // State

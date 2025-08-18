@@ -53,5 +53,16 @@
 	<array>
 		<string>Ionicons.ttf</string>
 	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>nvlp.app.deeplink</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>nvlp</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>
