@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthContext } from '../contexts/AuthContext';
 import supabaseClient from '../services/supabaseClient';
 import reactotron from '../config/reactotron';
+import DeepLinkService from '../services/deepLinkService';
 
 export const LoginScreen: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -131,12 +132,16 @@ export const LoginScreen: React.FC = () => {
               style={[styles.button, { backgroundColor: '#FF6B6B', marginTop: 20 }]}
               onPress={() => {
                 const testUrl = 'nvlp://auth/callback#access_token=test_token&refresh_token=test_refresh&expires_in=3600&token_type=bearer&type=magiclink';
-                console.log('Testing URL:', testUrl);
-                Alert.alert('Test', 'Simulating magic link click');
-                Linking.openURL(testUrl);
+                console.log('🧪 Testing by directly calling DeepLinkService...');
+                
+                // Directly call the DeepLinkService to simulate receiving a deep link
+                // @ts-ignore - accessing private method for testing
+                DeepLinkService.handleURL(testUrl);
+                
+                Alert.alert('Test', 'Check console for deep link processing logs');
               }}
             >
-              <Text style={styles.buttonText}>Test Magic Link (Debug)</Text>
+              <Text style={styles.buttonText}>Test Direct Handler (Debug)</Text>
             </TouchableOpacity>
           </View>
 
