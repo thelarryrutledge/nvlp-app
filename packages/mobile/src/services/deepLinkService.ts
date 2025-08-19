@@ -30,7 +30,7 @@ class DeepLinkService {
   private handlers: Map<string, DeepLinkHandler> = new Map();
   private isInitialized = false;
   private pendingURLs: string[] = [];
-  private lastMagicLinkData: { url: string; data: MagicLinkData } | null = null;
+  private processedURLs: Set<string> = new Set(); // Track processed URLs to avoid duplicates
 
   private constructor() {}
 
@@ -50,20 +50,16 @@ class DeepLinkService {
     }
 
     try {
-      // Set up default magic link handler
-      // This ensures we can handle magic links even before the auth system is fully initialized
-      this.registerHandler('auth', {
-        scheme: 'auth',
-        handler: this.handleMagicLink.bind(this),
-      });
+      // DON'T set up default handler - let the auth system register its own handler
+      // This prevents duplicate processing of magic links
 
       // Check if app was opened with a deep link
       const initialUrl = await Linking.getInitialURL();
       if (initialUrl) {
         console.log('📱 App opened with deep link:', initialUrl);
         reactotron.log('📱 App opened with deep link:', initialUrl);
-        // Try to handle it, but if no handler exists yet, it will be queued
-        await this.handleURL(initialUrl);
+        // Store it for later processing when handler is registered
+        this.pendingURLs.push(initialUrl);
       }
 
       // Listen for incoming deep links while app is running
@@ -120,17 +116,7 @@ class DeepLinkService {
       });
     }
     
-    // If we have stored magic link data and this is the auth handler, process it
-    if (key === 'auth' && this.lastMagicLinkData) {
-      console.log('🔗 Processing stored magic link data for new auth handler');
-      Promise.resolve(handler.handler(this.lastMagicLinkData.url, this.lastMagicLinkData.data))
-        .then(() => {
-          this.lastMagicLinkData = null; // Clear it after processing
-        })
-        .catch(error => {
-          console.error('Failed to process stored magic link data:', error);
-        });
-    }
+    // No need for stored magic link data since we don't use default handler anymore
   }
 
   /**
@@ -147,6 +133,13 @@ class DeepLinkService {
   private async handleURL(url: string): Promise<void> {
     try {
       console.log('🔗 DeepLinkService.handleURL called with:', url);
+      
+      // Skip if we've already processed this exact URL
+      if (this.processedURLs.has(url)) {
+        console.log('🔗 URL already processed, skipping:', url);
+        return;
+      }
+      this.processedURLs.add(url);
       
       // For nvlp://auth/callback, "auth" is the hostname and "/callback" is the path
       // We want to use "auth" as our scheme identifier
@@ -218,46 +211,6 @@ class DeepLinkService {
     }
   }
 
-  /**
-   * Default magic link handler
-   */
-  private async handleMagicLink(url: string, data: MagicLinkData): Promise<void> {
-    try {
-      console.log('🔗 Default handler processing magic link:', data);
-      
-      // Store the magic link data for when a real handler registers
-      this.lastMagicLinkData = { url, data };
-      
-      if (data.error) {
-        console.error(`🔗 Magic link error: ${data.error} - ${data.error_description}`);
-        reactotron.error(`🔗 Magic link error: ${data.error} - ${data.error_description}`);
-        return;
-      }
-
-      if (data.access_token) {
-        console.log('✅ Magic link authentication data received by default handler');
-        reactotron.log('✅ Magic link authentication successful');
-        
-        reactotron.display({
-          name: '✅ Magic Link Success (Default Handler)',
-          value: {
-            hasAccessToken: !!data.access_token,
-            hasRefreshToken: !!data.refresh_token,
-            tokenType: data.token_type,
-            expiresIn: data.expires_in,
-            type: data.type,
-          },
-          preview: 'Magic link received by default handler',
-        });
-      }
-    } catch (error) {
-      reactotron.error('Failed to handle magic link:', error as Error);
-      ErrorHandlingService.reportError(
-        error as Error,
-        { service: 'DeepLinkService', operation: 'handleMagicLink', url }
-      );
-    }
-  }
 
   /**
    * Get the magic link redirect URL for this app

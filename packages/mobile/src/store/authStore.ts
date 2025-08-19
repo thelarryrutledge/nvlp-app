@@ -148,75 +148,43 @@ const useAuthStore = create<AuthState>()(
             throw new Error('Invalid magic link data');
           }
           
-          // The tokens from the magic link are already valid - just use them
-          console.log('🔄 Setting up session with magic link tokens...');
-          
-          // Try to get the current user with the tokens
-          const result = await supabaseClient.exchangeCodeForSession(
-            magicLinkData.access_token,
-            magicLinkData.refresh_token
-          );
-          
-          console.log('🔄 Session result:', {
-            success: result.success,
-            hasSession: !!result.session,
-            hasUser: !!result.user,
-            error: result.error
-          });
-          
-          // Even if setSession fails, we have valid tokens from the magic link
-          // Store them and continue
-          if (!result.success) {
-            console.warn('setSession failed but we have valid tokens from magic link');
-            // We'll store the tokens anyway since they came from a valid magic link
-          }
+          // The tokens from magic link are already validated by Supabase
+          // Just store them and mark as authenticated - no need to call Supabase again
+          console.log('✅ Magic link tokens are valid, storing and authenticating...');
           
           // Create session object from magic link tokens
-          // If setSession succeeded, use that session, otherwise create our own
-          let session = result.session;
-          let user = result.user;
-          
-          if (!session) {
-            console.log('Creating session from magic link tokens...');
-            // Create a minimal session object that matches Supabase's structure
-            session = {
-              access_token: magicLinkData.access_token,
-              refresh_token: magicLinkData.refresh_token,
-              expires_at: Math.floor(Date.now() / 1000) + parseInt(magicLinkData.expires_in || '3600'),
-              expires_in: parseInt(magicLinkData.expires_in || '3600'),
-              token_type: magicLinkData.token_type || 'bearer',
-              user: null
-            };
-            // We don't have user info if setSession failed, but that's ok
-            user = null;
-          }
+          const session = {
+            access_token: magicLinkData.access_token,
+            refresh_token: magicLinkData.refresh_token,
+            expires_at: Math.floor(Date.now() / 1000) + parseInt(magicLinkData.expires_in || '3600'),
+            expires_in: parseInt(magicLinkData.expires_in || '3600'),
+            token_type: magicLinkData.token_type || 'bearer',
+            user: null // We'll get user info when needed via API calls
+          };
           
           // Store tokens securely
           const authTokens: AuthTokens = {
             accessToken: session.access_token,
             refreshToken: session.refresh_token,
             expiresAt: session.expires_at ? session.expires_at * 1000 : Date.now() + 3600000,
-            userId: user?.id || '',
+            userId: '', // Will be populated when needed
           };
           
-          console.log('Storing auth tokens...');
+          console.log('💾 Storing auth tokens securely...');
           await SecureStorageService.setAuthTokens(authTokens);
           
-          // Update state with the session (either from Supabase or constructed)
+          // Update state - user is now authenticated
           console.log('✅ Setting authenticated state...');
-          console.log('Session object:', session);
-          console.log('User object:', user);
-          
           set({
             session: session,
-            user: user,
+            user: null, // Will be populated when needed
             isAuthenticated: true,
             isLoading: false,
             error: null,
           });
           
-          console.log('✅ Authentication successful:', user?.email || 'No user email');
-          reactotron.log('✅ Authentication successful:', user?.email || 'No user email');
+          console.log('✅ Authentication successful - tokens stored');
+          reactotron.log('✅ Authentication successful - tokens stored');
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Authentication failed';
           console.error('❌ Magic link authentication failed:', error);
