@@ -9,6 +9,7 @@ import {
   Platform,
   ActivityIndicator,
   Alert,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthContext } from '../contexts/AuthContext';
@@ -124,6 +125,19 @@ export const LoginScreen: React.FC = () => {
             <Text style={styles.helpText}>
               We'll send you a secure link to sign in without a password.
             </Text>
+            
+            {/* Test button for debugging */}
+            <TouchableOpacity
+              style={[styles.button, { backgroundColor: '#FF6B6B', marginTop: 20 }]}
+              onPress={() => {
+                const testUrl = 'nvlp://auth/callback#access_token=test_token&refresh_token=test_refresh&expires_in=3600&token_type=bearer&type=magiclink';
+                console.log('Testing URL:', testUrl);
+                Alert.alert('Test', 'Simulating magic link click');
+                Linking.openURL(testUrl);
+              }}
+            >
+              <Text style={styles.buttonText}>Test Magic Link (Debug)</Text>
+            </TouchableOpacity>
           </View>
 
           {/* Debug info */}

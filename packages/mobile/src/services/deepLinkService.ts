@@ -1,4 +1,4 @@
-import { Linking } from 'react-native';
+import { Linking, Alert } from 'react-native';
 import { env } from '../config/env';
 import reactotron from '../config/reactotron';
 import ErrorHandlingService from './errorHandlingService';
@@ -30,6 +30,7 @@ class DeepLinkService {
   private handlers: Map<string, DeepLinkHandler> = new Map();
   private isInitialized = false;
   private pendingURLs: string[] = [];
+  private lastMagicLinkData: { url: string; data: MagicLinkData } | null = null;
 
   private constructor() {}
 
@@ -49,6 +50,13 @@ class DeepLinkService {
     }
 
     try {
+      // Set up default magic link handler
+      // This ensures we can handle magic links even before the auth system is fully initialized
+      this.registerHandler('auth', {
+        scheme: 'auth',
+        handler: this.handleMagicLink.bind(this),
+      });
+
       // Check if app was opened with a deep link
       const initialUrl = await Linking.getInitialURL();
       if (initialUrl) {
@@ -111,6 +119,13 @@ class DeepLinkService {
         }
       });
     }
+    
+    // If we have stored magic link data and this is the auth handler, process it
+    if (key === 'auth' && this.lastMagicLinkData) {
+      console.log('🔗 Processing stored magic link data for new auth handler');
+      await handler.handler(this.lastMagicLinkData.url, this.lastMagicLinkData.data);
+      this.lastMagicLinkData = null; // Clear it after processing
+    }
   }
 
   /**
@@ -166,8 +181,13 @@ class DeepLinkService {
    */
   private parseMagicLinkData(url: string): MagicLinkData {
     try {
+      console.log('🔍 Parsing magic link URL:', url);
       const parsedUrl = new URL(url);
+      console.log('🔍 URL hash:', parsedUrl.hash);
+      console.log('🔍 URL search:', parsedUrl.search);
+      
       const params = new URLSearchParams(parsedUrl.hash.substring(1)); // Remove # and parse
+      console.log('🔍 Parsed params:', Array.from(params.entries()));
 
       const data: MagicLinkData = {};
 
@@ -198,24 +218,23 @@ class DeepLinkService {
    */
   private async handleMagicLink(url: string, data: MagicLinkData): Promise<void> {
     try {
+      console.log('🔗 Default handler processing magic link:', data);
+      
+      // Store the magic link data for when a real handler registers
+      this.lastMagicLinkData = { url, data };
+      
       if (data.error) {
+        console.error(`🔗 Magic link error: ${data.error} - ${data.error_description}`);
         reactotron.error(`🔗 Magic link error: ${data.error} - ${data.error_description}`);
-        // You could emit an event or call a callback here
         return;
       }
 
       if (data.access_token) {
+        console.log('✅ Magic link authentication data received by default handler');
         reactotron.log('✅ Magic link authentication successful');
         
-        // Here you would typically:
-        // 1. Create a Supabase session from the tokens
-        // 2. Store the session securely
-        // 3. Update app state to authenticated
-        // 4. Navigate to the main app
-        
-        // For now, just log the successful authentication
         reactotron.display({
-          name: '✅ Magic Link Success',
+          name: '✅ Magic Link Success (Default Handler)',
           value: {
             hasAccessToken: !!data.access_token,
             hasRefreshToken: !!data.refresh_token,
@@ -223,7 +242,7 @@ class DeepLinkService {
             expiresIn: data.expires_in,
             type: data.type,
           },
-          preview: 'Magic link authentication successful',
+          preview: 'Magic link received by default handler',
         });
       }
     } catch (error) {
