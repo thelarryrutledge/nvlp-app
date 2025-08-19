@@ -172,35 +172,51 @@ const useAuthStore = create<AuthState>()(
           }
           
           // Create session object from magic link tokens
-          const session = result.session || {
-            access_token: magicLinkData.access_token,
-            refresh_token: magicLinkData.refresh_token,
-            expires_at: Math.floor(Date.now() / 1000) + parseInt(magicLinkData.expires_in || '3600'),
-            user: result.user || null
-          };
+          // If setSession succeeded, use that session, otherwise create our own
+          let session = result.session;
+          let user = result.user;
+          
+          if (!session) {
+            console.log('Creating session from magic link tokens...');
+            // Create a minimal session object that matches Supabase's structure
+            session = {
+              access_token: magicLinkData.access_token,
+              refresh_token: magicLinkData.refresh_token,
+              expires_at: Math.floor(Date.now() / 1000) + parseInt(magicLinkData.expires_in || '3600'),
+              expires_in: parseInt(magicLinkData.expires_in || '3600'),
+              token_type: magicLinkData.token_type || 'bearer',
+              user: null
+            };
+            // We don't have user info if setSession failed, but that's ok
+            user = null;
+          }
           
           // Store tokens securely
           const authTokens: AuthTokens = {
-            accessToken: magicLinkData.access_token,
-            refreshToken: magicLinkData.refresh_token,
+            accessToken: session.access_token,
+            refreshToken: session.refresh_token,
             expiresAt: session.expires_at ? session.expires_at * 1000 : Date.now() + 3600000,
-            userId: result.user?.id || '',
+            userId: user?.id || '',
           };
           
+          console.log('Storing auth tokens...');
           await SecureStorageService.setAuthTokens(authTokens);
           
           // Update state with the session (either from Supabase or constructed)
           console.log('✅ Setting authenticated state...');
+          console.log('Session object:', session);
+          console.log('User object:', user);
+          
           set({
             session: session,
-            user: result.user || session.user,
+            user: user,
             isAuthenticated: true,
             isLoading: false,
             error: null,
           });
           
-          console.log('✅ Authentication successful:', result.user?.email);
-          reactotron.log('✅ Authentication successful:', result.user?.email);
+          console.log('✅ Authentication successful:', user?.email || 'No user email');
+          reactotron.log('✅ Authentication successful:', user?.email || 'No user email');
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Authentication failed';
           console.error('❌ Magic link authentication failed:', error);
