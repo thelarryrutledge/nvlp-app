@@ -58,13 +58,24 @@ const useAuthStore = create<AuthState>()(
           console.log('🔐 Initializing auth store...');
           reactotron.log('🔐 Initializing auth store...');
           
-          // Try to restore session from secure storage
-          console.log('🔐 Attempting to restore tokens from secure storage...');
-          const tokens = await SecureStorageService.getAuthTokens();
-          console.log('🔐 Tokens result:', tokens ? 'found' : 'none');
+          // Try to restore session from secure storage (this is optional - may not exist on first launch)
+          let tokens = null;
+          let deviceInfo = null;
           
-          const deviceInfo = await SecureStorageService.getDeviceInfo();
-          console.log('🔐 Device info result:', deviceInfo ? 'found' : 'none');
+          try {
+            console.log('🔐 Attempting to restore tokens from secure storage...');
+            tokens = await SecureStorageService.getAuthTokens();
+            console.log('🔐 Tokens result:', tokens ? 'found' : 'none');
+          } catch (error) {
+            console.log('🔐 No stored tokens (normal for first launch)');
+          }
+          
+          try {
+            deviceInfo = await SecureStorageService.getDeviceInfo();
+            console.log('🔐 Device info result:', deviceInfo ? 'found' : 'none');
+          } catch (error) {
+            console.log('🔐 No stored device info (normal for first launch)');
+          }
           
           if (tokens && tokens.expiresAt > Date.now()) {
             console.log('🔐 Valid tokens found, restoring session...');

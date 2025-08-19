@@ -95,18 +95,13 @@ export const useAuth = (options: UseAuthOptions = {}) => {
       reactotron.log('✅ Auth system fully initialized');
       console.log('✅ Auth system fully initialized');
     } catch (error) {
-      console.error('Failed to initialize auth system:', error);
-      reactotron.error('Failed to initialize auth system:', error as Error);
+      console.error('Non-critical initialization warning:', error);
+      reactotron.log('Non-critical initialization warning:', error as Error);
       
-      if (showAlerts) {
-        Alert.alert(
-          'Initialization Error',
-          'Failed to initialize authentication system',
-          [{ text: 'OK' }]
-        );
-      }
+      // Don't show alerts for initialization errors - they're usually not critical
+      // The app can still function even if initialization has some issues
     }
-  }, [initialize, magicLink, showAlerts]);
+  }, [initialize, magicLink]);
 
   // Auto-initialize on mount if enabled
   useEffect(() => {

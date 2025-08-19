@@ -29,6 +29,7 @@ class DeepLinkService {
   private static instance: DeepLinkService;
   private handlers: Map<string, DeepLinkHandler> = new Map();
   private isInitialized = false;
+  private pendingURLs: string[] = [];
 
   private constructor() {}
 
@@ -51,7 +52,9 @@ class DeepLinkService {
       // Check if app was opened with a deep link
       const initialUrl = await Linking.getInitialURL();
       if (initialUrl) {
+        console.log('📱 App opened with deep link:', initialUrl);
         reactotron.log('📱 App opened with deep link:', initialUrl);
+        // Try to handle it, but if no handler exists yet, it will be queued
         await this.handleURL(initialUrl);
       }
 
@@ -82,8 +85,32 @@ class DeepLinkService {
    * Register a deep link handler
    */
   registerHandler(key: string, handler: DeepLinkHandler): void {
+    console.log(`🔗 Registering handler for key: ${key}`);
     this.handlers.set(key, handler);
     reactotron.log(`🔗 Deep link handler registered: ${key}`);
+    
+    // Process any pending URLs for this handler
+    const pendingForThisHandler = this.pendingURLs.filter(url => {
+      try {
+        const parsedUrl = new URL(url);
+        const scheme = parsedUrl.hostname || parsedUrl.host;
+        return scheme === key;
+      } catch {
+        return false;
+      }
+    });
+    
+    if (pendingForThisHandler.length > 0) {
+      console.log(`🔗 Processing ${pendingForThisHandler.length} pending URLs for ${key}`);
+      pendingForThisHandler.forEach(url => {
+        this.handleURL(url);
+        // Remove from pending
+        const index = this.pendingURLs.indexOf(url);
+        if (index > -1) {
+          this.pendingURLs.splice(index, 1);
+        }
+      });
+    }
   }
 
   /**
@@ -119,8 +146,10 @@ class DeepLinkService {
         console.log(`🔗 Parsed magic link data:`, magicLinkData);
         await handler.handler(url, magicLinkData);
       } else {
-        console.error(`🔗 No handler found for scheme: ${scheme}`);
-        reactotron.warn(`🔗 No handler found for scheme: ${scheme}`);
+        console.warn(`🔗 No handler found for scheme: ${scheme}, queuing URL`);
+        reactotron.warn(`🔗 No handler found for scheme: ${scheme}, queuing URL`);
+        // Store the URL to process later when handler is registered
+        this.pendingURLs.push(url);
       }
     } catch (error) {
       console.error('Failed to handle deep link:', error);
@@ -263,12 +292,14 @@ class DeepLinkService {
     handlerCount: number;
     redirectURL: string;
     handlers: string[];
+    pendingURLs: string[];
   } {
     return {
       isInitialized: this.isInitialized,
       handlerCount: this.handlers.size,
       redirectURL: this.getMagicLinkRedirectURL(),
       handlers: Array.from(this.handlers.keys()),
+      pendingURLs: this.pendingURLs,
     };
   }
 }

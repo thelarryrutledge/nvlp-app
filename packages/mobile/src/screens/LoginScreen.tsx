@@ -134,6 +134,9 @@ export const LoginScreen: React.FC = () => {
             <Text style={styles.debugText}>
               Redirect URL: {magicLink.getRedirectURL()}
             </Text>
+            <Text style={styles.debugText}>
+              Stats: {JSON.stringify(magicLink.getStats(), null, 2)}
+            </Text>
           </View>
         </View>
       </KeyboardAvoidingView>
