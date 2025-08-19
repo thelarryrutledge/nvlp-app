@@ -29,7 +29,7 @@ export const useMagicLink = (options: UseMagicLinkOptions = {}) => {
     autoInitialize = true,
   } = options;
   
-  const initializationAttempted = useRef(false);
+  // Remove initialization tracking - DeepLinkService is initialized in App.tsx
 
   const [state, setState] = useState<UseMagicLinkState>({
     isReady: false,
@@ -54,8 +54,16 @@ export const useMagicLink = (options: UseMagicLinkOptions = {}) => {
    */
   const initialize = useCallback(async () => {
     try {
-      // Register custom magic link handler
-      console.log('🔧 Registering magic link handler...');
+      // Just register our handler - DeepLinkService is already initialized
+      console.log('🔧 Registering magic link handler in useMagicLink...');
+      
+      // Check if DeepLinkService is already initialized
+      const stats = DeepLinkService.getStats();
+      if (!stats.isInitialized) {
+        console.log('🔧 DeepLinkService not initialized, initializing now...');
+        await DeepLinkService.initialize();
+      }
+      
       DeepLinkService.registerHandler('auth', {
         scheme: 'auth',
         handler: async (url: string, data: MagicLinkData) => {
@@ -111,17 +119,15 @@ export const useMagicLink = (options: UseMagicLinkOptions = {}) => {
         },
       });
 
-      console.log('🔧 Initializing DeepLinkService...');
-      await DeepLinkService.initialize();
-      
+      // Mark as ready
       setState(prev => ({
         ...prev,
         isReady: true,
         error: null,
       }));
 
-      console.log('✅ Magic link hook initialized');
-      reactotron.log('🔗 Magic link hook initialized');
+      console.log('✅ Magic link handler registered');
+      reactotron.log('🔗 Magic link handler registered');
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to initialize magic link service';
       
@@ -192,14 +198,15 @@ export const useMagicLink = (options: UseMagicLinkOptions = {}) => {
 
   // Auto-initialize if enabled
   useEffect(() => {
-    if (autoInitialize && !initializationAttempted.current) {
-      initializationAttempted.current = true;
+    if (autoInitialize) {
       initialize();
     }
 
     // Cleanup on unmount
-    return cleanup;
-  }, [autoInitialize]); // Remove functions from deps to prevent infinite loop
+    return () => {
+      cleanup();
+    };
+  }, [autoInitialize]); // Only depend on autoInitialize
 
   return {
     // State

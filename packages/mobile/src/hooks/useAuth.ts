@@ -24,7 +24,7 @@ export const useAuth = (options: UseAuthOptions = {}) => {
     showAlerts = true,
   } = options;
   
-  const initializationAttempted = useRef(false);
+  // No need for initialization tracking - handled by the stores
 
   // Get auth store state and actions
   const {
@@ -107,8 +107,7 @@ export const useAuth = (options: UseAuthOptions = {}) => {
 
   // Auto-initialize on mount if enabled
   useEffect(() => {
-    if (autoInitialize && !isInitialized && !initializationAttempted.current) {
-      initializationAttempted.current = true;
+    if (autoInitialize && !isInitialized) {
       initializeAuth();
     }
   }, [autoInitialize, isInitialized]);
