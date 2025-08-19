@@ -62,20 +62,32 @@ class SupabaseAuthClient {
    */
   async exchangeCodeForSession(accessToken: string, refreshToken: string) {
     try {
+      console.log('🔄 Attempting to set session with tokens...');
+      console.log('🔄 Access token length:', accessToken?.length);
+      console.log('🔄 Refresh token:', refreshToken);
+      
       const { data, error } = await this.client.auth.setSession({
         access_token: accessToken,
         refresh_token: refreshToken,
       });
 
       if (error) {
+        console.error('❌ Session exchange error details:', {
+          message: error.message,
+          status: error.status,
+          code: error.code,
+          details: error
+        });
         reactotron.error('Session exchange error:', error);
         return { success: false, error: error.message };
       }
 
+      console.log('✅ Session established successfully');
       reactotron.log('✅ Session established:', data.user?.email);
       return { success: true, user: data.user, session: data.session };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('❌ Session exchange exception:', error);
       reactotron.error('Session exchange failed:', error);
       return { success: false, error: errorMessage };
     }
