@@ -10,6 +10,9 @@
 // Import URL polyfill first - this should fix the protocol getter issue
 import 'react-native-url-polyfill/auto';
 
+// Import crypto polyfill for UUID generation
+import 'react-native-get-random-values';
+
 // Additional polyfills for compatibility
 if (typeof global !== 'undefined') {
   // Ensure btoa/atob are available for base64 operations

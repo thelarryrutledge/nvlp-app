@@ -53,9 +53,11 @@ export const useMagicLink = (options: UseMagicLinkOptions = {}) => {
   const initialize = useCallback(async () => {
     try {
       // Register custom magic link handler
-      DeepLinkService.registerHandler('magic-link', {
+      console.log('🔧 Registering magic link handler...');
+      DeepLinkService.registerHandler('auth', {
         scheme: 'auth',
         handler: async (url: string, data: MagicLinkData) => {
+          console.log('🔗 Magic link received via hook:', url, data);
           reactotron.log('🔗 Magic link received via hook:', data);
           
           setState(prev => ({
@@ -89,8 +91,11 @@ export const useMagicLink = (options: UseMagicLinkOptions = {}) => {
 
           // Handle successful authentication
           if (data.access_token) {
+            console.log('✅ Magic link has access token, calling handler...');
             if (onMagicLinkRef.current) {
               onMagicLinkRef.current(data);
+            } else {
+              console.warn('⚠️ No magic link handler registered');
             }
 
             if (showAlertsRef.current) {
@@ -104,6 +109,7 @@ export const useMagicLink = (options: UseMagicLinkOptions = {}) => {
         },
       });
 
+      console.log('🔧 Initializing DeepLinkService...');
       await DeepLinkService.initialize();
       
       setState(prev => ({
@@ -112,6 +118,7 @@ export const useMagicLink = (options: UseMagicLinkOptions = {}) => {
         error: null,
       }));
 
+      console.log('✅ Magic link hook initialized');
       reactotron.log('🔗 Magic link hook initialized');
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to initialize magic link service';
@@ -134,7 +141,7 @@ export const useMagicLink = (options: UseMagicLinkOptions = {}) => {
    * Clean up handler
    */
   const cleanup = useCallback(() => {
-    DeepLinkService.unregisterHandler('magic-link');
+    DeepLinkService.unregisterHandler('auth');
     setState({
       isReady: false,
       lastMagicLink: null,

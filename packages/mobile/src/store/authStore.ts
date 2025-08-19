@@ -55,13 +55,19 @@ const useAuthStore = create<AuthState>()(
         set({ isLoading: true, error: null });
         
         try {
+          console.log('🔐 Initializing auth store...');
           reactotron.log('🔐 Initializing auth store...');
           
           // Try to restore session from secure storage
+          console.log('🔐 Attempting to restore tokens from secure storage...');
           const tokens = await SecureStorageService.getAuthTokens();
+          console.log('🔐 Tokens result:', tokens ? 'found' : 'none');
+          
           const deviceInfo = await SecureStorageService.getDeviceInfo();
+          console.log('🔐 Device info result:', deviceInfo ? 'found' : 'none');
           
           if (tokens && tokens.expiresAt > Date.now()) {
+            console.log('🔐 Valid tokens found, restoring session...');
             // Validate session with Supabase
             const sessionResult = await supabaseClient.exchangeCodeForSession(
               tokens.accessToken,
@@ -79,12 +85,14 @@ const useAuthStore = create<AuthState>()(
                 error: null,
               });
               
+              console.log('✅ Auth restored from secure storage:', sessionResult.user?.email);
               reactotron.log('✅ Auth restored from secure storage:', sessionResult.user?.email);
               return;
             }
           }
           
           // No valid session found
+          console.log('🔐 No valid session found during initialization');
           set({
             isInitialized: true,
             isLoading: false,
@@ -97,6 +105,7 @@ const useAuthStore = create<AuthState>()(
           reactotron.log('🔐 No valid session found during initialization');
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Failed to initialize auth';
+          console.error('❌ Failed to initialize auth store:', error);
           reactotron.error('Failed to initialize auth store:', error as Error);
           
           set({
@@ -112,22 +121,38 @@ const useAuthStore = create<AuthState>()(
 
       // Sign in with magic link
       signInWithMagicLink: async (magicLinkData: MagicLinkData) => {
+        console.log('🔑 Starting magic link authentication...', magicLinkData);
         set({ isLoading: true, error: null });
         
         try {
           reactotron.log('🔑 Processing magic link authentication...');
+          console.log('🔑 Processing magic link authentication...', {
+            hasAccessToken: !!magicLinkData.access_token,
+            hasRefreshToken: !!magicLinkData.refresh_token,
+            error: magicLinkData.error
+          });
           
           if (!magicLinkData.access_token || !magicLinkData.refresh_token) {
+            console.error('Invalid magic link data:', magicLinkData);
             throw new Error('Invalid magic link data');
           }
           
           // Exchange tokens for session
+          console.log('🔄 Exchanging tokens for session...');
           const result = await supabaseClient.exchangeCodeForSession(
             magicLinkData.access_token,
             magicLinkData.refresh_token
           );
           
+          console.log('🔄 Session exchange result:', {
+            success: result.success,
+            hasSession: !!result.session,
+            hasUser: !!result.user,
+            error: result.error
+          });
+          
           if (!result.success || !result.session) {
+            console.error('Session exchange failed:', result.error);
             throw new Error(result.error || 'Failed to establish session');
           }
           
@@ -142,6 +167,7 @@ const useAuthStore = create<AuthState>()(
           await SecureStorageService.setAuthTokens(authTokens);
           
           // Update state
+          console.log('✅ Setting authenticated state...');
           set({
             session: result.session,
             user: result.user,
@@ -150,9 +176,11 @@ const useAuthStore = create<AuthState>()(
             error: null,
           });
           
+          console.log('✅ Authentication successful:', result.user?.email);
           reactotron.log('✅ Authentication successful:', result.user?.email);
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Authentication failed';
+          console.error('❌ Magic link authentication failed:', error);
           reactotron.error('Magic link authentication failed:', error as Error);
           
           set({

@@ -47,19 +47,26 @@ export const useAuth = (options: UseAuthOptions = {}) => {
     showAlerts: false, // We'll handle alerts here
     onMagicLink: async (data) => {
       reactotron.log('🔗 Magic link received in useAuth:', data);
+      console.log('🔗 Magic link received in useAuth:', data);
       
       // Process the magic link through the auth store
-      await signInWithMagicLink(data);
-      
-      if (showAlerts && !error) {
-        Alert.alert(
-          'Authentication Successful',
-          'You have been successfully signed in!',
-          [{ text: 'OK' }]
-        );
+      try {
+        await signInWithMagicLink(data);
+        
+        if (showAlerts && !error) {
+          Alert.alert(
+            'Authentication Successful',
+            'You have been successfully signed in!',
+            [{ text: 'OK' }]
+          );
+        }
+      } catch (authError) {
+        console.error('Magic link processing failed:', authError);
+        reactotron.error('Magic link processing failed:', authError as Error);
       }
     },
     onError: (errorMessage) => {
+      console.error('Magic link error in useAuth:', errorMessage);
       reactotron.error('Magic link error in useAuth:', new Error(errorMessage));
       
       if (showAlerts) {
@@ -75,14 +82,20 @@ export const useAuth = (options: UseAuthOptions = {}) => {
   // Initialize auth store and magic link service
   const initializeAuth = useCallback(async () => {
     try {
+      console.log('🔧 Initializing auth system...');
+      
       // Initialize auth store first
       await initialize();
+      console.log('✅ Auth store initialized');
       
       // Then initialize magic link service
       await magicLink.initialize();
+      console.log('✅ Magic link service initialized');
       
       reactotron.log('✅ Auth system fully initialized');
+      console.log('✅ Auth system fully initialized');
     } catch (error) {
+      console.error('Failed to initialize auth system:', error);
       reactotron.error('Failed to initialize auth system:', error as Error);
       
       if (showAlerts) {
