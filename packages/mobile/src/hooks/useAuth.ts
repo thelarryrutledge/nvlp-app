@@ -45,7 +45,7 @@ export const useAuth = (options: UseAuthOptions = {}) => {
 
   // Set up magic link handling
   const magicLink = useMagicLink({
-    autoInitialize: false, // We'll initialize manually
+    autoInitialize: true, // Let it auto-initialize
     showAlerts: false, // We'll handle alerts here
     onMagicLink: async (data) => {
       reactotron.log('🔗 Magic link received in useAuth:', data);
@@ -81,21 +81,17 @@ export const useAuth = (options: UseAuthOptions = {}) => {
     },
   });
 
-  // Initialize auth store and magic link service
+  // Initialize auth store
   const initializeAuth = useCallback(async () => {
     try {
       console.log('🔧 Initializing auth system...');
       
-      // Initialize auth store first
+      // Initialize auth store - magic link service auto-initializes
       await initialize();
       console.log('✅ Auth store initialized');
       
-      // Then initialize magic link service
-      await magicLink.initialize();
-      console.log('✅ Magic link service initialized');
-      
-      reactotron.log('✅ Auth system fully initialized');
-      console.log('✅ Auth system fully initialized');
+      reactotron.log('✅ Auth system initialized');
+      console.log('✅ Auth system initialized');
     } catch (error) {
       console.error('Non-critical initialization warning:', error);
       reactotron.log('Non-critical initialization warning:', error as Error);
@@ -103,7 +99,7 @@ export const useAuth = (options: UseAuthOptions = {}) => {
       // Don't show alerts for initialization errors - they're usually not critical
       // The app can still function even if initialization has some issues
     }
-  }, [initialize, magicLink.initialize]);
+  }, [initialize]);
 
   // Auto-initialize on mount if enabled
   useEffect(() => {

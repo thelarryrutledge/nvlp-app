@@ -199,6 +199,7 @@ export const useMagicLink = (options: UseMagicLinkOptions = {}) => {
   // Auto-initialize if enabled
   useEffect(() => {
     if (autoInitialize) {
+      console.log('🔧 useMagicLink auto-initializing...');
       initialize();
     }
 
@@ -206,7 +207,7 @@ export const useMagicLink = (options: UseMagicLinkOptions = {}) => {
     return () => {
       cleanup();
     };
-  }, [autoInitialize]); // Only depend on autoInitialize
+  }, [autoInitialize, initialize]); // Add initialize as dependency
 
   return {
     // State

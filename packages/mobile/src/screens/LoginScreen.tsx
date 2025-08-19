@@ -21,7 +21,17 @@ export const LoginScreen: React.FC = () => {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
-  const { magicLink, isAuthenticated, user } = useAuthContext();
+  const { magicLink, isAuthenticated, user, session, error } = useAuthContext();
+  
+  // Debug logging
+  React.useEffect(() => {
+    console.log('📱 LoginScreen render - Auth state:', {
+      isAuthenticated,
+      hasUser: !!user,
+      hasSession: !!session,
+      error
+    });
+  }, [isAuthenticated, user, session, error]);
 
   const handleSendMagicLink = async () => {
     if (!email) {
@@ -72,14 +82,17 @@ export const LoginScreen: React.FC = () => {
   };
 
   // If already authenticated, show welcome message
-  if (isAuthenticated && user) {
+  if (isAuthenticated) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.content}>
           <Text style={styles.title}>Welcome Back!</Text>
-          <Text style={styles.email}>{user.email}</Text>
+          <Text style={styles.email}>{user?.email || 'Unknown User'}</Text>
           <Text style={styles.successMessage}>
             You are successfully authenticated
+          </Text>
+          <Text style={styles.debugText}>
+            Session: {session ? 'Valid' : 'None'}
           </Text>
         </View>
       </SafeAreaView>
@@ -132,16 +145,22 @@ export const LoginScreen: React.FC = () => {
               style={[styles.button, { backgroundColor: '#FF6B6B', marginTop: 20 }]}
               onPress={() => {
                 const testUrl = 'nvlp://auth/callback#access_token=test_token&refresh_token=test_refresh&expires_in=3600&token_type=bearer&type=magiclink';
-                console.log('🧪 Testing by directly calling DeepLinkService...');
+                console.log('🧪 Testing magic link by simulating Linking event...');
                 
-                // Directly call the DeepLinkService to simulate receiving a deep link
-                // @ts-ignore - accessing private method for testing
-                DeepLinkService.handleURL(testUrl);
+                // Test the magic link parsing
+                const parsedData = DeepLinkService.testMagicLink(testUrl);
+                console.log('🧪 Parsed test data:', parsedData);
                 
-                Alert.alert('Test', 'Check console for deep link processing logs');
+                // Simulate receiving a deep link via Linking
+                Linking.openURL(testUrl).catch(err => {
+                  console.log('Expected error opening custom scheme:', err);
+                  console.log('This is normal when testing - the URL would normally come from an external source');
+                });
+                
+                Alert.alert('Test', 'Check console for deep link processing logs. Parsed data: ' + JSON.stringify(parsedData));
               }}
             >
-              <Text style={styles.buttonText}>Test Direct Handler (Debug)</Text>
+              <Text style={styles.buttonText}>Test Magic Link (Debug)</Text>
             </TouchableOpacity>
           </View>
 
