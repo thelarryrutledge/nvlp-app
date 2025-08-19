@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { Alert } from 'react-native';
 import useAuthStore from '../store/authStore';
 import useMagicLink from './useMagicLink';
@@ -23,6 +23,8 @@ export const useAuth = (options: UseAuthOptions = {}) => {
     autoInitialize = true,
     showAlerts = true,
   } = options;
+  
+  const initializationAttempted = useRef(false);
 
   // Get auth store state and actions
   const {
@@ -101,14 +103,15 @@ export const useAuth = (options: UseAuthOptions = {}) => {
       // Don't show alerts for initialization errors - they're usually not critical
       // The app can still function even if initialization has some issues
     }
-  }, [initialize, magicLink]);
+  }, [initialize, magicLink.initialize]);
 
   // Auto-initialize on mount if enabled
   useEffect(() => {
-    if (autoInitialize && !isInitialized) {
+    if (autoInitialize && !isInitialized && !initializationAttempted.current) {
+      initializationAttempted.current = true;
       initializeAuth();
     }
-  }, [autoInitialize, isInitialized, initializeAuth]);
+  }, [autoInitialize, isInitialized]);
 
   // Auto-refresh session when it's about to expire
   useEffect(() => {

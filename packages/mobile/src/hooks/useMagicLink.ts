@@ -28,6 +28,8 @@ export const useMagicLink = (options: UseMagicLinkOptions = {}) => {
     showAlerts = true,
     autoInitialize = true,
   } = options;
+  
+  const initializationAttempted = useRef(false);
 
   const [state, setState] = useState<UseMagicLinkState>({
     isReady: false,
@@ -190,13 +192,14 @@ export const useMagicLink = (options: UseMagicLinkOptions = {}) => {
 
   // Auto-initialize if enabled
   useEffect(() => {
-    if (autoInitialize) {
+    if (autoInitialize && !initializationAttempted.current) {
+      initializationAttempted.current = true;
       initialize();
     }
 
     // Cleanup on unmount
     return cleanup;
-  }, [autoInitialize, initialize, cleanup]); // Now these are stable callbacks
+  }, [autoInitialize]); // Remove functions from deps to prevent infinite loop
 
   return {
     // State
