@@ -123,8 +123,13 @@ class DeepLinkService {
     // If we have stored magic link data and this is the auth handler, process it
     if (key === 'auth' && this.lastMagicLinkData) {
       console.log('🔗 Processing stored magic link data for new auth handler');
-      await handler.handler(this.lastMagicLinkData.url, this.lastMagicLinkData.data);
-      this.lastMagicLinkData = null; // Clear it after processing
+      Promise.resolve(handler.handler(this.lastMagicLinkData.url, this.lastMagicLinkData.data))
+        .then(() => {
+          this.lastMagicLinkData = null; // Clear it after processing
+        })
+        .catch(error => {
+          console.error('Failed to process stored magic link data:', error);
+        });
     }
   }
 
