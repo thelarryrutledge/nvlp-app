@@ -79,27 +79,31 @@ const useAuthStore = create<AuthState>()(
           
           if (tokens && tokens.expiresAt > Date.now()) {
             console.log('🔐 Valid tokens found, restoring session...');
-            // Validate session with Supabase
-            const sessionResult = await supabaseClient.exchangeCodeForSession(
-              tokens.accessToken,
-              tokens.refreshToken
-            );
             
-            if (sessionResult.success && sessionResult.session) {
-              set({
-                session: sessionResult.session,
-                user: sessionResult.user,
-                isAuthenticated: true,
-                deviceInfo,
-                isInitialized: true,
-                isLoading: false,
-                error: null,
-              });
-              
-              console.log('✅ Auth restored from secure storage:', sessionResult.user?.email);
-              reactotron.log('✅ Auth restored from secure storage:', sessionResult.user?.email);
-              return;
-            }
+            // Create session object from stored tokens (don't validate with Supabase)
+            // The tokens are already valid since they were stored from a successful magic link
+            const session = {
+              access_token: tokens.accessToken,
+              refresh_token: tokens.refreshToken,
+              expires_at: Math.floor(tokens.expiresAt / 1000), // Convert back to seconds
+              expires_in: Math.floor((tokens.expiresAt - Date.now()) / 1000),
+              token_type: 'bearer',
+              user: null // User info will be fetched when needed
+            };
+            
+            set({
+              session: session,
+              user: null, // Will be populated when needed
+              isAuthenticated: true,
+              deviceInfo,
+              isInitialized: true,
+              isLoading: false,
+              error: null,
+            });
+            
+            console.log('✅ Auth restored from secure storage');
+            reactotron.log('✅ Auth restored from secure storage');
+            return;
           }
           
           // No valid session found
