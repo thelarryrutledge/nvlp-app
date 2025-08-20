@@ -70,7 +70,7 @@ Build a pure React Native mobile app for NVLP that provides a native mobile expe
 - [x] Install react-native-get-random-values for UUID generation
 - [x] Create device utilities (generate device ID, fingerprint, device info)
 - [x] Implement device registration on successful magic link auth
-- [ ] Add device ID to API client headers (X-Device-ID)
+- [x] Add device ID to API client headers (X-Device-ID)
 - [ ] Handle SESSION_INVALIDATED error responses from API
 - [ ] Create device management hook (useDeviceManagement)
 - [ ] Build "Active Sessions" screen in security settings
