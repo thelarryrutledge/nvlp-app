@@ -1,205 +1,147 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Session, User } from '@supabase/supabase-js';
-import SecureStorageService, { AuthTokens, DeviceInfo } from '../services/secureStorage';
-import supabaseClient from '../services/supabaseClient';
-import reactotron from '../config/reactotron';
+import SecureStorageService, { AuthTokens } from '../services/secureStorage';
 import { MagicLinkData } from '../services/deepLinkService';
+import { validateJWTForSecurity } from '../utils/jwt';
 
 interface AuthState {
   // State
-  user: User | null;
-  session: Session | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   isInitialized: boolean;
   error: string | null;
-  deviceInfo: DeviceInfo | null;
   
   // Actions
   initialize: () => Promise<void>;
   signInWithMagicLink: (magicLinkData: MagicLinkData) => Promise<void>;
   signOut: () => Promise<void>;
-  refreshSession: () => Promise<void>;
-  setDeviceInfo: (deviceInfo: DeviceInfo) => Promise<void>;
+  updateActivity: () => Promise<void>;
   clearError: () => void;
   
-  // Internal
-  _setSession: (session: Session | null) => void;
-  _setUser: (user: User | null) => void;
-  _setLoading: (loading: boolean) => void;
-  _setError: (error: string | null) => void;
+  // Getters for tokens (don't store in state for security)
+  getAccessToken: () => Promise<string | null>;
+  hasValidTokens: () => Promise<boolean>;
+  
 }
 
 const useAuthStore = create<AuthState>()(
   persist(
-    (set, get) => ({
-      // Initial state
-      user: null,
-      session: null,
-      isAuthenticated: false,
-      isLoading: false,
-      isInitialized: false,
-      error: null,
-      deviceInfo: null,
+    (set, get) => {
+      console.log('🏪 AuthStore: Creating store instance');
+      
+      return {
+        // Initial state
+        isAuthenticated: false,
+        isLoading: false,
+        isInitialized: false,
+        error: null,
 
       // Initialize auth state from secure storage
       initialize: async () => {
         const { isInitialized } = get();
         if (isInitialized) {
-          reactotron.log('🔐 Auth store already initialized');
+          console.log('🔐 AuthStore: Already initialized, skipping...');
           return;
         }
 
+        console.log('🔐 AuthStore: Starting initialization...');
         set({ isLoading: true, error: null });
         
         try {
-          console.log('🔐 Initializing auth store...');
-          reactotron.log('🔐 Initializing auth store...');
+          console.log('🔐 AuthStore: Checking for cached tokens...');
           
-          // Try to restore session from secure storage (this is optional - may not exist on first launch)
-          let tokens = null;
-          let deviceInfo = null;
+          // Check if we have valid cached tokens
+          const tokens = await SecureStorageService.getAuthTokens();
+          const hasValidTokens = tokens !== null;
           
-          try {
-            console.log('🔐 Attempting to restore tokens from secure storage...');
-            tokens = await SecureStorageService.getAuthTokens();
-            console.log('🔐 Tokens result:', tokens ? 'found' : 'none');
-          } catch (error) {
-            console.log('🔐 No stored tokens (normal for first launch)');
+          console.log('🔐 AuthStore: Token check result:', { hasValidTokens, tokens: tokens ? 'found' : 'none' });
+          
+          if (hasValidTokens) {
+            console.log('✅ AuthStore: Valid tokens found - user is authenticated');
+            // Update activity timestamp since app is opening
+            await SecureStorageService.updateLastActivity();
+          } else {
+            console.log('🔐 AuthStore: No valid tokens found - user needs to sign in');
           }
           
-          try {
-            deviceInfo = await SecureStorageService.getDeviceInfo();
-            console.log('🔐 Device info result:', deviceInfo ? 'found' : 'none');
-          } catch (error) {
-            console.log('🔐 No stored device info (normal for first launch)');
-          }
-          
-          if (tokens && tokens.expiresAt > Date.now()) {
-            console.log('🔐 Valid tokens found, restoring session...');
-            
-            // Create session object from stored tokens (don't validate with Supabase)
-            // The tokens are already valid since they were stored from a successful magic link
-            const session = {
-              access_token: tokens.accessToken,
-              refresh_token: tokens.refreshToken,
-              expires_at: Math.floor(tokens.expiresAt / 1000), // Convert back to seconds
-              expires_in: Math.floor((tokens.expiresAt - Date.now()) / 1000),
-              token_type: 'bearer',
-              user: null // User info will be fetched when needed
-            };
-            
-            set({
-              session: session,
-              user: null, // Will be populated when needed
-              isAuthenticated: true,
-              deviceInfo,
-              isInitialized: true,
-              isLoading: false,
-              error: null,
-            });
-            
-            console.log('✅ Auth restored from secure storage');
-            reactotron.log('✅ Auth restored from secure storage');
-            return;
-          }
-          
-          // No valid session found
-          console.log('🔐 No valid session found during initialization');
           set({
+            isAuthenticated: hasValidTokens,
             isInitialized: true,
             isLoading: false,
-            isAuthenticated: false,
-            session: null,
-            user: null,
-            deviceInfo,
+            error: null,
           });
           
-          reactotron.log('🔐 No valid session found during initialization');
+          console.log('✅ AuthStore: Initialization complete, isAuthenticated:', hasValidTokens);
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Failed to initialize auth';
-          console.error('❌ Failed to initialize auth store:', error);
-          reactotron.error('Failed to initialize auth store:', error as Error);
+          console.error('❌ AuthStore: Failed to initialize:', error);
           
           set({
             isInitialized: true,
             isLoading: false,
             error: errorMessage,
             isAuthenticated: false,
-            session: null,
-            user: null,
           });
         }
       },
 
       // Sign in with magic link
       signInWithMagicLink: async (magicLinkData: MagicLinkData) => {
-        console.log('🔑 Starting magic link authentication...', magicLinkData);
+        console.log('🔑 AuthStore: Starting magic link authentication...', {
+          hasAccessToken: !!magicLinkData.access_token,
+          hasRefreshToken: !!magicLinkData.refresh_token,
+          expiresIn: magicLinkData.expires_in
+        });
         set({ isLoading: true, error: null });
         
         try {
-          reactotron.log('🔑 Processing magic link authentication...');
-          console.log('🔑 Processing magic link authentication...', {
-            hasAccessToken: !!magicLinkData.access_token,
-            hasRefreshToken: !!magicLinkData.refresh_token,
-            error: magicLinkData.error
-          });
-          
           if (!magicLinkData.access_token || !magicLinkData.refresh_token) {
-            console.error('Invalid magic link data:', magicLinkData);
-            throw new Error('Invalid magic link data');
+            throw new Error('Invalid magic link data - missing tokens');
           }
           
-          // The tokens from magic link are already validated by Supabase
-          // Just store them and mark as authenticated - no need to call Supabase again
-          console.log('✅ Magic link tokens are valid, storing and authenticating...');
+          // Validate the access token for security
+          console.log('🔒 AuthStore: Validating JWT token security...');
+          const jwtValidation = validateJWTForSecurity(magicLinkData.access_token);
           
-          // Create session object from magic link tokens
-          const session = {
-            access_token: magicLinkData.access_token,
-            refresh_token: magicLinkData.refresh_token,
-            expires_at: Math.floor(Date.now() / 1000) + parseInt(magicLinkData.expires_in || '3600'),
-            expires_in: parseInt(magicLinkData.expires_in || '3600'),
-            token_type: magicLinkData.token_type || 'bearer',
-            user: null // We'll get user info when needed via API calls
-          };
+          if (!jwtValidation.isValid) {
+            console.error('❌ AuthStore: JWT validation failed:', jwtValidation.reason);
+            throw new Error(`Security validation failed: ${jwtValidation.reason}`);
+          }
           
-          // Store tokens securely
+          console.log('✅ AuthStore: JWT token is valid and not expired');
+          
+          // Store tokens securely with current timestamp as lastActivity
           const authTokens: AuthTokens = {
-            accessToken: session.access_token,
-            refreshToken: session.refresh_token,
-            expiresAt: session.expires_at ? session.expires_at * 1000 : Date.now() + 3600000,
-            userId: '', // Will be populated when needed
+            accessToken: magicLinkData.access_token,
+            refreshToken: magicLinkData.refresh_token,
+            userId: 'magic_link_user', // Use a default value for now
+            lastActivity: Date.now(),
           };
           
-          console.log('💾 Storing auth tokens securely...');
+          console.log('💾 AuthStore: Storing auth tokens securely...', {
+            lastActivity: new Date(authTokens.lastActivity).toISOString(),
+            hasAccessToken: !!authTokens.accessToken,
+            hasRefreshToken: !!authTokens.refreshToken
+          });
+          
           await SecureStorageService.setAuthTokens(authTokens);
           
-          // Update state - user is now authenticated
-          console.log('✅ Setting authenticated state...');
           set({
-            session: session,
-            user: null, // Will be populated when needed
             isAuthenticated: true,
             isLoading: false,
             error: null,
           });
           
-          console.log('✅ Authentication successful - tokens stored');
-          reactotron.log('✅ Authentication successful - tokens stored');
+          console.log('✅ AuthStore: Magic link authentication successful, isAuthenticated: true');
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Authentication failed';
-          console.error('❌ Magic link authentication failed:', error);
-          reactotron.error('Magic link authentication failed:', error as Error);
+          console.error('❌ AuthStore: Magic link authentication failed:', error);
           
           set({
             isLoading: false,
             error: errorMessage,
             isAuthenticated: false,
-            session: null,
-            user: null,
           });
         }
       },
@@ -209,33 +151,25 @@ const useAuthStore = create<AuthState>()(
         set({ isLoading: true, error: null });
         
         try {
-          reactotron.log('🚪 Signing out...');
-          
-          // Sign out from Supabase
-          await supabaseClient.signOut();
+          console.log('🚪 Signing out...');
           
           // Clear secure storage
           await SecureStorageService.clearAuthTokens();
-          await SecureStorageService.clearPIN();
           
           // Clear state
           set({
-            session: null,
-            user: null,
             isAuthenticated: false,
             isLoading: false,
             error: null,
           });
           
-          reactotron.log('✅ Sign out successful');
+          console.log('✅ Sign out successful');
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Sign out failed';
-          reactotron.error('Sign out failed:', error as Error);
+          console.error('❌ Sign out failed:', error);
           
           // Clear state anyway for security
           set({
-            session: null,
-            user: null,
             isAuthenticated: false,
             isLoading: false,
             error: errorMessage,
@@ -243,93 +177,47 @@ const useAuthStore = create<AuthState>()(
         }
       },
 
-      // Refresh session
-      refreshSession: async () => {
-        const { session } = get();
-        
-        if (!session) {
-          reactotron.log('No session to refresh');
-          return;
-        }
-        
-        set({ isLoading: true, error: null });
-        
+      // Update activity timestamp
+      updateActivity: async () => {
         try {
-          reactotron.log('🔄 Refreshing session...');
-          
-          const currentSessionResult = await supabaseClient.getCurrentSession();
-          
-          if (currentSessionResult.success && currentSessionResult.session) {
-            // Update tokens in secure storage
-            const authTokens: AuthTokens = {
-              accessToken: currentSessionResult.session.access_token,
-              refreshToken: currentSessionResult.session.refresh_token,
-              expiresAt: currentSessionResult.session.expires_at 
-                ? currentSessionResult.session.expires_at * 1000 
-                : Date.now() + 3600000,
-              userId: currentSessionResult.session.user?.id || '',
-            };
-            
-            await SecureStorageService.setAuthTokens(authTokens);
-            
-            set({
-              session: currentSessionResult.session,
-              user: currentSessionResult.session.user,
-              isLoading: false,
-              error: null,
-            });
-            
-            reactotron.log('✅ Session refreshed successfully');
-          } else {
-            // Session expired, need to re-authenticate
-            set({
-              session: null,
-              user: null,
-              isAuthenticated: false,
-              isLoading: false,
-              error: 'Session expired. Please sign in again.',
-            });
-            
-            await SecureStorageService.clearAuthTokens();
-          }
+          await SecureStorageService.updateLastActivity();
         } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : 'Failed to refresh session';
-          reactotron.error('Session refresh failed:', error as Error);
-          
-          set({
-            isLoading: false,
-            error: errorMessage,
-          });
+          console.error('Failed to update activity:', error);
         }
       },
 
-      // Set device info
-      setDeviceInfo: async (deviceInfo: DeviceInfo) => {
+      // Get access token for API calls
+      getAccessToken: async (): Promise<string | null> => {
         try {
-          await SecureStorageService.setDeviceInfo(deviceInfo);
-          set({ deviceInfo });
-          reactotron.log('📱 Device info stored:', deviceInfo.deviceId);
+          const tokens = await SecureStorageService.getAuthTokens();
+          return tokens?.accessToken || null;
         } catch (error) {
-          reactotron.error('Failed to store device info:', error as Error);
+          console.error('Failed to get access token:', error);
+          return null;
         }
       },
 
-      // Clear error
-      clearError: () => set({ error: null }),
+      // Check if user has valid tokens
+      hasValidTokens: async (): Promise<boolean> => {
+        try {
+          const tokens = await SecureStorageService.getAuthTokens();
+          return tokens !== null;
+        } catch (error) {
+          console.error('Failed to check valid tokens:', error);
+          return false;
+        }
+      },
 
-      // Internal setters
-      _setSession: (session) => set({ session }),
-      _setUser: (user) => set({ user }),
-      _setLoading: (isLoading) => set({ isLoading }),
-      _setError: (error) => set({ error }),
-    }),
+        // Clear error
+        clearError: () => set({ error: null }),
+      };
+    },
     {
       name: 'nvlp-auth-storage',
       storage: createJSONStorage(() => AsyncStorage),
-      // Only persist non-sensitive data
+      // Only persist authentication status, not initialization state
       partialize: (state) => ({
-        isInitialized: state.isInitialized,
-        deviceInfo: state.deviceInfo,
+        isAuthenticated: state.isAuthenticated,
       }),
     }
   )

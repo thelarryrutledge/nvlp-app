@@ -2,7 +2,6 @@ import { useEffect, useCallback, useRef } from 'react';
 import { Alert } from 'react-native';
 import useAuthStore from '../store/authStore';
 import useMagicLink from './useMagicLink';
-import reactotron from '../config/reactotron';
 
 interface UseAuthOptions {
   autoInitialize?: boolean;
@@ -28,19 +27,17 @@ export const useAuth = (options: UseAuthOptions = {}) => {
 
   // Get auth store state and actions
   const {
-    user,
-    session,
     isAuthenticated,
     isLoading,
     isInitialized,
     error,
-    deviceInfo,
     initialize,
     signInWithMagicLink,
     signOut,
-    refreshSession,
-    setDeviceInfo,
+    updateActivity,
     clearError,
+    getAccessToken,
+    hasValidTokens,
   } = useAuthStore();
 
   // Set up magic link handling
@@ -48,14 +45,13 @@ export const useAuth = (options: UseAuthOptions = {}) => {
     autoInitialize: true, // Let it auto-initialize
     showAlerts: false, // We'll handle alerts here
     onMagicLink: async (data) => {
-      reactotron.log('🔗 Magic link received in useAuth:', data);
       console.log('🔗 Magic link received in useAuth:', data);
       
       // Process the magic link through the auth store
       try {
         await signInWithMagicLink(data);
         
-        if (showAlerts && !error) {
+        if (showAlerts) {
           Alert.alert(
             'Authentication Successful',
             'You have been successfully signed in!',
@@ -64,12 +60,22 @@ export const useAuth = (options: UseAuthOptions = {}) => {
         }
       } catch (authError) {
         console.error('Magic link processing failed:', authError);
-        reactotron.error('Magic link processing failed:', authError as Error);
+        
+        // Show specific error message for JWT validation failures
+        const errorMessage = authError instanceof Error ? authError.message : 'Authentication failed';
+        if (errorMessage.includes('Security validation failed')) {
+          if (showAlerts) {
+            Alert.alert(
+              'Authentication Error',
+              'This magic link has expired or is invalid. Please request a new one.',
+              [{ text: 'OK' }]
+            );
+          }
+        }
       }
     },
     onError: (errorMessage) => {
       console.error('Magic link error in useAuth:', errorMessage);
-      reactotron.error('Magic link error in useAuth:', new Error(errorMessage));
       
       if (showAlerts) {
         Alert.alert(
@@ -88,13 +94,9 @@ export const useAuth = (options: UseAuthOptions = {}) => {
       
       // Initialize auth store - magic link service auto-initializes
       await initialize();
-      console.log('✅ Auth store initialized');
-      
-      reactotron.log('✅ Auth system initialized');
       console.log('✅ Auth system initialized');
     } catch (error) {
       console.error('Non-critical initialization warning:', error);
-      reactotron.log('Non-critical initialization warning:', error as Error);
       
       // Don't show alerts for initialization errors - they're usually not critical
       // The app can still function even if initialization has some issues
@@ -103,35 +105,21 @@ export const useAuth = (options: UseAuthOptions = {}) => {
 
   // Auto-initialize on mount if enabled
   useEffect(() => {
+    console.log('🔧 useAuth: useEffect triggered', { autoInitialize, isInitialized });
     if (autoInitialize && !isInitialized) {
+      console.log('🔧 useAuth: Calling initializeAuth...');
       initializeAuth();
+    } else {
+      console.log('🔧 useAuth: Skipping initialization - autoInitialize:', autoInitialize, 'isInitialized:', isInitialized);
     }
-  }, [autoInitialize, isInitialized]);
+  }, [autoInitialize, isInitialized, initializeAuth]);
 
-  // Auto-refresh session when it's about to expire
+  // Update activity when user interacts with the app
   useEffect(() => {
-    if (!session) return;
-
-    const expiresAt = session.expires_at ? session.expires_at * 1000 : 0;
-    const now = Date.now();
-    const timeUntilExpiry = expiresAt - now;
-    
-    // Refresh 5 minutes before expiry
-    const refreshTime = timeUntilExpiry - (5 * 60 * 1000);
-    
-    if (refreshTime <= 0) {
-      // Already expired or about to expire
-      refreshSession();
-      return;
+    if (isAuthenticated) {
+      updateActivity();
     }
-
-    const timer = setTimeout(() => {
-      reactotron.log('⏰ Auto-refreshing session...');
-      refreshSession();
-    }, refreshTime);
-
-    return () => clearTimeout(timer);
-  }, [session, refreshSession]);
+  }, [isAuthenticated, updateActivity]);
 
   // Handle authentication errors
   useEffect(() => {
@@ -149,22 +137,29 @@ export const useAuth = (options: UseAuthOptions = {}) => {
     }
   }, [error, showAlerts, clearError]);
 
+  // Debug log the current auth state
+  console.log('🔧 useAuth: Returning auth state', { 
+    isAuthenticated, 
+    isLoading, 
+    isInitialized 
+  });
+
   return {
     // State
-    user,
-    session,
     isAuthenticated,
     isLoading,
     isInitialized,
     error,
-    deviceInfo,
     
     // Actions
     initialize: initializeAuth,
     signOut,
-    refreshSession,
-    setDeviceInfo,
+    updateActivity,
     clearError,
+    
+    // Token utilities
+    getAccessToken,
+    hasValidTokens,
     
     // Magic link utilities
     magicLink: {

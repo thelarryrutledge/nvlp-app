@@ -21,17 +21,15 @@ export const LoginScreen: React.FC = () => {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
-  const { magicLink, isAuthenticated, user, session, error } = useAuthContext();
+  const { magicLink, isAuthenticated, error } = useAuthContext();
   
   // Debug logging
   React.useEffect(() => {
     console.log('📱 LoginScreen render - Auth state:', {
       isAuthenticated,
-      hasUser: !!user,
-      hasSession: !!session,
       error
     });
-  }, [isAuthenticated, user, session, error]);
+  }, [isAuthenticated, error]);
 
   const handleSendMagicLink = async () => {
     if (!email) {
@@ -87,12 +85,12 @@ export const LoginScreen: React.FC = () => {
       <SafeAreaView style={styles.container}>
         <View style={styles.content}>
           <Text style={styles.title}>Welcome Back!</Text>
-          <Text style={styles.email}>{user?.email || 'Unknown User'}</Text>
+          <Text style={styles.email}>User authenticated</Text>
           <Text style={styles.successMessage}>
             You are successfully authenticated
           </Text>
           <Text style={styles.debugText}>
-            Session: {session ? 'Valid' : 'None'}
+            Authentication: Valid
           </Text>
         </View>
       </SafeAreaView>

@@ -1,47 +1,23 @@
-import * as Keychain from 'react-native-keychain';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 /**
- * Secure Storage Service
+ * Token Storage Service
  * 
- * Provides secure storage for authentication tokens, PIN, and other sensitive data
- * using the device's secure keychain/keystore.
- * 
- * Security Features:
- * - Tokens stored in hardware-backed keychain when available
- * - Biometric authentication protection
- * - Access control restrictions
+ * Simple token storage using AsyncStorage for convenience authentication.
+ * Security is provided by magic link validation, not storage encryption.
  */
 
-// Service identifiers for different types of stored data
-const SERVICES = {
-  AUTH_TOKENS: 'nvlp.auth.tokens',
-  USER_PIN: 'nvlp.auth.pin',
-  DEVICE_INFO: 'nvlp.device.info',
-  BIOMETRIC_SETTINGS: 'nvlp.biometric.settings',
+// Storage keys for different types of data
+const STORAGE_KEYS = {
+  AUTH_TOKENS: '@nvlp:auth_tokens',
+  DEVICE_INFO: '@nvlp:device_info',
 } as const;
-
-// Keychain access control options for maximum security
-const SECURE_OPTIONS: Keychain.Options = {
-  accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_ANY_OR_DEVICE_PASSCODE,
-  accessGroup: undefined, // Use default access group
-  authenticatePrompt: 'Authenticate to access NVLP',
-  service: SERVICES.AUTH_TOKENS,
-  touchID: true,
-  showModal: true,
-};
-
-// Standard options for non-critical data
-const STANDARD_OPTIONS: Keychain.Options = {
-  service: SERVICES.AUTH_TOKENS,
-  touchID: false,
-  showModal: false,
-};
 
 export interface AuthTokens {
   accessToken: string;
   refreshToken: string;
-  expiresAt: number;
   userId: string;
+  lastActivity: number; // Track last activity for auto sign-out
 }
 
 export interface DeviceInfo {
@@ -51,30 +27,29 @@ export interface DeviceInfo {
   deviceType: 'ios' | 'android';
 }
 
-export interface BiometricSettings {
-  enabled: boolean;
-  availableType: 'FaceID' | 'TouchID' | 'Fingerprint' | 'Passcode' | 'None';
-}
-
 /**
- * Secure Storage Service
+ * Token Storage Service
  */
 export class SecureStorageService {
   /**
-   * Store authentication tokens securely
+   * Store authentication tokens
    */
   static async setAuthTokens(tokens: AuthTokens): Promise<void> {
     try {
+      console.log('💾 TokenStorage: Storing auth tokens...', {
+        userId: tokens.userId,
+        lastActivity: new Date(tokens.lastActivity).toISOString(),
+        hasAccessToken: !!tokens.accessToken,
+        hasRefreshToken: !!tokens.refreshToken
+      });
+      
       const tokenData = JSON.stringify(tokens);
-      await Keychain.setInternetCredentials(
-        SERVICES.AUTH_TOKENS,
-        tokens.userId,
-        tokenData,
-        SECURE_OPTIONS
-      );
+      await AsyncStorage.setItem(STORAGE_KEYS.AUTH_TOKENS, tokenData);
+      
+      console.log('✅ TokenStorage: Auth tokens stored successfully');
     } catch (error) {
-      console.error('Failed to store auth tokens:', error);
-      throw new Error('Failed to store authentication tokens securely');
+      console.error('❌ TokenStorage: Failed to store auth tokens:', error);
+      throw new Error('Failed to store authentication tokens');
     }
   }
 
@@ -83,24 +58,58 @@ export class SecureStorageService {
    */
   static async getAuthTokens(): Promise<AuthTokens | null> {
     try {
-      const credentials = await Keychain.getInternetCredentials(SERVICES.AUTH_TOKENS);
+      console.log('💾 TokenStorage: Attempting to retrieve auth tokens...');
       
-      if (!credentials || credentials === false) {
+      const tokenData = await AsyncStorage.getItem(STORAGE_KEYS.AUTH_TOKENS);
+      
+      console.log('💾 TokenStorage: AsyncStorage result:', {
+        hasData: !!tokenData,
+        dataLength: tokenData?.length || 0
+      });
+      
+      if (!tokenData) {
+        console.log('💾 TokenStorage: No tokens found in storage');
         return null;
       }
 
-      const tokens = JSON.parse(credentials.password) as AuthTokens;
+      console.log('💾 TokenStorage: Parsing stored token data...');
+      const tokens = JSON.parse(tokenData) as AuthTokens;
       
-      // Check if tokens are expired
-      if (tokens.expiresAt <= Date.now()) {
+      console.log('💾 TokenStorage: Retrieved tokens:', {
+        userId: tokens.userId,
+        lastActivity: tokens.lastActivity ? new Date(tokens.lastActivity).toISOString() : 'undefined',
+        hasAccessToken: !!tokens.accessToken,
+        hasRefreshToken: !!tokens.refreshToken
+      });
+      
+      // Only check for 30-day inactivity - assume tokens are valid since they were validated before storing
+      const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+      if (tokens.lastActivity && (Date.now() - tokens.lastActivity) > thirtyDaysMs) {
+        console.log('💾 TokenStorage: Auto sign-out - 30 days of inactivity detected');
         await this.clearAuthTokens();
         return null;
       }
 
+      console.log('✅ TokenStorage: Valid tokens found');
       return tokens;
     } catch (error) {
-      console.error('Failed to retrieve auth tokens:', error);
+      console.error('❌ TokenStorage: Failed to retrieve auth tokens:', error);
       return null;
+    }
+  }
+
+  /**
+   * Update last activity timestamp for existing tokens
+   */
+  static async updateLastActivity(): Promise<void> {
+    try {
+      const tokens = await this.getAuthTokens();
+      if (tokens) {
+        tokens.lastActivity = Date.now();
+        await this.setAuthTokens(tokens);
+      }
+    } catch (error) {
+      console.error('Failed to update last activity:', error);
     }
   }
 
@@ -109,59 +118,11 @@ export class SecureStorageService {
    */
   static async clearAuthTokens(): Promise<void> {
     try {
-      await Keychain.resetInternetCredentials(SERVICES.AUTH_TOKENS);
+      console.log('💾 TokenStorage: Clearing auth tokens...');
+      await AsyncStorage.removeItem(STORAGE_KEYS.AUTH_TOKENS);
+      console.log('✅ TokenStorage: Auth tokens cleared successfully');
     } catch (error) {
-      console.error('Failed to clear auth tokens:', error);
-    }
-  }
-
-  /**
-   * Store user PIN securely
-   */
-  static async setPIN(pin: string, userId: string): Promise<void> {
-    try {
-      await Keychain.setInternetCredentials(
-        SERVICES.USER_PIN,
-        userId,
-        pin,
-        {
-          ...SECURE_OPTIONS,
-          service: SERVICES.USER_PIN,
-          authenticatePrompt: 'Authenticate to save your PIN',
-        }
-      );
-    } catch (error) {
-      console.error('Failed to store PIN:', error);
-      throw new Error('Failed to store PIN securely');
-    }
-  }
-
-  /**
-   * Verify user PIN
-   */
-  static async verifyPIN(pin: string, userId: string): Promise<boolean> {
-    try {
-      const credentials = await Keychain.getInternetCredentials(SERVICES.USER_PIN);
-      
-      if (!credentials || credentials === false) {
-        return false;
-      }
-
-      return credentials.password === pin && credentials.username === userId;
-    } catch (error) {
-      console.error('Failed to verify PIN:', error);
-      return false;
-    }
-  }
-
-  /**
-   * Clear user PIN
-   */
-  static async clearPIN(): Promise<void> {
-    try {
-      await Keychain.resetInternetCredentials(SERVICES.USER_PIN);
-    } catch (error) {
-      console.error('Failed to clear PIN:', error);
+      console.error('❌ TokenStorage: Failed to clear auth tokens:', error);
     }
   }
 
@@ -171,15 +132,7 @@ export class SecureStorageService {
   static async setDeviceInfo(deviceInfo: DeviceInfo): Promise<void> {
     try {
       const deviceData = JSON.stringify(deviceInfo);
-      await Keychain.setInternetCredentials(
-        SERVICES.DEVICE_INFO,
-        deviceInfo.deviceId,
-        deviceData,
-        {
-          ...STANDARD_OPTIONS,
-          service: SERVICES.DEVICE_INFO,
-        }
-      );
+      await AsyncStorage.setItem(STORAGE_KEYS.DEVICE_INFO, deviceData);
     } catch (error) {
       console.error('Failed to store device info:', error);
       throw new Error('Failed to store device information');
@@ -191,75 +144,11 @@ export class SecureStorageService {
    */
   static async getDeviceInfo(): Promise<DeviceInfo | null> {
     try {
-      const credentials = await Keychain.getInternetCredentials(SERVICES.DEVICE_INFO);
-      
-      if (!credentials || credentials === false) {
-        return null;
-      }
-
-      return JSON.parse(credentials.password) as DeviceInfo;
+      const deviceData = await AsyncStorage.getItem(STORAGE_KEYS.DEVICE_INFO);
+      return deviceData ? JSON.parse(deviceData) as DeviceInfo : null;
     } catch (error) {
       console.error('Failed to retrieve device info:', error);
       return null;
-    }
-  }
-
-  /**
-   * Store biometric settings
-   */
-  static async setBiometricSettings(settings: BiometricSettings): Promise<void> {
-    try {
-      const settingsData = JSON.stringify(settings);
-      await Keychain.setInternetCredentials(
-        SERVICES.BIOMETRIC_SETTINGS,
-        'biometric_settings',
-        settingsData,
-        {
-          ...STANDARD_OPTIONS,
-          service: SERVICES.BIOMETRIC_SETTINGS,
-        }
-      );
-    } catch (error) {
-      console.error('Failed to store biometric settings:', error);
-      throw new Error('Failed to store biometric settings');
-    }
-  }
-
-  /**
-   * Retrieve biometric settings
-   */
-  static async getBiometricSettings(): Promise<BiometricSettings | null> {
-    try {
-      const credentials = await Keychain.getInternetCredentials(SERVICES.BIOMETRIC_SETTINGS);
-      
-      if (!credentials || credentials === false) {
-        return null;
-      }
-
-      return JSON.parse(credentials.password) as BiometricSettings;
-    } catch (error) {
-      console.error('Failed to retrieve biometric settings:', error);
-      return null;
-    }
-  }
-
-  /**
-   * Check if biometric authentication is available
-   */
-  static async isBiometricAvailable(): Promise<BiometricSettings> {
-    try {
-      const biometryType = await Keychain.getSupportedBiometryType();
-      
-      return {
-        enabled: false, // Default to disabled, user must opt-in
-        availableType: biometryType || 'None',
-      };
-    } catch (error) {
-      console.error('Failed to check biometric availability:', error);
-      return {
-        enabled: false,
-        availableType: 'None',
-      };
     }
   }
 
@@ -270,24 +159,10 @@ export class SecureStorageService {
     try {
       await Promise.all([
         this.clearAuthTokens(),
-        this.clearPIN(),
-        Keychain.resetInternetCredentials(SERVICES.DEVICE_INFO),
-        Keychain.resetInternetCredentials(SERVICES.BIOMETRIC_SETTINGS),
+        AsyncStorage.removeItem(STORAGE_KEYS.DEVICE_INFO),
       ]);
     } catch (error) {
-      console.error('Failed to clear all secure storage:', error);
-    }
-  }
-
-  /**
-   * Check if keychain is available
-   */
-  static async isAvailable(): Promise<boolean> {
-    try {
-      return await Keychain.hasInternetCredentials(SERVICES.AUTH_TOKENS);
-    } catch (error) {
-      console.error('Failed to check keychain availability:', error);
-      return false;
+      console.error('Failed to clear all storage:', error);
     }
   }
 }

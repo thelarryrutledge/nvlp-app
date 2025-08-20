@@ -1,24 +1,22 @@
 import React, { createContext, useContext, useEffect } from 'react';
 import useAuth from '../hooks/useAuth';
 import useAuthStore from '../store/authStore';
-import { User, Session } from '@supabase/supabase-js';
-import { DeviceInfo } from '../services/secureStorage';
 
 interface AuthContextValue {
   // State
-  user: User | null;
-  session: Session | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   isInitialized: boolean;
   error: string | null;
-  deviceInfo: DeviceInfo | null;
   
   // Actions
   signOut: () => Promise<void>;
-  refreshSession: () => Promise<void>;
-  setDeviceInfo: (deviceInfo: DeviceInfo) => Promise<void>;
+  updateActivity: () => Promise<void>;
   clearError: () => void;
+  
+  // Token utilities
+  getAccessToken: () => Promise<string | null>;
+  hasValidTokens: () => Promise<boolean>;
   
   // Magic link utilities
   magicLink: {
@@ -49,10 +47,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
   autoInitialize = true,
   showAlerts = true,
 }) => {
+  console.log('🏗️ AuthProvider: Rendering with props', { autoInitialize, showAlerts });
+  
   const auth = useAuth({
     autoInitialize,
     showAlerts,
   });
+  
+  console.log('🏗️ AuthProvider: useAuth result', { 
+    isAuthenticated: auth.isAuthenticated, 
+    isInitialized: auth.isInitialized,
+    isLoading: auth.isLoading 
+  });
+
+  // Re-render debug
+  React.useEffect(() => {
+    console.log('🏗️ AuthProvider: Auth state changed', {
+      isAuthenticated: auth.isAuthenticated,
+      isInitialized: auth.isInitialized,
+      isLoading: auth.isLoading
+    });
+  }, [auth.isAuthenticated, auth.isInitialized, auth.isLoading]);
 
   return (
     <AuthContext.Provider value={auth}>
@@ -87,23 +102,13 @@ export const useIsAuthenticated = (): boolean => {
 };
 
 /**
- * Hook to get current user
+ * Hook to get access token
  * 
- * Simple hook that returns just the current user
+ * Simple hook that returns the access token
  */
-export const useCurrentUser = (): User | null => {
-  const { user } = useAuthContext();
-  return user;
-};
-
-/**
- * Hook to get current session
- * 
- * Simple hook that returns just the current session
- */
-export const useSession = (): Session | null => {
-  const { session } = useAuthContext();
-  return session;
+export const useAccessToken = (): (() => Promise<string | null>) => {
+  const { getAccessToken } = useAuthContext();
+  return getAccessToken;
 };
 
 export default AuthContext;
