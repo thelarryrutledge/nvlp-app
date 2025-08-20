@@ -16,6 +16,7 @@ import { Session } from '@supabase/supabase-js';
 import SecureStorageService, { AuthTokens } from './secureStorage';
 import LocalStorageService from './localStorage';
 import { env, validateEnv } from '../config/env';
+import { getDeviceHeaders } from '../utils/device';
 import reactotron from '../config/reactotron';
 
 /**
@@ -179,8 +180,12 @@ export class ApiClientService {
     // Create session provider
     this.sessionProvider = new ReactNativeSessionProvider();
 
-    // Get device info for headers
-    const deviceInfo = await SecureStorageService.getDeviceInfo();
+    // Get device headers for all API requests
+    const deviceHeaders = await getDeviceHeaders();
+    
+    // Get device ID separately for the config
+    const { getDeviceId } = await import('../utils/device');
+    const deviceId = await getDeviceId();
 
     // Validate environment variables
     validateEnv();
@@ -193,7 +198,7 @@ export class ApiClientService {
       headers: {
         'X-Client-Type': 'react-native',
         'X-Client-Version': '1.0.0',
-        ...(deviceInfo?.deviceId && { 'X-Device-ID': deviceInfo.deviceId }),
+        ...deviceHeaders,
       },
       timeout: 30000, // 30 seconds
       offlineQueue: {
@@ -216,7 +221,7 @@ export class ApiClientService {
           },
         },
       },
-      deviceId: deviceInfo?.deviceId,
+      deviceId,
       ...config,
     };
 

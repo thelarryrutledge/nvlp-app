@@ -4,6 +4,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import SecureStorageService, { AuthTokens } from '../services/secureStorage';
 import { MagicLinkData } from '../services/deepLinkService';
 import { validateJWTForSecurity } from '../utils/jwt';
+import DeviceService from '../services/deviceService';
+import ApiClientService from '../services/apiClient';
 
 interface AuthState {
   // State
@@ -126,6 +128,25 @@ const useAuthStore = create<AuthState>()(
           });
           
           await SecureStorageService.setAuthTokens(authTokens);
+          
+          // Initialize API client if not already initialized
+          console.log('🔌 AuthStore: Initializing API client...');
+          try {
+            await ApiClientService.initialize();
+            console.log('✅ AuthStore: API client initialized');
+          } catch (initError) {
+            console.warn('⚠️ AuthStore: API client initialization failed:', initError);
+          }
+          
+          // Register device after successful authentication
+          console.log('📱 AuthStore: Registering device with API...');
+          try {
+            await DeviceService.registerDevice();
+            console.log('✅ AuthStore: Device registered successfully');
+          } catch (deviceError) {
+            // Log but don't fail authentication if device registration fails
+            console.warn('⚠️ AuthStore: Device registration failed (non-critical):', deviceError);
+          }
           
           set({
             isAuthenticated: true,
