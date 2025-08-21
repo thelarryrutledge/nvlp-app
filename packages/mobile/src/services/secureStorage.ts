@@ -80,7 +80,9 @@ export class SecureStorageService {
         userId: tokens.userId,
         lastActivity: tokens.lastActivity ? new Date(tokens.lastActivity).toISOString() : 'undefined',
         hasAccessToken: !!tokens.accessToken,
-        hasRefreshToken: !!tokens.refreshToken
+        hasRefreshToken: !!tokens.refreshToken,
+        expiresAt: tokens.expiresAt,
+        expiresAtDate: tokens.expiresAt ? new Date(tokens.expiresAt * 1000).toISOString() : 'N/A'
       });
       
       // Only check for 30-day inactivity - assume tokens are valid since they were validated before storing
