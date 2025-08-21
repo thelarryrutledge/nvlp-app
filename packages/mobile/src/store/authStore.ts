@@ -121,6 +121,7 @@ const useAuthStore = create<AuthState>()(
             refreshToken: magicLinkData.refresh_token,
             userId: 'magic_link_user', // Use a default value for now
             lastActivity: Date.now(),
+            expiresAt: magicLinkData.expires_at ? parseInt(magicLinkData.expires_at, 10) : undefined, // Store the actual expiry time
           };
           
           console.log('💾 AuthStore: Storing auth tokens securely...', {

@@ -14,6 +14,7 @@ export interface MagicLinkData {
   access_token?: string;
   refresh_token?: string;
   expires_in?: string;
+  expires_at?: string; // Unix timestamp when the token expires
   token_type?: string;
   type?: string;
   error?: string;

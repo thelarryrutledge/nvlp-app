@@ -18,6 +18,7 @@ export interface AuthTokens {
   refreshToken: string;
   userId: string;
   lastActivity: number; // Track last activity for auto sign-out
+  expiresAt?: number; // Unix timestamp when the access token expires
 }
 
 export interface DeviceInfo {

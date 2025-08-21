@@ -53,9 +53,17 @@ class ReactNativeSessionProvider implements SessionProvider {
    * Convert our AuthTokens to Supabase Session format
    */
   private createSessionFromTokens(tokens: AuthTokens): Session {
-    // Calculate expiration time (assume 1 hour default if not present)
-    const expiresInMs = 60 * 60 * 1000; // 1 hour
-    const expiresAt = Math.floor((tokens.lastActivity + expiresInMs) / 1000);
+    // Use the stored expires_at if available, otherwise calculate based on lastActivity
+    let expiresAt: number;
+    if (tokens.expiresAt) {
+      // Use the actual expiry time from the token
+      expiresAt = tokens.expiresAt;
+    } else {
+      // Fallback: assume 1 hour from lastActivity (shouldn't happen with new tokens)
+      const expiresInMs = 60 * 60 * 1000; // 1 hour
+      expiresAt = Math.floor((tokens.lastActivity + expiresInMs) / 1000);
+      console.warn('⚠️ No expiresAt in stored tokens, using fallback calculation');
+    }
     
     return {
       access_token: tokens.accessToken,
@@ -212,6 +220,7 @@ class ReactNativeSessionProvider implements SessionProvider {
         refreshToken: session.refresh_token,
         userId: session.user.id,
         lastActivity: Date.now(),
+        expiresAt: session.expires_at, // Store the actual expiry time
       };
       
       await SecureStorageService.setAuthTokens(tokens);
