@@ -63,6 +63,19 @@ export const useDeviceManagement = (options: UseDeviceManagementOptions = {}): U
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   /**
+   * Ensure API client is initialized before use
+   */
+  const ensureApiClient = useCallback(async () => {
+    try {
+      return ApiClientService.getClient();
+    } catch (initError) {
+      // If client not initialized, initialize it now
+      await ApiClientService.initialize();
+      return ApiClientService.getClient();
+    }
+  }, []);
+
+  /**
    * Fetch all devices for the current user
    */
   const fetchDevices = useCallback(async () => {
@@ -70,7 +83,7 @@ export const useDeviceManagement = (options: UseDeviceManagementOptions = {}): U
       setIsLoading(true);
       setError(null);
       
-      const client = ApiClientService.getClient();
+      const client = await ensureApiClient();
       const deviceList = await client.device.getDevices();
       
       setDevices(deviceList);
@@ -94,7 +107,7 @@ export const useDeviceManagement = (options: UseDeviceManagementOptions = {}): U
     } finally {
       setIsLoading(false);
     }
-  }, [showAlerts]);
+  }, [showAlerts, ensureApiClient]);
 
   /**
    * Register the current device with the API
@@ -118,7 +131,7 @@ export const useDeviceManagement = (options: UseDeviceManagementOptions = {}): U
         ip_address: deviceInfo.ipAddress,
       };
       
-      const client = ApiClientService.getClient();
+      const client = await ensureApiClient();
       const result = await client.device.registerDevice(registerRequest);
       
       // Store device info locally
@@ -159,7 +172,7 @@ export const useDeviceManagement = (options: UseDeviceManagementOptions = {}): U
     } finally {
       setIsLoading(false);
     }
-  }, [fetchDevices, showAlerts]);
+  }, [fetchDevices, showAlerts, ensureApiClient]);
 
   /**
    * Update device name
@@ -169,7 +182,7 @@ export const useDeviceManagement = (options: UseDeviceManagementOptions = {}): U
       setIsLoading(true);
       setError(null);
       
-      const client = ApiClientService.getClient();
+      const client = await ensureApiClient();
       const updatedDevice = await client.device.updateDeviceInfo({
         device_name: newName,
       });
@@ -199,7 +212,7 @@ export const useDeviceManagement = (options: UseDeviceManagementOptions = {}): U
     } finally {
       setIsLoading(false);
     }
-  }, [currentDevice, showAlerts]);
+  }, [currentDevice, showAlerts, ensureApiClient]);
 
   /**
    * Sign out a specific device
@@ -214,7 +227,7 @@ export const useDeviceManagement = (options: UseDeviceManagementOptions = {}): U
         throw new Error('Cannot sign out the current device. Use the sign out function instead.');
       }
       
-      const client = ApiClientService.getClient();
+      const client = await ensureApiClient();
       await client.device.signOutDevice(deviceId);
       
       // Remove from local state
@@ -237,7 +250,7 @@ export const useDeviceManagement = (options: UseDeviceManagementOptions = {}): U
     } finally {
       setIsLoading(false);
     }
-  }, [currentDevice, devices, showAlerts]);
+  }, [currentDevice, devices, showAlerts, ensureApiClient]);
 
   /**
    * Sign out all other devices
@@ -247,7 +260,7 @@ export const useDeviceManagement = (options: UseDeviceManagementOptions = {}): U
       setIsLoading(true);
       setError(null);
       
-      const client = ApiClientService.getClient();
+      const client = await ensureApiClient();
       await client.device.signOutAllOtherDevices();
       
       // Keep only the current device in state
@@ -271,7 +284,7 @@ export const useDeviceManagement = (options: UseDeviceManagementOptions = {}): U
     } finally {
       setIsLoading(false);
     }
-  }, [currentDevice, showAlerts]);
+  }, [currentDevice, showAlerts, ensureApiClient]);
 
   /**
    * Revoke a device (permanent action)
@@ -281,7 +294,7 @@ export const useDeviceManagement = (options: UseDeviceManagementOptions = {}): U
       setIsLoading(true);
       setError(null);
       
-      const client = ApiClientService.getClient();
+      const client = await ensureApiClient();
       await client.device.revokeDevice(deviceId);
       
       // Update device status in local state
@@ -306,7 +319,7 @@ export const useDeviceManagement = (options: UseDeviceManagementOptions = {}): U
     } finally {
       setIsLoading(false);
     }
-  }, [devices, showAlerts]);
+  }, [devices, showAlerts, ensureApiClient]);
 
   /**
    * Refresh security status
@@ -316,7 +329,7 @@ export const useDeviceManagement = (options: UseDeviceManagementOptions = {}): U
       setIsLoading(true);
       setError(null);
       
-      const client = ApiClientService.getClient();
+      const client = await ensureApiClient();
       const status = await client.device.getDeviceSecurityStatus();
       
       setSecurityStatus(status);
@@ -332,7 +345,7 @@ export const useDeviceManagement = (options: UseDeviceManagementOptions = {}): U
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [ensureApiClient]);
 
   /**
    * Clear error state
