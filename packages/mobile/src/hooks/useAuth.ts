@@ -97,8 +97,8 @@ export const useAuth = (options: UseAuthOptions = {}) => {
       // Initialize auth store - magic link service auto-initializes
       await initialize();
       
-      // Initialize API client to set up session invalidation handling
-      await ApiClientService.initialize();
+      // Don't initialize API client here - it will be initialized lazily when needed
+      // This prevents initialization errors when environment isn't ready
       
       console.log('✅ Auth system initialized');
     } catch (error) {
@@ -129,36 +129,41 @@ export const useAuth = (options: UseAuthOptions = {}) => {
 
   // Set up session invalidation handling
   useEffect(() => {
-    if (!isInitialized) return;
+    if (!isInitialized || !isAuthenticated) return;
 
     console.log('🔧 useAuth: Setting up session invalidation handler...');
     
-    const unsubscribe = ApiClientService.onSessionInvalidated(async (errorMessage: string) => {
-      console.log('🚨 useAuth: Session invalidated:', errorMessage);
-      
-      // Handle session invalidation through the auth store
-      await handleSessionInvalidated(errorMessage);
-      
-      // Show alert to user if enabled
-      if (showAlerts) {
-        Alert.alert(
-          'Session Ended',
-          'Your session has been ended for security reasons. Please sign in again.',
-          [
-            { 
-              text: 'OK',
-              onPress: clearError,
-            }
-          ]
-        );
-      }
-    });
+    try {
+      const unsubscribe = ApiClientService.onSessionInvalidated(async (errorMessage: string) => {
+        console.log('🚨 useAuth: Session invalidated:', errorMessage);
+        
+        // Handle session invalidation through the auth store
+        await handleSessionInvalidated(errorMessage);
+        
+        // Show alert to user if enabled
+        if (showAlerts) {
+          Alert.alert(
+            'Session Ended',
+            'Your session has been ended for security reasons. Please sign in again.',
+            [
+              { 
+                text: 'OK',
+                onPress: clearError,
+              }
+            ]
+          );
+        }
+      });
 
-    return () => {
-      console.log('🔧 useAuth: Cleaning up session invalidation handler...');
-      unsubscribe();
-    };
-  }, [isInitialized, handleSessionInvalidated, showAlerts, clearError]);
+      return () => {
+        console.log('🔧 useAuth: Cleaning up session invalidation handler...');
+        unsubscribe();
+      };
+    } catch (error) {
+      // If API client isn't ready yet, that's fine - it will be initialized when needed
+      console.log('🔧 useAuth: API client not ready for session invalidation handler');
+    }
+  }, [isInitialized, isAuthenticated, handleSessionInvalidated, showAlerts, clearError]);
 
   // Handle authentication errors
   useEffect(() => {
