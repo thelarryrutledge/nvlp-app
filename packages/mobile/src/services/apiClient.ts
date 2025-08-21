@@ -38,6 +38,11 @@ class ReactNativeSessionProvider implements SessionProvider {
       const tokens = await SecureStorageService.getAuthTokens();
       if (tokens) {
         this.currentSession = this.createSessionFromTokens(tokens);
+        console.log('🔐 Loaded stored session:', {
+          hasSession: !!this.currentSession,
+          expiresAt: this.currentSession?.expires_at,
+          isExpired: this.currentSession?.expires_at ? Math.floor(Date.now() / 1000) >= this.currentSession.expires_at : false
+        });
       }
     } catch (error) {
       console.error('Failed to load stored session:', error);
@@ -128,20 +133,31 @@ class ReactNativeSessionProvider implements SessionProvider {
     // Check if current session is still valid
     if (this.currentSession && this.currentSession.expires_at) {
       const now = Math.floor(Date.now() / 1000);
+      const isExpired = now >= this.currentSession.expires_at;
       
-      if (now >= this.currentSession.expires_at) {
+      console.log('🔐 Session check:', {
+        now,
+        expiresAt: this.currentSession.expires_at,
+        isExpired,
+        hasRefreshToken: !!this.currentSession.refresh_token
+      });
+      
+      if (isExpired) {
+        console.log('🔄 Session expired, attempting refresh...');
         // Session expired, try to refresh it before clearing
         try {
           const refreshedSession = await this.refreshSession(this.currentSession);
           if (refreshedSession) {
+            console.log('✅ Token refreshed successfully');
             await this.setSession(refreshedSession);
             return refreshedSession;
           }
         } catch (error) {
-          console.error('Failed to refresh expired session:', error);
+          console.error('❌ Failed to refresh expired session:', error);
         }
         
         // If refresh failed, clear the expired session
+        console.log('🗑️ Clearing expired session');
         this.currentSession = null;
         await SecureStorageService.clearAuthTokens();
       }
