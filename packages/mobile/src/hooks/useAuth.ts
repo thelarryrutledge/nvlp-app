@@ -2,6 +2,7 @@ import { useEffect, useCallback, useRef } from 'react';
 import { Alert } from 'react-native';
 import useAuthStore from '../store/authStore';
 import useMagicLink from './useMagicLink';
+import ApiClientService from '../services/apiClient';
 
 interface UseAuthOptions {
   autoInitialize?: boolean;
@@ -38,6 +39,7 @@ export const useAuth = (options: UseAuthOptions = {}) => {
     clearError,
     getAccessToken,
     hasValidTokens,
+    handleSessionInvalidated,
   } = useAuthStore();
 
   // Set up magic link handling
@@ -94,6 +96,10 @@ export const useAuth = (options: UseAuthOptions = {}) => {
       
       // Initialize auth store - magic link service auto-initializes
       await initialize();
+      
+      // Initialize API client to set up session invalidation handling
+      await ApiClientService.initialize();
+      
       console.log('✅ Auth system initialized');
     } catch (error) {
       console.error('Non-critical initialization warning:', error);
@@ -120,6 +126,39 @@ export const useAuth = (options: UseAuthOptions = {}) => {
       updateActivity();
     }
   }, [isAuthenticated, updateActivity]);
+
+  // Set up session invalidation handling
+  useEffect(() => {
+    if (!isInitialized) return;
+
+    console.log('🔧 useAuth: Setting up session invalidation handler...');
+    
+    const unsubscribe = ApiClientService.onSessionInvalidated(async (errorMessage: string) => {
+      console.log('🚨 useAuth: Session invalidated:', errorMessage);
+      
+      // Handle session invalidation through the auth store
+      await handleSessionInvalidated(errorMessage);
+      
+      // Show alert to user if enabled
+      if (showAlerts) {
+        Alert.alert(
+          'Session Ended',
+          'Your session has been ended for security reasons. Please sign in again.',
+          [
+            { 
+              text: 'OK',
+              onPress: clearError,
+            }
+          ]
+        );
+      }
+    });
+
+    return () => {
+      console.log('🔧 useAuth: Cleaning up session invalidation handler...');
+      unsubscribe();
+    };
+  }, [isInitialized, handleSessionInvalidated, showAlerts, clearError]);
 
   // Handle authentication errors
   useEffect(() => {

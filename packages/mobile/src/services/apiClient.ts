@@ -274,9 +274,47 @@ export class ApiClientService {
   private static setupErrorHandling(): void {
     if (!this.instance) return;
 
-    // Listen for session invalidation errors
-    // The client should emit these when it receives 401 responses
-    // This is a placeholder for the actual error handling implementation
+    // Listen for session invalidation errors from the NVLP client
+    this.instance.on('sessionInvalidated', this.handleSessionInvalidated.bind(this));
+  }
+
+  /**
+   * Handle session invalidation from the API
+   */
+  private static async handleSessionInvalidated(errorMessage: string): Promise<void> {
+    reactotron.log('🚨 Session invalidated by API:', errorMessage);
+
+    try {
+      // Clear local session data
+      if (this.sessionProvider) {
+        await this.sessionProvider.clearSession();
+      }
+
+      // Clear cached data
+      await LocalStorageService.clearCache('all');
+
+      // Clear device info (but keep device ID for future registrations)
+      const { clearDeviceInfo } = await import('../utils/device');
+      await clearDeviceInfo();
+
+      // Log to Reactotron for debugging
+      reactotron.display({
+        name: '🚨 Session Invalidated',
+        value: {
+          reason: errorMessage,
+          timestamp: new Date().toISOString(),
+          action: 'All local data cleared, user needs to re-authenticate',
+        },
+        preview: `Session invalidated: ${errorMessage}`,
+      });
+
+      // The app should listen for this event to show UI and redirect to login
+      // We don't handle UI here since this is a service layer
+      console.warn('[ApiClient] Session invalidated:', errorMessage);
+    } catch (cleanupError) {
+      reactotron.error('Failed to clean up after session invalidation:', cleanupError as Error);
+      console.error('[ApiClient] Failed to clean up after session invalidation:', cleanupError);
+    }
   }
 
   /**
@@ -345,6 +383,25 @@ export class ApiClientService {
   static async reinitialize(config?: Partial<NVLPClientConfig>): Promise<NVLPClient> {
     this.dispose();
     return this.initialize(config);
+  }
+
+  /**
+   * Listen for session invalidation events
+   * Returns an unsubscribe function
+   */
+  static onSessionInvalidated(handler: (errorMessage: string) => void): () => void {
+    if (!this.instance) {
+      throw new Error('API client not initialized. Call ApiClientService.initialize() first.');
+    }
+
+    this.instance.on('sessionInvalidated', handler);
+
+    // Return unsubscribe function
+    return () => {
+      if (this.instance) {
+        this.instance.off('sessionInvalidated', handler);
+      }
+    };
   }
 }
 

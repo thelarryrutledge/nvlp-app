@@ -71,7 +71,7 @@ Build a pure React Native mobile app for NVLP that provides a native mobile expe
 - [x] Create device utilities (generate device ID, fingerprint, device info)
 - [x] Implement device registration on successful magic link auth
 - [x] Add device ID to API client headers (X-Device-ID)
-- [ ] Handle SESSION_INVALIDATED error responses from API
+- [x] Handle SESSION_INVALIDATED error responses from API
 - [ ] Create device management hook (useDeviceManagement)
 - [ ] Build "Active Sessions" screen in security settings
 - [ ] Build device list component with swipe-to-delete

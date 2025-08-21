@@ -25,6 +25,8 @@ interface AuthState {
   getAccessToken: () => Promise<string | null>;
   hasValidTokens: () => Promise<boolean>;
   
+  // Session invalidation handling
+  handleSessionInvalidated: (errorMessage: string) => Promise<void>;
 }
 
 const useAuthStore = create<AuthState>()(
@@ -231,6 +233,34 @@ const useAuthStore = create<AuthState>()(
 
         // Clear error
         clearError: () => set({ error: null }),
+        
+        // Handle session invalidation from API
+        handleSessionInvalidated: async (errorMessage: string) => {
+          console.log('🚨 AuthStore: Handling session invalidation:', errorMessage);
+          
+          try {
+            // Clear all secure storage (auth tokens and device info)
+            await SecureStorageService.clearAll();
+            
+            // Update state to logged out
+            set({
+              isAuthenticated: false,
+              isLoading: false,
+              error: `Session ended: ${errorMessage}`,
+            });
+            
+            console.log('✅ AuthStore: Session invalidation handled successfully');
+          } catch (error) {
+            console.error('❌ AuthStore: Error handling session invalidation:', error);
+            
+            // Force logout state even if cleanup fails
+            set({
+              isAuthenticated: false,
+              isLoading: false,
+              error: 'Session ended due to security policy',
+            });
+          }
+        },
       };
     },
     {
