@@ -34,10 +34,17 @@ export class DeviceService {
   /**
    * Get the device service instance from the API client
    */
-  private static getService(): ClientDeviceService {
-    const client = ApiClientService.getClient();
-    // The NVLPClient has a device property that is already an instance of DeviceService
-    return client.device;
+  private static async getService(): Promise<ClientDeviceService> {
+    // Ensure API client is initialized
+    try {
+      const client = ApiClientService.getClient();
+      return client.device;
+    } catch (initError) {
+      // If client not initialized, initialize it now
+      await ApiClientService.initialize();
+      const client = ApiClientService.getClient();
+      return client.device;
+    }
   }
 
   /**
@@ -73,7 +80,7 @@ export class DeviceService {
       };
 
       // Register with API
-      const service = this.getService();
+      const service = await this.getService();
       await service.registerDevice(apiDeviceInfo);
 
       reactotron.log('✅ Device registered successfully', {
@@ -92,7 +99,7 @@ export class DeviceService {
    */
   static async getActiveDevices(): Promise<RegisteredDevice[]> {
     try {
-      const service = this.getService();
+      const service = await this.getService();
       const devices = await service.getDevices();
       
       return devices.map((device: Device) => ({
@@ -120,7 +127,7 @@ export class DeviceService {
    */
   static async signOutDevice(deviceId: string): Promise<void> {
     try {
-      const service = this.getService();
+      const service = await this.getService();
       await service.signOutDevice(deviceId);
       
       reactotron.log('✅ Device signed out:', deviceId);
@@ -135,7 +142,7 @@ export class DeviceService {
    */
   static async signOutAllOtherDevices(): Promise<void> {
     try {
-      const service = this.getService();
+      const service = await this.getService();
       await service.signOutAllOtherDevices();
       
       reactotron.log('✅ All other devices signed out');
