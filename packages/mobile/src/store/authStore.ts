@@ -127,7 +127,9 @@ const useAuthStore = create<AuthState>()(
           console.log('💾 AuthStore: Storing auth tokens securely...', {
             lastActivity: new Date(authTokens.lastActivity).toISOString(),
             hasAccessToken: !!authTokens.accessToken,
-            hasRefreshToken: !!authTokens.refreshToken
+            hasRefreshToken: !!authTokens.refreshToken,
+            expiresAt: authTokens.expiresAt,
+            magicLinkExpiresAt: magicLinkData.expires_at
           });
           
           await SecureStorageService.setAuthTokens(authTokens);
