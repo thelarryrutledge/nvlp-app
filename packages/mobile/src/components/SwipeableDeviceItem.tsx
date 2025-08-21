@@ -23,6 +23,7 @@ interface SwipeableDeviceItemProps {
   onRename?: (device: Device) => void;
   onSignOut?: (device: Device) => void;
   onRevoke?: (device: Device) => void;
+  onSignOutCurrentDevice?: () => void;
   showRevokeOption?: boolean;
 }
 
@@ -44,6 +45,7 @@ export const SwipeableDeviceItem: React.FC<SwipeableDeviceItemProps> = ({
   onRename,
   onSignOut,
   onRevoke,
+  onSignOutCurrentDevice,
   showRevokeOption = false,
 }) => {
   const translateX = useRef(new Animated.Value(0)).current;
@@ -157,9 +159,26 @@ export const SwipeableDeviceItem: React.FC<SwipeableDeviceItemProps> = ({
     );
   };
 
+  const handleSignOutCurrentDevice = () => {
+    resetPosition();
+    
+    Alert.alert(
+      'Sign Out',
+      'Are you sure you want to sign out of this device? You will need to sign in again.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Sign Out',
+          style: 'destructive',
+          onPress: () => onSignOutCurrentDevice?.(),
+        },
+      ]
+    );
+  };
+
   const renderActions = () => {
     if (isCurrentDevice) {
-      // Current device only shows rename option
+      // Current device shows rename and sign out options
       return (
         <View style={styles.actionsContainer}>
           <TouchableOpacity
@@ -168,6 +187,13 @@ export const SwipeableDeviceItem: React.FC<SwipeableDeviceItemProps> = ({
           >
             <Text style={styles.actionButtonText}>✏️</Text>
             <Text style={styles.actionButtonLabel}>Rename</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.actionButton, styles.signOutButton]}
+            onPress={handleSignOutCurrentDevice}
+          >
+            <Text style={styles.actionButtonText}>🚪</Text>
+            <Text style={styles.actionButtonLabel}>Sign Out</Text>
           </TouchableOpacity>
         </View>
       );

@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useDeviceManagement } from '../hooks/useDeviceManagement';
+import { useAuthContext } from '../contexts/AuthContext';
 import { Device } from '@nvlp/types';
 import DeviceList from '../components/DeviceList';
 import reactotron from '../config/reactotron';
@@ -26,6 +27,7 @@ import reactotron from '../config/reactotron';
 const ActiveSessionsScreen: React.FC = () => {
   const navigation = useNavigation();
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
+  const { signOut } = useAuthContext();
   
   const {
     devices,
@@ -109,6 +111,15 @@ const ActiveSessionsScreen: React.FC = () => {
       ],
       { cancelable: true }
     );
+  };
+
+  const handleSignOutCurrentDevice = async () => {
+    try {
+      await signOut();
+      // Navigation will be handled automatically by the auth flow
+    } catch (error) {
+      Alert.alert('Error', 'Failed to sign out. Please try again.');
+    }
   };
 
   const handleRenameDevice = (device: Device) => {
@@ -260,6 +271,7 @@ const ActiveSessionsScreen: React.FC = () => {
             onDevicePress={(device) => setSelectedDevice(device)}
             onDeviceRename={handleRenameDevice}
             onDeviceSignOut={handleSignOutDevice}
+            onSignOutCurrentDevice={handleSignOutCurrentDevice}
             showRevokeOption={false}
             emptyStateText="No active sessions"
           />

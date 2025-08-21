@@ -19,6 +19,7 @@ interface DeviceListProps {
   onDeviceRename?: (device: Device) => void;
   onDeviceSignOut?: (device: Device) => void;
   onDeviceRevoke?: (device: Device) => void;
+  onSignOutCurrentDevice?: () => void;
   showRevokeOption?: boolean;
   emptyStateText?: string;
 }
@@ -38,6 +39,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({
   onDeviceRename,
   onDeviceSignOut,
   onDeviceRevoke,
+  onSignOutCurrentDevice,
   showRevokeOption = false,
   emptyStateText = 'No devices found',
 }) => {
@@ -53,6 +55,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({
       onRename={onDeviceRename}
       onSignOut={onDeviceSignOut}
       onRevoke={onDeviceRevoke}
+      onSignOutCurrentDevice={onSignOutCurrentDevice}
       showRevokeOption={showRevokeOption}
     />
   );
