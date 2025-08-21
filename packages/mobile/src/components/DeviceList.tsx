@@ -47,6 +47,12 @@ export const DeviceList: React.FC<DeviceListProps> = ({
   headerComponent,
   footerComponent,
 }) => {
+  console.log('📱 DeviceList render:', {
+    deviceCount: devices.length,
+    devices: devices,
+    currentDeviceId: currentDeviceId,
+    isLoading: isLoading,
+  });
   const isCurrentDevice = (device: Device): boolean => {
     return device.is_current || device.device_id === currentDeviceId;
   };

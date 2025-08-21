@@ -46,11 +46,11 @@ const ActiveSessionsScreen: React.FC = () => {
     showAlerts: false, // We'll handle alerts ourselves for better UX
   });
 
-  // Fetch security status on mount
+  // Fetch security status on mount (only once)
   useEffect(() => {
     console.log('📱 ActiveSessionsScreen: Calling refreshSecurityStatus');
     refreshSecurityStatus();
-  }, [refreshSecurityStatus]);
+  }, []); // Empty dependency array to run only once
 
   // Log screen view
   useEffect(() => {
