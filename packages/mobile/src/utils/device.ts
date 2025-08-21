@@ -34,20 +34,25 @@ export interface DeviceDetails {
 /**
  * Get or generate a unique device ID
  * 
- * This ID persists across app sessions but is unique per installation.
+ * This ID persists across app sessions and logins.
+ * The ID is stored in AsyncStorage (not SecureStorage) so it survives logouts.
  * If the app is uninstalled and reinstalled, a new ID will be generated.
  */
 export const getDeviceId = async (): Promise<string> => {
   try {
-    // First check secure storage
-    const storedInfo = await SecureStorageService.getDeviceInfo();
-    if (storedInfo?.deviceId) {
-      reactotron.log('📱 Device ID retrieved from secure storage:', storedInfo.deviceId);
-      return storedInfo.deviceId;
-    }
-
-    // Then check AsyncStorage for backward compatibility
+    // Always check AsyncStorage first (this persists across logins)
     let deviceId = await AsyncStorage.getItem(DEVICE_ID_KEY);
+    
+    if (!deviceId) {
+      // Check secure storage for backward compatibility (might have old device ID)
+      const storedInfo = await SecureStorageService.getDeviceInfo();
+      if (storedInfo?.deviceId) {
+        deviceId = storedInfo.deviceId;
+        // Migrate to AsyncStorage for persistence
+        await AsyncStorage.setItem(DEVICE_ID_KEY, deviceId);
+        reactotron.log('📱 Device ID migrated from secure storage to AsyncStorage:', deviceId);
+      }
+    }
     
     if (!deviceId) {
       // Generate a new UUID
@@ -55,7 +60,7 @@ export const getDeviceId = async (): Promise<string> => {
       await AsyncStorage.setItem(DEVICE_ID_KEY, deviceId);
       reactotron.log('📱 New device ID generated:', deviceId);
     } else {
-      reactotron.log('📱 Device ID retrieved from AsyncStorage:', deviceId);
+      reactotron.log('📱 Device ID retrieved:', deviceId);
     }
     
     return deviceId;

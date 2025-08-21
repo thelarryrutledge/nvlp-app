@@ -157,15 +157,31 @@ export class SecureStorageService {
 
   /**
    * Clear all stored data (use for logout/reset)
+   * Note: This preserves device info to maintain device identity across logins
    */
   static async clearAll(): Promise<void> {
+    try {
+      // Only clear auth tokens, not device info
+      // Device info should persist across logins to avoid creating duplicate device entries
+      await this.clearAuthTokens();
+      // DO NOT clear device info - it should persist
+      // await AsyncStorage.removeItem(STORAGE_KEYS.DEVICE_INFO);
+    } catch (error) {
+      console.error('Failed to clear all storage:', error);
+    }
+  }
+  
+  /**
+   * Clear all data including device info (use for factory reset)
+   */
+  static async clearAllIncludingDevice(): Promise<void> {
     try {
       await Promise.all([
         this.clearAuthTokens(),
         AsyncStorage.removeItem(STORAGE_KEYS.DEVICE_INFO),
       ]);
     } catch (error) {
-      console.error('Failed to clear all storage:', error);
+      console.error('Failed to clear all storage including device:', error);
     }
   }
 }
