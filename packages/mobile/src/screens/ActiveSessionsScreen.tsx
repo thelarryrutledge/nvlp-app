@@ -402,6 +402,7 @@ const styles = StyleSheet.create({
     color: '#959da5',
   },
   devicesSection: {
+    flex: 1,
     marginHorizontal: 20,
   },
   sectionHeader: {
