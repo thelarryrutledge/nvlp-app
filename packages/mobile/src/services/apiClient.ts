@@ -25,6 +25,7 @@ import reactotron from '../config/reactotron';
 class ReactNativeSessionProvider implements SessionProvider {
   private currentSession: Session | null = null;
   private sessionChangeHandlers: ((session: Session | null) => void)[] = [];
+  private refreshPromise: Promise<Session | null> | null = null;
 
   constructor() {
     this.loadStoredSession();
@@ -94,7 +95,32 @@ class ReactNativeSessionProvider implements SessionProvider {
       throw new Error('No refresh token available');
     }
 
+    // If a refresh is already in progress, wait for it
+    if (this.refreshPromise) {
+      console.log('🔄 Refresh already in progress, waiting...');
+      return await this.refreshPromise;
+    }
+
+    // Start a new refresh process
+    this.refreshPromise = this.performRefresh(session);
+    
     try {
+      const result = await this.refreshPromise;
+      this.refreshPromise = null;
+      return result;
+    } catch (error) {
+      this.refreshPromise = null;
+      throw error;
+    }
+  }
+
+  /**
+   * Actually perform the token refresh
+   */
+  private async performRefresh(session: Session): Promise<Session | null> {
+    try {
+      console.log('🔄 Starting token refresh...');
+      
       // Use Supabase's auth API to refresh the token
       const refreshUrl = `${env.SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`;
       
@@ -130,8 +156,14 @@ class ReactNativeSessionProvider implements SessionProvider {
         user: tokenData.user || session.user,
       };
 
+      console.log('✅ Token refresh successful', {
+        newExpiresAt: refreshedSession.expires_at,
+        expiresIn: refreshedSession.expires_in
+      });
+
       return refreshedSession;
     } catch (error) {
+      console.error('❌ Token refresh failed:', error);
       throw error;
     }
   }
@@ -180,33 +212,72 @@ class ReactNativeSessionProvider implements SessionProvider {
    * Ensure we have a valid session (refresh if needed)
    */
   async ensureValidSession(): Promise<Session> {
-    const session = await this.getSession();
-    if (!session) {
+    // First, check if we have stored tokens (even if expired)
+    const storedTokens = await SecureStorageService.getAuthTokens();
+    if (!storedTokens || !storedTokens.refreshToken) {
       throw new Error('No valid session available. Please authenticate.');
     }
 
-    // If session is close to expiring (within 5 minutes), we should refresh
-    const now = Math.floor(Date.now() / 1000);
-    const expiresAt = session.expires_at || 0;
-    const fiveMinutes = 5 * 60;
+    // Check if current session exists and is still valid
+    const session = await this.getSession();
+    
+    // If we have a valid session, return it
+    if (session) {
+      // If session is close to expiring (within 5 minutes), proactively refresh
+      const now = Math.floor(Date.now() / 1000);
+      const expiresAt = session.expires_at || 0;
+      const fiveMinutes = 5 * 60;
 
-    if (expiresAt - now < fiveMinutes) {
-      // Attempt to refresh the token
-      try {
-        const refreshedSession = await this.refreshSession(session);
-        if (refreshedSession) {
-          await this.setSession(refreshedSession);
-          return refreshedSession;
+      if (expiresAt - now < fiveMinutes) {
+        console.log('🔄 Session expiring soon, proactively refreshing...');
+        try {
+          const refreshedSession = await this.refreshSession(session);
+          if (refreshedSession) {
+            await this.setSession(refreshedSession);
+            return refreshedSession;
+          }
+        } catch (error) {
+          console.error('Failed to proactively refresh session:', error);
+          // Continue with current session if proactive refresh fails
         }
-      } catch (error) {
-        console.error('Failed to refresh session:', error);
-        // If refresh fails, clear the session and throw
-        await this.clearSession();
-        throw new Error('Session expired and refresh failed. Please authenticate again.');
       }
+      return session;
     }
 
-    return session;
+    // No valid session but we have tokens - try to refresh using stored tokens
+    console.log('🔄 No valid session but have stored tokens, attempting refresh...');
+    try {
+      const mockExpiredSession: Session = {
+        access_token: storedTokens.accessToken,
+        refresh_token: storedTokens.refreshToken,
+        expires_at: storedTokens.expiresAt || Math.floor(Date.now() / 1000) - 1, // Expired
+        expires_in: 0,
+        token_type: 'bearer',
+        user: {
+          id: storedTokens.userId,
+          aud: 'authenticated',
+          role: 'authenticated',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          email: '',
+          app_metadata: {},
+          user_metadata: {},
+        },
+      };
+
+      const refreshedSession = await this.refreshSession(mockExpiredSession);
+      if (refreshedSession) {
+        await this.setSession(refreshedSession);
+        console.log('✅ Successfully refreshed expired session');
+        return refreshedSession;
+      }
+    } catch (error) {
+      console.error('❌ Failed to refresh expired session:', error);
+      // Clear stored tokens since refresh failed
+      await this.clearSession();
+    }
+
+    throw new Error('Session expired and refresh failed. Please authenticate again.');
   }
 
   /**
@@ -254,6 +325,8 @@ class ReactNativeSessionProvider implements SessionProvider {
    * Clear current session
    */
   async clearSession(): Promise<void> {
+    // Cancel any pending refresh
+    this.refreshPromise = null;
     await this.setSession(null);
   }
 }
