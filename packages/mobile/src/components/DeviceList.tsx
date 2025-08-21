@@ -22,6 +22,8 @@ interface DeviceListProps {
   onSignOutCurrentDevice?: () => void;
   showRevokeOption?: boolean;
   emptyStateText?: string;
+  headerComponent?: React.ReactElement | null;
+  footerComponent?: React.ReactElement | null;
 }
 
 /**
@@ -42,6 +44,8 @@ export const DeviceList: React.FC<DeviceListProps> = ({
   onSignOutCurrentDevice,
   showRevokeOption = false,
   emptyStateText = 'No devices found',
+  headerComponent,
+  footerComponent,
 }) => {
   const isCurrentDevice = (device: Device): boolean => {
     return device.is_current || device.device_id === currentDeviceId;
@@ -71,35 +75,50 @@ export const DeviceList: React.FC<DeviceListProps> = ({
   );
 
   const renderHeader = () => {
-    if (devices.length === 0) return null;
-    
-    const activeDevices = devices.filter(d => !d.is_revoked).length;
-    const currentDevice = devices.find(isCurrentDevice);
-    
-    return (
+    const defaultHeader = devices.length > 0 ? (
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Your Devices</Text>
         <Text style={styles.headerSubtitle}>
-          {activeDevices} active session{activeDevices !== 1 ? 's' : ''}
-          {currentDevice && ` • Current: ${currentDevice.device_name}`}
+          {devices.filter(d => !d.is_revoked).length} active session{devices.filter(d => !d.is_revoked).length !== 1 ? 's' : ''}
+          {devices.find(isCurrentDevice) && ` • Current: ${devices.find(isCurrentDevice)?.device_name}`}
         </Text>
         <Text style={styles.headerHint}>
           ← Swipe left on any device to see actions
         </Text>
       </View>
-    );
+    ) : null;
+
+    if (headerComponent) {
+      return (
+        <>
+          {headerComponent}
+          {defaultHeader}
+        </>
+      );
+    }
+    
+    return defaultHeader;
   };
 
   const renderFooter = () => {
-    if (devices.length === 0) return null;
-    
-    return (
+    const defaultFooter = devices.length > 0 ? (
       <View style={styles.footer}>
         <Text style={styles.footerText}>
           💡 Tip: Regularly review your active sessions for security
         </Text>
       </View>
-    );
+    ) : null;
+
+    if (footerComponent) {
+      return (
+        <>
+          {defaultFooter}
+          {footerComponent}
+        </>
+      );
+    }
+    
+    return defaultFooter;
   };
 
   if (isLoading && devices.length === 0) {

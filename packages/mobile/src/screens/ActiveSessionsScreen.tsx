@@ -3,11 +3,9 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
   ActivityIndicator,
   Alert,
-  RefreshControl,
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -215,84 +213,69 @@ const ActiveSessionsScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        refreshControl={
-          <RefreshControl
-            refreshing={isLoading}
-            onRefresh={() => {
-              fetchDevices();
-              refreshSecurityStatus();
-            }}
-            colors={['#4CAF50']}
-            tintColor="#4CAF50"
-          />
-        }
-      >
-        <View style={styles.header}>
-          <Text style={styles.title}>Active Sessions</Text>
-          <Text style={styles.subtitle}>
-            Manage devices that have access to your account
-          </Text>
-        </View>
+      <View style={styles.header}>
+        <Text style={styles.title}>Active Sessions</Text>
+        <Text style={styles.subtitle}>
+          Manage devices that have access to your account
+        </Text>
+      </View>
 
-        {error && (
-          <View style={styles.errorContainer}>
-            <Text style={styles.errorText}>{error}</Text>
-            <TouchableOpacity onPress={clearError}>
-              <Text style={styles.errorDismiss}>✕</Text>
+      {error && (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity onPress={clearError}>
+            <Text style={styles.errorDismiss}>✕</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      <View style={styles.devicesSection}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Your Devices</Text>
+          {hasMultipleDevices() && (
+            <TouchableOpacity
+              style={styles.signOutAllButton}
+              onPress={handleSignOutAll}
+            >
+              <Text style={styles.signOutAllText}>Sign Out All Others</Text>
             </TouchableOpacity>
-          </View>
-        )}
-
-        {renderSecuritySummary()}
-
-        <View style={styles.devicesSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Your Devices</Text>
-            {hasMultipleDevices() && (
-              <TouchableOpacity
-                style={styles.signOutAllButton}
-                onPress={handleSignOutAll}
-              >
-                <Text style={styles.signOutAllText}>Sign Out All Others</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-
-          <DeviceList
-            devices={devices}
-            currentDeviceId={currentDevice?.device_id}
-            isLoading={isLoading}
-            onRefresh={() => {
-              fetchDevices();
-              refreshSecurityStatus();
-            }}
-            onDevicePress={(device) => setSelectedDevice(device)}
-            onDeviceRename={handleRenameDevice}
-            onDeviceSignOut={handleSignOutDevice}
-            onSignOutCurrentDevice={handleSignOutCurrentDevice}
-            showRevokeOption={false}
-            emptyStateText="No active sessions"
-          />
+          )}
         </View>
 
-        <View style={styles.securityTips}>
-          <Text style={styles.tipsTitle}>Security Tips</Text>
-          <Text style={styles.tipText}>
-            • Review your active sessions regularly
-          </Text>
-          <Text style={styles.tipText}>
-            • Sign out devices you don't recognize
-          </Text>
-          <Text style={styles.tipText}>
-            • Use unique device names for easy identification
-          </Text>
-          <Text style={styles.tipText}>
-            • Enable notifications for new device sign-ins
-          </Text>
-        </View>
-      </ScrollView>
+        <DeviceList
+          devices={devices}
+          currentDeviceId={currentDevice?.device_id}
+          isLoading={isLoading}
+          onRefresh={() => {
+            fetchDevices();
+            refreshSecurityStatus();
+          }}
+          onDevicePress={(device) => setSelectedDevice(device)}
+          onDeviceRename={handleRenameDevice}
+          onDeviceSignOut={handleSignOutDevice}
+          onSignOutCurrentDevice={handleSignOutCurrentDevice}
+          showRevokeOption={false}
+          emptyStateText="No active sessions"
+          headerComponent={renderSecuritySummary()}
+          footerComponent={
+            <View style={styles.securityTips}>
+              <Text style={styles.tipsTitle}>Security Tips</Text>
+              <Text style={styles.tipText}>
+                • Review your active sessions regularly
+              </Text>
+              <Text style={styles.tipText}>
+                • Sign out devices you don't recognize
+              </Text>
+              <Text style={styles.tipText}>
+                • Use unique device names for easy identification
+              </Text>
+              <Text style={styles.tipText}>
+                • Enable notifications for new device sign-ins
+              </Text>
+            </View>
+          }
+        />
+      </View>
     </SafeAreaView>
   );
 };
@@ -301,9 +284,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8f9fa',
-  },
-  scrollContent: {
-    paddingBottom: 30,
   },
   loadingContainer: {
     flex: 1,
