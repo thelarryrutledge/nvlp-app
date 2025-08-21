@@ -51,8 +51,6 @@ export const useDeviceManagement = (options: UseDeviceManagementOptions = {}): U
     refreshInterval = 0, // No auto-refresh by default
     showAlerts = true,
   } = options;
-  
-  console.log('📱 useDeviceManagement: Hook initialized with options:', { autoFetch, refreshInterval, showAlerts });
 
   // State
   const [devices, setDevices] = useState<Device[]>([]);
@@ -81,22 +79,17 @@ export const useDeviceManagement = (options: UseDeviceManagementOptions = {}): U
    * Fetch all devices for the current user
    */
   const fetchDevices = useCallback(async () => {
-    console.log('📱 useDeviceManagement: fetchDevices called');
     try {
       setIsLoading(true);
       setError(null);
       
       const client = await ensureApiClient();
-      console.log('📱 useDeviceManagement: API client ready, fetching devices...');
       const deviceList = await client.device.getDevices();
-      console.log('📱 useDeviceManagement: Received device list:', deviceList);
       
-      console.log('📱 useDeviceManagement: Setting devices state:', deviceList);
       setDevices(deviceList);
       
       // Find and set the current device
       const current = deviceList.find(d => d.is_current);
-      console.log('📱 useDeviceManagement: Current device:', current);
       setCurrentDevice(current || null);
       
       reactotron.log('📱 Fetched devices:', {
@@ -384,12 +377,8 @@ export const useDeviceManagement = (options: UseDeviceManagementOptions = {}): U
 
   // Auto-fetch devices on mount if enabled
   useEffect(() => {
-    console.log('📱 useDeviceManagement: Auto-fetch effect triggered', { autoFetch });
     if (autoFetch) {
-      console.log('📱 useDeviceManagement: Starting auto-fetch...');
       fetchDevices();
-    } else {
-      console.log('📱 useDeviceManagement: Auto-fetch disabled');
     }
   }, [autoFetch, fetchDevices]);
 

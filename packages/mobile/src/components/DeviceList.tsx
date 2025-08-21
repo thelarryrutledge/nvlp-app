@@ -47,20 +47,12 @@ export const DeviceList: React.FC<DeviceListProps> = ({
   headerComponent,
   footerComponent,
 }) => {
-  console.log('📱 DeviceList render:', {
-    deviceCount: devices.length,
-    devices: devices,
-    currentDeviceId: currentDeviceId,
-    isLoading: isLoading,
-  });
   const isCurrentDevice = (device: Device): boolean => {
     return device.is_current || device.device_id === currentDeviceId;
   };
 
-  const renderDevice = ({ item: device }: { item: Device }) => {
-    console.log('📱 DeviceList renderDevice called for:', device.device_name);
-    return (
-      <SwipeableDeviceItem
+  const renderDevice = ({ item: device }: { item: Device }) => (
+    <SwipeableDeviceItem
         device={device}
         isCurrentDevice={isCurrentDevice(device)}
         onPress={onDevicePress}
@@ -69,9 +61,8 @@ export const DeviceList: React.FC<DeviceListProps> = ({
         onRevoke={onDeviceRevoke}
         onSignOutCurrentDevice={onSignOutCurrentDevice}
         showRevokeOption={showRevokeOption}
-      />
-    );
-  };
+    />
+  );
 
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
@@ -138,11 +129,6 @@ export const DeviceList: React.FC<DeviceListProps> = ({
       </View>
     );
   }
-
-  console.log('📱 DeviceList passing to FlatList:', {
-    dataLength: devices.length,
-    data: devices,
-  });
 
   return (
     <View style={styles.container}>

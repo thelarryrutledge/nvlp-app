@@ -48,23 +48,16 @@ const ActiveSessionsScreen: React.FC = () => {
 
   // Fetch security status on mount (only once)
   useEffect(() => {
-    console.log('📱 ActiveSessionsScreen: Calling refreshSecurityStatus');
     refreshSecurityStatus();
   }, []); // Empty dependency array to run only once
 
   // Log screen view
   useEffect(() => {
-    console.log('📱 Active Sessions screen - devices state:', {
-      deviceCount: devices.length,
-      devices: devices,
-      currentDevice: currentDevice,
-      isLoading: isLoading,
-    });
     reactotron.log('📱 Active Sessions screen viewed', {
       deviceCount: devices.length,
       currentDevice: currentDevice?.device_name,
     });
-  }, [devices.length, currentDevice, isLoading]);
+  }, [devices.length, currentDevice]);
 
   const handleSignOutDevice = (device: Device) => {
     Alert.alert(
@@ -206,13 +199,6 @@ const ActiveSessionsScreen: React.FC = () => {
       </View>
     );
   };
-
-  console.log('📱 ActiveSessionsScreen render:', {
-    isLoading,
-    deviceCount: devices.length,
-    hasDevices: devices.length > 0,
-    shouldShowLoading: isLoading && devices.length === 0
-  });
 
   if (isLoading && devices.length === 0) {
     return (
