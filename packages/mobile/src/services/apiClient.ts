@@ -41,7 +41,9 @@ class ReactNativeSessionProvider implements SessionProvider {
         console.log('🔐 Loaded stored session:', {
           hasSession: !!this.currentSession,
           expiresAt: this.currentSession?.expires_at,
-          isExpired: this.currentSession?.expires_at ? Math.floor(Date.now() / 1000) >= this.currentSession.expires_at : false
+          isExpired: this.currentSession?.expires_at ? Math.floor(Date.now() / 1000) >= this.currentSession.expires_at : false,
+          tokensHadExpiresAt: !!tokens.expiresAt,
+          storedExpiresAt: tokens.expiresAt
         });
       }
     } catch (error) {

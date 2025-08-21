@@ -139,6 +139,32 @@ const useAuthStore = create<AuthState>()(
           try {
             await ApiClientService.initialize();
             console.log('✅ AuthStore: API client initialized');
+            
+            // Create a proper session with the correct expires_at
+            if (magicLinkData.expires_at) {
+              const session = {
+                access_token: magicLinkData.access_token!,
+                refresh_token: magicLinkData.refresh_token!,
+                expires_at: parseInt(magicLinkData.expires_at, 10),
+                expires_in: parseInt(magicLinkData.expires_in || '3600', 10),
+                token_type: magicLinkData.token_type || 'bearer',
+                user: {
+                  id: 'magic_link_user',
+                  aud: 'authenticated',
+                  role: 'authenticated',
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
+                  email: '',
+                  app_metadata: {},
+                  user_metadata: {},
+                },
+              };
+              
+              // Update the session provider with the correct session
+              const sessionProvider = ApiClientService.getSessionProvider();
+              await sessionProvider.setSession(session);
+              console.log('✅ AuthStore: Session updated with correct expires_at');
+            }
           } catch (initError) {
             console.warn('⚠️ AuthStore: API client initialization failed:', initError);
           }
