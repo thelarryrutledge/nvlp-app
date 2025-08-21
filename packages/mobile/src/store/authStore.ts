@@ -181,6 +181,10 @@ const useAuthStore = create<AuthState>()(
           try {
             await DeviceService.registerDevice();
             console.log('✅ AuthStore: Device registered successfully');
+            
+            // Start monitoring for new devices
+            await DeviceService.startDeviceMonitoring();
+            console.log('📱 AuthStore: Started device monitoring');
           } catch (deviceError) {
             // Log but don't fail authentication if device registration fails
             console.warn('⚠️ AuthStore: Device registration failed (non-critical):', deviceError);
@@ -211,6 +215,12 @@ const useAuthStore = create<AuthState>()(
         
         try {
           console.log('🚪 Signing out...');
+          
+          // Stop device monitoring
+          DeviceService.stopDeviceMonitoring();
+          
+          // Clear known devices list
+          await DeviceService.clearKnownDevices();
           
           // Clear secure storage
           await SecureStorageService.clearAuthTokens();

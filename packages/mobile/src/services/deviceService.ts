@@ -11,6 +11,8 @@ import ApiClientService from './apiClient';
 import SecureStorageService from './secureStorage';
 import { getDeviceInfo, getDeviceId, storeDeviceInfo } from '../utils/device';
 import reactotron from '../config/reactotron';
+import notificationService from './notificationService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export interface RegisteredDevice {
   id: string;
@@ -31,6 +33,9 @@ export interface RegisteredDevice {
  * Device Management Service
  */
 export class DeviceService {
+  private static readonly KNOWN_DEVICES_KEY = '@nvlp/known_devices';
+  private static readonly CHECK_INTERVAL = 60000; // Check every minute
+  private static checkTimer: NodeJS.Timeout | null = null;
   /**
    * Get the device service instance from the API client
    */
@@ -166,6 +171,116 @@ export class DeviceService {
     } catch (error) {
       reactotron.error('Failed to check device registration:', error as Error);
       return false;
+    }
+  }
+
+  /**
+   * Start monitoring for new devices
+   */
+  static async startDeviceMonitoring(): Promise<void> {
+    // Stop any existing timer
+    this.stopDeviceMonitoring();
+    
+    // Initial check
+    await this.checkForNewDevices();
+    
+    // Set up periodic checks
+    this.checkTimer = setInterval(async () => {
+      await this.checkForNewDevices();
+    }, this.CHECK_INTERVAL);
+    
+    reactotron.log('📱 Started device monitoring');
+  }
+
+  /**
+   * Stop monitoring for new devices
+   */
+  static stopDeviceMonitoring(): void {
+    if (this.checkTimer) {
+      clearInterval(this.checkTimer);
+      this.checkTimer = null;
+      reactotron.log('📱 Stopped device monitoring');
+    }
+  }
+
+  /**
+   * Check for new devices and show notifications
+   */
+  static async checkForNewDevices(): Promise<void> {
+    try {
+      // Get current device ID
+      const currentDeviceId = await getDeviceId();
+      
+      // Get all active devices
+      const devices = await this.getActiveDevices();
+      
+      // Get known devices from storage
+      const knownDevicesJson = await AsyncStorage.getItem(this.KNOWN_DEVICES_KEY);
+      const knownDevices: string[] = knownDevicesJson ? JSON.parse(knownDevicesJson) : [];
+      
+      // Find new devices (not in known list and not current device)
+      const newDevices = devices.filter(device => 
+        !device.isRevoked && 
+        device.deviceId !== currentDeviceId &&
+        !knownDevices.includes(device.deviceId)
+      );
+      
+      // Show notification for each new device
+      for (const device of newDevices) {
+        notificationService.showDeviceAlert({
+          deviceName: device.deviceName,
+          deviceId: device.deviceId,
+          location: device.locationCity && device.locationCountry 
+            ? `${device.locationCity}, ${device.locationCountry}`
+            : device.locationCountry,
+          onViewDetails: () => {
+            // Navigate to device details screen
+            reactotron.log('View device details:', device.deviceId);
+            // TODO: Implement navigation to device details
+          },
+          onSignOutDevice: async () => {
+            // Sign out the specific device
+            try {
+              await this.signOutDevice(device.deviceId);
+              reactotron.log('✅ Device signed out:', device.deviceId);
+              notificationService.showSuccess(
+                'Device Signed Out',
+                `${device.deviceName} has been signed out successfully.`
+              );
+            } catch (error) {
+              reactotron.error('Failed to sign out device:', error as Error);
+              notificationService.showError(
+                'Sign Out Failed',
+                'Failed to sign out the device. Please try again.'
+              );
+            }
+          },
+        });
+      }
+      
+      // Update known devices list
+      const allDeviceIds = devices
+        .filter(d => !d.isRevoked)
+        .map(d => d.deviceId);
+      await AsyncStorage.setItem(this.KNOWN_DEVICES_KEY, JSON.stringify(allDeviceIds));
+      
+      if (newDevices.length > 0) {
+        reactotron.log(`📱 Found ${newDevices.length} new device(s)`);
+      }
+    } catch (error) {
+      reactotron.error('Failed to check for new devices:', error as Error);
+    }
+  }
+
+  /**
+   * Clear known devices (useful after sign out)
+   */
+  static async clearKnownDevices(): Promise<void> {
+    try {
+      await AsyncStorage.removeItem(this.KNOWN_DEVICES_KEY);
+      reactotron.log('📱 Cleared known devices list');
+    } catch (error) {
+      reactotron.error('Failed to clear known devices:', error as Error);
     }
   }
 

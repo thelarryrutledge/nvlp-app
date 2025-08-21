@@ -15,6 +15,7 @@ import { useAuthContext } from '../contexts/AuthContext';
 import { Device } from '@nvlp/types';
 import DeviceList from '../components/DeviceList';
 import reactotron from '../config/reactotron';
+import notificationService from '../services/notificationService';
 
 /**
  * Active Sessions Screen
@@ -258,20 +259,49 @@ const ActiveSessionsScreen: React.FC = () => {
           emptyStateText="No active sessions"
           headerComponent={renderSecuritySummary()}
           footerComponent={
-            <View style={styles.securityTips}>
-              <Text style={styles.tipsTitle}>Security Tips</Text>
-              <Text style={styles.tipText}>
-                • Review your active sessions regularly
-              </Text>
-              <Text style={styles.tipText}>
-                • Sign out devices you don't recognize
-              </Text>
-              <Text style={styles.tipText}>
-                • Use unique device names for easy identification
-              </Text>
-              <Text style={styles.tipText}>
-                • Enable notifications for new device sign-ins
-              </Text>
+            <View>
+              <View style={styles.securityTips}>
+                <Text style={styles.tipsTitle}>Security Tips</Text>
+                <Text style={styles.tipText}>
+                  • Review your active sessions regularly
+                </Text>
+                <Text style={styles.tipText}>
+                  • Sign out devices you don't recognize
+                </Text>
+                <Text style={styles.tipText}>
+                  • Use unique device names for easy identification
+                </Text>
+                <Text style={styles.tipText}>
+                  • Enable notifications for new device sign-ins
+                </Text>
+              </View>
+              
+              {/* Test Notification Button - Remove in production */}
+              {__DEV__ && (
+                <TouchableOpacity
+                  style={styles.testButton}
+                  onPress={() => {
+                    notificationService.showDeviceAlert({
+                      deviceName: 'iPhone 15 Pro (Test)',
+                      deviceId: 'test-device-123',
+                      location: 'San Francisco, USA',
+                      onViewDetails: () => {
+                        reactotron.log('Test: View device details');
+                        Alert.alert('Test', 'View Details pressed');
+                      },
+                      onSignOutDevice: () => {
+                        reactotron.log('Test: Sign out device');
+                        notificationService.showSuccess(
+                          'Test Success',
+                          'This is how a success notification looks!'
+                        );
+                      },
+                    });
+                  }}
+                >
+                  <Text style={styles.testButtonText}>Test Device Alert Notification</Text>
+                </TouchableOpacity>
+              )}
             </View>
           }
         />
@@ -412,6 +442,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: '#d73a49',
+  },
+  testButton: {
+    margin: 16,
+    padding: 16,
+    backgroundColor: '#FF9800',
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  testButtonText: {
+    color: 'white',
+    fontWeight: '600',
+    fontSize: 16,
   },
   deviceCard: {
     backgroundColor: '#fff',

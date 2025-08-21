@@ -78,7 +78,7 @@ Build a pure React Native mobile app for NVLP that provides a native mobile expe
 - [x] Add "Sign out all other devices" functionality
 - [x] Add "Sign out this device" option
 - [x] Show device details (name, model, location, last seen)
-- [ ] Handle new device notifications (in-app alerts)
+- [x] Handle new device notifications (in-app alerts)
 - [x] Add device name customization feature
 
 ---

@@ -14,6 +14,7 @@ import { useGlobalErrorHandler } from './src/hooks/useGlobalErrorHandler';
 import ErrorHandlingService from './src/services/errorHandlingService';
 import { AuthProvider } from './src/contexts/AuthContext';
 import DeepLinkService from './src/services/deepLinkService';
+import NotificationBanner from './src/components/NotificationBanner';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -48,6 +49,7 @@ function App() {
         <AuthProvider autoInitialize={true} showAlerts={true}>
           <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
           <AppNavigator />
+          <NotificationBanner />
         </AuthProvider>
       </SafeAreaProvider>
     </ErrorBoundary>
