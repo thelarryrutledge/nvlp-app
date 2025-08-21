@@ -34,8 +34,8 @@ export interface RegisteredDevice {
  */
 export class DeviceService {
   private static readonly KNOWN_DEVICES_KEY = '@nvlp/known_devices';
-  private static readonly CHECK_INTERVAL = 60000; // Check every minute
-  private static checkTimer: NodeJS.Timeout | null = null;
+  private static lastCheckTime: Date | null = null;
+  private static readonly MIN_CHECK_INTERVAL = 300000; // Minimum 5 minutes between checks
   /**
    * Get the device service instance from the API client
    */
@@ -101,11 +101,15 @@ export class DeviceService {
 
   /**
    * Get list of user's active devices
+   * Also opportunistically checks for new devices to show notifications
    */
   static async getActiveDevices(): Promise<RegisteredDevice[]> {
     try {
       const service = await this.getService();
       const devices = await service.getDevices();
+      
+      // Opportunistically check for new devices (throttled)
+      this.checkForNewDevicesOpportunistically();
       
       return devices.map((device: Device) => ({
         id: device.id,
@@ -175,32 +179,20 @@ export class DeviceService {
   }
 
   /**
-   * Start monitoring for new devices
+   * Check for new devices opportunistically
+   * Called automatically when getting active devices
    */
-  static async startDeviceMonitoring(): Promise<void> {
-    // Stop any existing timer
-    this.stopDeviceMonitoring();
-    
-    // Initial check
-    await this.checkForNewDevices();
-    
-    // Set up periodic checks
-    this.checkTimer = setInterval(async () => {
-      await this.checkForNewDevices();
-    }, this.CHECK_INTERVAL);
-    
-    reactotron.log('📱 Started device monitoring');
-  }
-
-  /**
-   * Stop monitoring for new devices
-   */
-  static stopDeviceMonitoring(): void {
-    if (this.checkTimer) {
-      clearInterval(this.checkTimer);
-      this.checkTimer = null;
-      reactotron.log('📱 Stopped device monitoring');
+  static async checkForNewDevicesOpportunistically(): Promise<void> {
+    // Only check if enough time has passed since last check
+    if (this.lastCheckTime) {
+      const timeSinceLastCheck = Date.now() - this.lastCheckTime.getTime();
+      if (timeSinceLastCheck < this.MIN_CHECK_INTERVAL) {
+        return; // Too soon, skip check
+      }
     }
+    
+    this.lastCheckTime = new Date();
+    await this.checkForNewDevices();
   }
 
   /**
