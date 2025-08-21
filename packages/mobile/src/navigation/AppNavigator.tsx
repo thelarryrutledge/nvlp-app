@@ -10,6 +10,7 @@ import HomeScreen from '../screens/HomeScreen';
 import BudgetScreen from '../screens/BudgetScreen';
 import TransactionScreen from '../screens/TransactionScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+import ActiveSessionsScreen from '../screens/ActiveSessionsScreen';
 
 export type RootTabParamList = {
   Home: undefined;
@@ -23,10 +24,52 @@ export type RootStackParamList = {
   Main: undefined;
   TransactionDetail: { transactionId: string };
   EnvelopeDetail: { envelopeId: string };
+  ActiveSessions: undefined;
+};
+
+export type SettingsStackParamList = {
+  SettingsMain: undefined;
+  ActiveSessions: undefined;
 };
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
 const Stack = createStackNavigator<RootStackParamList>();
+const SettingsStack = createStackNavigator<SettingsStackParamList>();
+
+const SettingsStackNavigator = () => {
+  return (
+    <SettingsStack.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: '#fff',
+          elevation: 0,
+          shadowOpacity: 0,
+          borderBottomWidth: 1,
+          borderBottomColor: '#e1e4e8',
+        },
+        headerTintColor: '#333',
+        headerTitleStyle: {
+          fontWeight: '600',
+        },
+      }}>
+      <SettingsStack.Screen
+        name="SettingsMain"
+        component={SettingsScreen}
+        options={{
+          title: 'Settings',
+        }}
+      />
+      <SettingsStack.Screen
+        name="ActiveSessions"
+        component={ActiveSessionsScreen}
+        options={{
+          title: 'Active Sessions',
+          headerBackTitle: 'Settings',
+        }}
+      />
+    </SettingsStack.Navigator>
+  );
+};
 
 const MainTabNavigator = () => {
   return (
@@ -62,7 +105,7 @@ const MainTabNavigator = () => {
       />
       <Tab.Screen
         name="Settings"
-        component={SettingsScreen}
+        component={SettingsStackNavigator}
         options={{
           tabBarLabel: 'Settings',
         }}

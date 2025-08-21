@@ -1,9 +1,16 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import SimpleGestureTest from '../components/SimpleGestureTest';
 
 const SettingsScreen = () => {
+  const navigation = useNavigation<any>();
+
+  const handleNavigateToActiveSessions = () => {
+    navigation.navigate('ActiveSessions');
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
@@ -14,6 +21,23 @@ const SettingsScreen = () => {
             options.
           </Text>
         </View>
+        
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Security</Text>
+          <TouchableOpacity 
+            style={styles.settingItem}
+            onPress={handleNavigateToActiveSessions}
+          >
+            <View style={styles.settingContent}>
+              <Text style={styles.settingTitle}>Active Sessions</Text>
+              <Text style={styles.settingDescription}>
+                Manage devices and sessions connected to your account
+              </Text>
+            </View>
+            <Text style={styles.settingArrow}>›</Text>
+          </TouchableOpacity>
+        </View>
+
         <View style={styles.divider} />
         <SimpleGestureTest />
       </ScrollView>
@@ -42,6 +66,48 @@ const styles = StyleSheet.create({
     color: '#888',
     textAlign: 'center',
     lineHeight: 24,
+  },
+  section: {
+    marginTop: 20,
+    paddingHorizontal: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 12,
+  },
+  settingItem: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 16,
+    marginBottom: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  settingContent: {
+    flex: 1,
+  },
+  settingTitle: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#333',
+    marginBottom: 4,
+  },
+  settingDescription: {
+    fontSize: 14,
+    color: '#666',
+  },
+  settingArrow: {
+    fontSize: 24,
+    color: '#999',
+    marginLeft: 10,
   },
   divider: {
     height: 1,
