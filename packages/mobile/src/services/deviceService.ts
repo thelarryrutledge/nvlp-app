@@ -203,12 +203,34 @@ export class DeviceService {
       // Get current device ID
       const currentDeviceId = await getDeviceId();
       
-      // Get all active devices
-      const devices = await this.getActiveDevices();
+      // Get all active devices directly (without triggering another check)
+      const service = await this.getService();
+      const devicesRaw = await service.getDevices();
+      const devices = devicesRaw.map((device: Device) => ({
+        id: device.id,
+        deviceId: device.device_id,
+        deviceFingerprint: device.device_fingerprint,
+        deviceName: device.device_name,
+        deviceType: device.device_type,
+        firstSeen: device.first_seen,
+        lastSeen: device.last_seen,
+        ipAddress: device.ip_address,
+        locationCountry: device.location_country,
+        locationCity: device.location_city,
+        isCurrent: device.is_current,
+        isRevoked: device.is_revoked,
+      }));
       
       // Get known devices from storage
       const knownDevicesJson = await AsyncStorage.getItem(this.KNOWN_DEVICES_KEY);
       const knownDevices: string[] = knownDevicesJson ? JSON.parse(knownDevicesJson) : [];
+      
+      reactotron.log('📱 Checking for new devices:', {
+        currentDeviceId,
+        totalDevices: devices.length,
+        knownDevices: knownDevices.length,
+        deviceIds: devices.map(d => ({ id: d.deviceId, name: d.deviceName }))
+      });
       
       // Find new devices (not in known list and not current device)
       const newDevices = devices.filter(device => 
@@ -216,6 +238,8 @@ export class DeviceService {
         device.deviceId !== currentDeviceId &&
         !knownDevices.includes(device.deviceId)
       );
+      
+      reactotron.log('📱 New devices found:', newDevices.length, newDevices.map(d => d.deviceName));
       
       // Show notification for each new device
       for (const device of newDevices) {
