@@ -48,6 +48,7 @@ const ActiveSessionsScreen: React.FC = () => {
 
   // Fetch security status on mount
   useEffect(() => {
+    console.log('📱 ActiveSessionsScreen: Calling refreshSecurityStatus');
     refreshSecurityStatus();
   }, [refreshSecurityStatus]);
 
@@ -205,6 +206,13 @@ const ActiveSessionsScreen: React.FC = () => {
       </View>
     );
   };
+
+  console.log('📱 ActiveSessionsScreen render:', {
+    isLoading,
+    deviceCount: devices.length,
+    hasDevices: devices.length > 0,
+    shouldShowLoading: isLoading && devices.length === 0
+  });
 
   if (isLoading && devices.length === 0) {
     return (
