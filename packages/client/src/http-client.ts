@@ -486,7 +486,11 @@ export class HttpClient {
    */
   private isAuthError(error: any): boolean {
     if (error instanceof HttpError) {
-      return error.status === 401 || error.status === 403;
+      const isAuth = error.status === 401 || error.status === 403;
+      if (isAuth) {
+        console.log('🔐 HTTP Client: Detected auth error:', error.status, error.statusText);
+      }
+      return isAuth;
     }
     return false;
   }
@@ -626,11 +630,14 @@ export class HttpClient {
       } catch (error) {
         // If auth error and we have a token provider, try to refresh and retry once
         if (this.isAuthError(error) && this.config.tokenProvider) {
+          console.log('🔄 HTTP Client: Got 401, attempting token refresh...');
           try {
             // Force token refresh by calling refreshToken directly
             await this.config.tokenProvider.refreshToken();
+            console.log('✅ HTTP Client: Token refreshed, retrying request...');
             return await makeRequest();
           } catch (refreshError) {
+            console.error('❌ HTTP Client: Token refresh failed:', refreshError);
             // If refresh fails, throw the original error
             throw error;
           }

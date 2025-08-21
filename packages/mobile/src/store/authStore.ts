@@ -116,12 +116,20 @@ const useAuthStore = create<AuthState>()(
           console.log('✅ AuthStore: JWT token is valid and not expired');
           
           // Store tokens securely with current timestamp as lastActivity
+          const expiresAtValue = magicLinkData.expires_at ? parseInt(magicLinkData.expires_at, 10) : undefined;
+          console.log('🔐 AuthStore: Parsing expires_at:', {
+            raw: magicLinkData.expires_at,
+            parsed: expiresAtValue,
+            expiresIn: magicLinkData.expires_in,
+            calculatedExpiry: expiresAtValue ? new Date(expiresAtValue * 1000).toISOString() : 'N/A'
+          });
+          
           const authTokens: AuthTokens = {
             accessToken: magicLinkData.access_token,
             refreshToken: magicLinkData.refresh_token,
             userId: 'magic_link_user', // Use a default value for now
             lastActivity: Date.now(),
-            expiresAt: magicLinkData.expires_at ? parseInt(magicLinkData.expires_at, 10) : undefined, // Store the actual expiry time
+            expiresAt: expiresAtValue, // Store the actual expiry time
           };
           
           console.log('💾 AuthStore: Storing auth tokens securely...', {
