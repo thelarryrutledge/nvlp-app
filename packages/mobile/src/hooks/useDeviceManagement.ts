@@ -91,10 +91,12 @@ export const useDeviceManagement = (options: UseDeviceManagementOptions = {}): U
       const deviceList = await client.device.getDevices();
       console.log('📱 useDeviceManagement: Received device list:', deviceList);
       
+      console.log('📱 useDeviceManagement: Setting devices state:', deviceList);
       setDevices(deviceList);
       
       // Find and set the current device
       const current = deviceList.find(d => d.is_current);
+      console.log('📱 useDeviceManagement: Current device:', current);
       setCurrentDevice(current || null);
       
       reactotron.log('📱 Fetched devices:', {

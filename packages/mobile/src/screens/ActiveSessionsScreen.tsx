@@ -53,11 +53,17 @@ const ActiveSessionsScreen: React.FC = () => {
 
   // Log screen view
   useEffect(() => {
+    console.log('📱 Active Sessions screen - devices state:', {
+      deviceCount: devices.length,
+      devices: devices,
+      currentDevice: currentDevice,
+      isLoading: isLoading,
+    });
     reactotron.log('📱 Active Sessions screen viewed', {
       deviceCount: devices.length,
       currentDevice: currentDevice?.device_name,
     });
-  }, [devices.length, currentDevice]);
+  }, [devices.length, currentDevice, isLoading]);
 
   const handleSignOutDevice = (device: Device) => {
     Alert.alert(
