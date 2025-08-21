@@ -74,7 +74,7 @@ Build a pure React Native mobile app for NVLP that provides a native mobile expe
 - [x] Handle SESSION_INVALIDATED error responses from API
 - [x] Create device management hook (useDeviceManagement)
 - [x] Build "Active Sessions" screen in security settings
-- [ ] Build device list component with swipe-to-delete
+- [x] Build device list component with swipe-to-delete
 - [ ] Add "Sign out all other devices" functionality
 - [ ] Add "Sign out this device" option
 - [ ] Show device details (name, model, location, last seen)

@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useDeviceManagement } from '../hooks/useDeviceManagement';
 import { Device } from '@nvlp/types';
+import DeviceList from '../components/DeviceList';
 import reactotron from '../config/reactotron';
 
 /**
@@ -121,7 +122,7 @@ const ActiveSessionsScreen: React.FC = () => {
         },
         {
           text: 'Save',
-          onPress: async (newName) => {
+          onPress: async (newName?: string) => {
             if (newName && newName.trim() && newName !== device.device_name) {
               try {
                 await updateDeviceName(device.device_id, newName.trim());
@@ -153,71 +154,6 @@ const ActiveSessionsScreen: React.FC = () => {
     return date.toLocaleDateString();
   };
 
-  const getDeviceIcon = (device: Device): string => {
-    if (device.device_type === 'ios') {
-      return device.device_model?.includes('iPad') ? '📱' : '📱';
-    }
-    return '🤖';
-  };
-
-  const renderDevice = (device: Device) => {
-    const isCurrent = isCurrentDevice(device.device_id);
-    
-    return (
-      <TouchableOpacity
-        key={device.device_id}
-        style={[styles.deviceCard, isCurrent && styles.currentDeviceCard]}
-        onPress={() => setSelectedDevice(device)}
-        activeOpacity={0.7}
-      >
-        <View style={styles.deviceHeader}>
-          <View style={styles.deviceIconContainer}>
-            <Text style={styles.deviceIcon}>{getDeviceIcon(device)}</Text>
-          </View>
-          <View style={styles.deviceInfo}>
-            <View style={styles.deviceNameRow}>
-              <Text style={styles.deviceName}>{device.device_name}</Text>
-              {isCurrent && (
-                <View style={styles.currentBadge}>
-                  <Text style={styles.currentBadgeText}>This Device</Text>
-                </View>
-              )}
-            </View>
-            <Text style={styles.deviceModel}>
-              {device.device_model || device.device_type} • {device.os_version || 'Unknown OS'}
-            </Text>
-            <Text style={styles.lastSeen}>
-              Last active: {formatLastSeen(device.last_seen)}
-            </Text>
-            {device.location_city && (
-              <Text style={styles.location}>
-                📍 {device.location_city}, {device.location_country}
-              </Text>
-            )}
-          </View>
-        </View>
-        
-        {!isCurrent && (
-          <View style={styles.deviceActions}>
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={() => handleRenameDevice(device)}
-            >
-              <Text style={styles.actionButtonText}>✏️ Rename</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.actionButton, styles.signOutButton]}
-              onPress={() => handleSignOutDevice(device)}
-            >
-              <Text style={[styles.actionButtonText, styles.signOutButtonText]}>
-                Sign Out
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </TouchableOpacity>
-    );
-  };
 
   const renderSecuritySummary = () => {
     if (!securityStatus) return null;
@@ -313,13 +249,20 @@ const ActiveSessionsScreen: React.FC = () => {
             )}
           </View>
 
-          {devices.length === 0 ? (
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyStateText}>No active sessions</Text>
-            </View>
-          ) : (
-            devices.map(renderDevice)
-          )}
+          <DeviceList
+            devices={devices}
+            currentDeviceId={currentDevice?.device_id}
+            isLoading={isLoading}
+            onRefresh={() => {
+              fetchDevices();
+              refreshSecurityStatus();
+            }}
+            onDevicePress={(device) => setSelectedDevice(device)}
+            onDeviceRename={handleRenameDevice}
+            onDeviceSignOut={handleSignOutDevice}
+            showRevokeOption={false}
+            emptyStateText="No active sessions"
+          />
         </View>
 
         <View style={styles.securityTips}>
