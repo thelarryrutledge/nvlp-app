@@ -74,7 +74,7 @@ const handler = async (req: Request) => {
           email,
           password,
           options: {
-            emailRedirectTo: `${Deno.env.get('PUBLIC_URL') || 'https://nvlp.app'}/email-verified`
+            emailRedirectTo: `${Deno.env.get('SUPABASE_URL')}/functions/v1/email-verified`
           }
         })
 
@@ -502,7 +502,7 @@ const handler = async (req: Request) => {
           type: 'signup',
           email,
           options: {
-            emailRedirectTo: `${Deno.env.get('PUBLIC_URL') || 'https://nvlp.app'}/email-verified`
+            emailRedirectTo: `${Deno.env.get('SUPABASE_URL')}/functions/v1/email-verified`
           }
         })
 

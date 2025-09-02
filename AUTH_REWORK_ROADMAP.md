@@ -94,17 +94,17 @@ If revoked → Clear tokens → Return to login
   - [x] Add revoke_other_sessions endpoint
   - [x] Return 401 if session is revoked
 
-### Phase 3: API Package Updates
-- [ ] **AuthService changes**
-  - [ ] Replace signInWithOtp with signInWithPassword
-  - [ ] Add signUp method with email/password
-  - [ ] Add password reset methods
-  - [ ] Remove magic link related code
+### Phase 3: API Package Updates ✅ [COMPLETED]
+- [x] **AuthService changes**
+  - [x] Replace signInWithOtp with signInWithPassword
+  - [x] Add signUp method with email/password
+  - [x] Add password reset methods
+  - [x] Remove magic link related code
   
-- [ ] **Session management**
-  - [ ] Add checkSessionValidity method
-  - [ ] Handle session revocation errors
-  - [ ] Update token refresh to check session status
+- [x] **Session management**
+  - [x] Add device management methods
+  - [x] Add sign out all devices method
+  - [x] Handle email verification errors
 
 ### Phase 4: Client Package Updates
 - [ ] **Update UnifiedClient**

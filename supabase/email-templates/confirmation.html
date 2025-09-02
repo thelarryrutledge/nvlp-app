@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to NVLP - Verify Your Email</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'Inter', Roboto, Oxygen, Ubuntu, sans-serif; line-height: 1.4; color: #1F2029; background: #F8F8F8;">
+    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background: #F8F8F8; padding: 48px 20px;">
+        <tr>
+            <td align="center">
+                <table cellpadding="0" cellspacing="0" border="0" width="600" style="background: #FFFFFF; border-radius: 20px; overflow: hidden; box-shadow: 0px 4px 40px rgba(0, 0, 0, 0.08);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #7C56FE 0%, #6A31F6 100%); padding: 32px; text-align: center;">
+                            <h1 style="color: #FFFFFF; font-size: 28px; font-weight: 700; margin: 0 0 8px; letter-spacing: -0.5px;">Welcome to NVLP!</h1>
+                            <p style="color: #FFFFFF; font-size: 16px; margin: 0; opacity: 0.95;">Your Virtual Envelope Budgeting System</p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px 32px;">
+                            <h2 style="font-size: 20px; font-weight: 600; color: #1F2029; margin: 0 0 16px;">Verify Your Email Address</h2>
+                            
+                            <p style="font-size: 16px; color: #7E808F; line-height: 1.6; margin: 0 0 32px;">
+                                Thanks for signing up! Please click the button below to verify your email address and activate your NVLP account.
+                            </p>
+                            
+                            <!-- CTA Button -->
+                            <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                                <tr>
+                                    <td align="center" style="padding: 8px 0;">
+                                        <a href="{{ .ConfirmationURL }}" style="display: inline-block; background: linear-gradient(135deg, #6A31F6 0%, #7C56FE 100%); color: #FFFFFF; text-decoration: none; padding: 16px 48px; border-radius: 12px; font-size: 17px; font-weight: 600; box-shadow: 0px 4px 24px rgba(106, 49, 246, 0.25);">
+                                            Verify Email Address
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <p style="font-size: 14px; color: #ADAEB8; margin: 32px 0 16px; text-align: center;">
+                                Or copy and paste this link into your browser:
+                            </p>
+                            
+                            <p style="background: #F8F8F8; border: 1px solid #E8E9ED; border-radius: 8px; padding: 12px; word-break: break-all; font-family: monospace; font-size: 12px; color: #6A31F6; margin: 0;">
+                                {{ .ConfirmationURL }}
+                            </p>
+                            
+                            <div style="margin-top: 40px; padding-top: 32px; border-top: 1px solid #E8E9ED;">
+                                <h3 style="font-size: 16px; font-weight: 600; color: #1F2029; margin: 0 0 16px;">What happens next?</h3>
+                                <p style="font-size: 14px; color: #7E808F; line-height: 1.6; margin: 0;">
+                                    After verifying your email, you'll be redirected to a confirmation page. Then simply open the NVLP app and sign in with your email and password to start managing your budget with virtual envelopes!
+                                </p>
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background: #F8F8F8; padding: 32px; text-align: center;">
+                            <p style="color: #ADAEB8; font-size: 13px; margin: 0 0 8px;">
+                                If you didn't create an account with NVLP, you can safely ignore this email.
+                            </p>
+                            <p style="color: #ADAEB8; font-size: 13px; margin: 0;">
+                                © 2025 NVLP - Virtual Envelope Budgeting System
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
