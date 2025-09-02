@@ -28,13 +28,13 @@ class ReactNativeSessionProvider implements SessionProvider {
   private refreshPromise: Promise<Session | null> | null = null;
 
   constructor() {
-    this.loadStoredSession();
+    // Don't auto-load on construction - wait for explicit initialization
   }
 
   /**
-   * Load session from secure storage on initialization
+   * Load session from secure storage
    */
-  private async loadStoredSession(): Promise<void> {
+  async loadStoredSession(): Promise<void> {
     try {
       const tokens = await SecureStorageService.getAuthTokens();
       if (tokens) {
@@ -42,7 +42,6 @@ class ReactNativeSessionProvider implements SessionProvider {
         console.log('🔐 Loaded stored session:', {
           hasSession: !!this.currentSession,
           expiresAt: this.currentSession?.expires_at,
-          isExpired: this.currentSession?.expires_at ? Math.floor(Date.now() / 1000) >= this.currentSession.expires_at : false,
           tokensHadExpiresAt: !!tokens.expiresAt,
           storedExpiresAt: tokens.expiresAt
         });
@@ -57,6 +56,7 @@ class ReactNativeSessionProvider implements SessionProvider {
    */
   private createSessionFromTokens(tokens: AuthTokens): Session {
     // Use the stored expires_at if available, otherwise calculate based on lastActivity
+
     let expiresAt: number;
     if (tokens.expiresAt) {
       // Use the actual expiry time from the token
@@ -351,6 +351,9 @@ export class ApiClientService {
 
     // Create session provider
     this.sessionProvider = new ReactNativeSessionProvider();
+    
+    // Load stored session into the provider
+    await this.sessionProvider.loadStoredSession();
 
     // Get device headers for all API requests
     const deviceHeaders = await getDeviceHeaders();

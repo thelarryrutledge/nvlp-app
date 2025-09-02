@@ -41,10 +41,13 @@ export class SecureStorageService {
         userId: tokens.userId,
         lastActivity: new Date(tokens.lastActivity).toISOString(),
         hasAccessToken: !!tokens.accessToken,
-        hasRefreshToken: !!tokens.refreshToken
+        hasRefreshToken: !!tokens.refreshToken,
+        expiresAt: tokens.expiresAt,
+        expiresAtDate: tokens.expiresAt ? new Date(tokens.expiresAt * 1000).toISOString() : 'N/A'
       });
       
       const tokenData = JSON.stringify(tokens);
+      console.log('💾 TokenStorage: Stringified data:', tokenData);
       await AsyncStorage.setItem(STORAGE_KEYS.AUTH_TOKENS, tokenData);
       
       console.log('✅ TokenStorage: Auth tokens stored successfully');
@@ -74,6 +77,7 @@ export class SecureStorageService {
       }
 
       console.log('💾 TokenStorage: Parsing stored token data...');
+      console.log('💾 TokenStorage: Raw data to parse:', tokenData);
       const tokens = JSON.parse(tokenData) as AuthTokens;
       
       console.log('💾 TokenStorage: Retrieved tokens:', {
@@ -82,8 +86,12 @@ export class SecureStorageService {
         hasAccessToken: !!tokens.accessToken,
         hasRefreshToken: !!tokens.refreshToken,
         expiresAt: tokens.expiresAt,
-        expiresAtDate: tokens.expiresAt ? new Date(tokens.expiresAt * 1000).toISOString() : 'N/A'
+        expiresAtDate: tokens.expiresAt ? new Date(tokens.expiresAt * 1000).toISOString() : 'N/A',
+        expiresAtType: typeof tokens.expiresAt
       });
+      
+      // Note: Removed migration check to avoid race conditions during development
+      // In production, tokens without expiresAt would be from a previous version
       
       // Only check for 30-day inactivity - assume tokens are valid since they were validated before storing
       const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;

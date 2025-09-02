@@ -251,7 +251,14 @@ class SupabaseTokenProvider implements TokenProvider {
   }
 
   async getToken(): Promise<string | null> {
+    console.log('🔐 SupabaseTokenProvider: getToken called');
     const session = await this.sessionProvider.getSession();
+    console.log('🔐 SupabaseTokenProvider: Got session:', {
+      hasSession: !!session,
+      hasAccessToken: !!session?.access_token,
+      tokenLength: session?.access_token?.length,
+      expiresAt: session?.expires_at
+    });
     return session?.access_token || null;
   }
 

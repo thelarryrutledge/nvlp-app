@@ -499,12 +499,23 @@ export class HttpClient {
    * Ensure we have a valid token, refreshing if necessary
    */
   private async ensureValidToken(): Promise<string | null> {
+    console.log('🔐 HTTP Client: ensureValidToken called, hasTokenProvider:', !!this.config.tokenProvider);
+    
     if (!this.config.tokenProvider) {
+      console.log('🔐 HTTP Client: No token provider configured');
       return null;
     }
 
+    console.log('🔐 HTTP Client: Getting token from provider...');
     const token = await this.config.tokenProvider.getToken();
+    console.log('🔐 HTTP Client: Token from provider:', {
+      hasToken: !!token,
+      tokenLength: token?.length,
+      tokenStart: token?.substring(0, 50) + '...'
+    });
+    
     if (!token) {
+      console.log('🔐 HTTP Client: No token available from provider');
       return null;
     }
 
@@ -562,6 +573,8 @@ export class HttpClient {
     const fetchWithTimeout = createTimeoutFetch(timeout);
 
     const makeRequest = async (includeToken: boolean = true): Promise<T> => {
+      console.log('🔐 HTTP Client: makeRequest called with includeToken:', includeToken, 'url:', url);
+      
       const finalHeaders: Record<string, string> = {
         ...this.config.defaultHeaders,
         ...headers,
@@ -569,22 +582,43 @@ export class HttpClient {
 
       // Add device ID header automatically if available
       const deviceId = this.getOrCreateDeviceId();
+      console.log('🔐 HTTP Client: Device ID for headers:', deviceId);
       if (deviceId) {
         finalHeaders['X-Device-ID'] = deviceId;
+        console.log('🔐 HTTP Client: Added X-Device-ID header:', deviceId);
+      } else {
+        console.log('⚠️ HTTP Client: No device ID available for X-Device-ID header');
       }
 
       // Add token if available and requested
       if (includeToken && this.config.tokenProvider) {
+        console.log('🔐 HTTP Client: Getting token for request...');
         const token = await this.ensureValidToken();
         if (token) {
           finalHeaders['Authorization'] = `Bearer ${token}`;
+          console.log('🔐 HTTP Client: Setting Authorization header:', {
+            tokenLength: token.length,
+            tokenStart: token.substring(0, 50) + '...',
+            url: url.includes('device') ? url : 'non-device endpoint'
+          });
+        } else {
+          console.log('⚠️ HTTP Client: No token available for Authorization header');
         }
+      } else {
+        console.log('🔐 HTTP Client: Not including token - includeToken:', includeToken, 'hasProvider:', !!this.config.tokenProvider);
       }
 
       // Auto-set Content-Type for JSON bodies
       if (body && typeof body === 'object' && !finalHeaders['Content-Type']) {
         finalHeaders['Content-Type'] = 'application/json';
       }
+
+      console.log('🔐 HTTP Client: Final headers being sent:', {
+        Authorization: finalHeaders['Authorization'] ? `Bearer ${finalHeaders['Authorization'].substring(7, 57)}...` : 'none',
+        'X-Device-ID': finalHeaders['X-Device-ID'] || 'none',
+        'Content-Type': finalHeaders['Content-Type'] || 'none',
+        totalHeaders: Object.keys(finalHeaders).length
+      });
 
       const response = await fetchWithTimeout(url, {
         ...requestInit,

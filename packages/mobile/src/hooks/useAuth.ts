@@ -49,6 +49,9 @@ export const useAuth = (options: UseAuthOptions = {}) => {
     onMagicLink: async (data) => {
       console.log('🔗 Magic link received in useAuth:', data);
       
+      // Clear any errors immediately when magic link is received
+      clearError();
+      
       // Process the magic link through the auth store
       try {
         await signInWithMagicLink(data);

@@ -194,11 +194,24 @@ class DeepLinkService {
       if (params.get('access_token')) data.access_token = params.get('access_token')!;
       if (params.get('refresh_token')) data.refresh_token = params.get('refresh_token')!;
       if (params.get('expires_in')) data.expires_in = params.get('expires_in')!;
+      if (params.get('expires_at')) data.expires_at = params.get('expires_at')!;
       if (params.get('token_type')) data.token_type = params.get('token_type')!;
       if (params.get('type')) data.type = params.get('type')!;
       if (params.get('error')) data.error = params.get('error')!;
       if (params.get('error_description')) data.error_description = params.get('error_description')!;
 
+      console.log('🔗 Extracted magic link data:', {
+        hasAccessToken: !!data.access_token,
+        accessTokenLength: data.access_token?.length,
+        hasRefreshToken: !!data.refresh_token,
+        refreshTokenLength: data.refresh_token?.length,
+        refreshToken: data.refresh_token,
+        expiresAt: data.expires_at,
+        expiresIn: data.expires_in,
+        tokenType: data.token_type,
+        type: data.type
+      });
+      
       reactotron.display({
         name: '🔗 Magic Link Data',
         value: data,

@@ -16,6 +16,8 @@ import { useAuthContext } from '../contexts/AuthContext';
 import supabaseClient from '../services/supabaseClient';
 import reactotron from '../config/reactotron';
 import DeepLinkService from '../services/deepLinkService';
+import SecureStorageService from '../services/secureStorage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const LoginScreen: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -160,6 +162,36 @@ export const LoginScreen: React.FC = () => {
             >
               <Text style={styles.buttonText}>Test Magic Link (Debug)</Text>
             </TouchableOpacity>
+            
+            {/* Clear Storage button for debugging */}
+            {__DEV__ && (
+              <TouchableOpacity
+                style={[styles.button, { backgroundColor: '#9B59B6', marginTop: 10 }]}
+                onPress={async () => {
+                  try {
+                    console.log('🗑️ Clearing all stored tokens and data...');
+                    
+                    // Clear secure storage
+                    await SecureStorageService.clearAll();
+                    
+                    // Clear all AsyncStorage (nuclear option)
+                    await AsyncStorage.clear();
+                    
+                    console.log('✅ All storage cleared successfully');
+                    Alert.alert(
+                      'Storage Cleared', 
+                      'All tokens and cached data have been cleared. You can now try a fresh sign-in.',
+                      [{ text: 'OK' }]
+                    );
+                  } catch (error) {
+                    console.error('❌ Error clearing storage:', error);
+                    Alert.alert('Error', 'Failed to clear storage: ' + (error as Error).message);
+                  }
+                }}
+              >
+                <Text style={styles.buttonText}>Clear All Storage (Debug)</Text>
+              </TouchableOpacity>
+            )}
           </View>
 
           {/* Debug info */}

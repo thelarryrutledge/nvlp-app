@@ -16,7 +16,31 @@ export const sessionValidationMiddleware = async (
     return { isValid: false, error: 'Invalid authentication' }
   }
   
-  // Check session invalidation using database function
+  // Check if session exists and is active in user_sessions table
+  const { data: session, error: sessionError } = await supabaseClient
+    .from('user_sessions')
+    .select('is_active, revoked_at')
+    .eq('user_id', user.id)
+    .eq('device_id', deviceId)
+    .single()
+  
+  if (sessionError || !session) {
+    // No session found for this device
+    return { isValid: false, error: 'Session not found', code: 'SESSION_NOT_FOUND' }
+  }
+  
+  if (!session.is_active || session.revoked_at) {
+    return { isValid: false, error: 'Session has been revoked', code: 'SESSION_REVOKED' }
+  }
+  
+  // Update last activity
+  await supabaseClient
+    .from('user_sessions')
+    .update({ last_activity: new Date().toISOString() })
+    .eq('user_id', user.id)
+    .eq('device_id', deviceId)
+  
+  // Also check session invalidation using database function (for backwards compatibility)
   const { data: isInvalidated, error } = await supabaseClient.rpc(
     'is_session_invalidated',
     { p_user_id: user.id, p_device_id: deviceId }

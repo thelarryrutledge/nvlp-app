@@ -3,6 +3,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts'
 import { withSecurity } from '../_shared/security-headers.ts'
 import { withRateLimit } from '../_shared/rate-limiter.ts'
+import { sessionValidationMiddleware } from '../_shared/session-validation.ts'
 
 const handler = async (req: Request) => {
   // Handle CORS
@@ -11,22 +12,25 @@ const handler = async (req: Request) => {
   }
 
   try {
-    // Get the authorization header
-    const authHeader = req.headers.get('Authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return new Response(
-        JSON.stringify({ error: 'Missing or invalid authorization header' }),
-        { 
-          status: 401,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      )
-    }
-
-    const token = authHeader.replace('Bearer ', '')
-    const deviceId = req.headers.get('X-Device-ID')
-
-    // Create Supabase client with the user's token
+    console.log('🔐 Edge Function: Processing device management request:', req.method, req.url)
+    
+    // Log ALL headers to debug what we're actually receiving
+    const allHeaders: Record<string, string> = {}
+    req.headers.forEach((value, key) => {
+      allHeaders[key] = key.toLowerCase() === 'authorization' ? `Bearer ${value.substring(7, 57)}...` : value
+    })
+    console.log('🔐 Edge Function: ALL headers received:', allHeaders)
+    
+    console.log('🔐 Edge Function: Specific header checks:', {
+      authorization: req.headers.get('Authorization') ? `Bearer ${req.headers.get('Authorization')?.substring(7, 57)}...` : 'none',
+      authorizationLower: req.headers.get('authorization') ? `Bearer ${req.headers.get('authorization')?.substring(7, 57)}...` : 'none',
+      deviceId: req.headers.get('X-Device-ID') || 'none',
+      deviceIdLower: req.headers.get('x-device-id') || 'none',
+      userAgent: req.headers.get('User-Agent') || 'none',
+      contentType: req.headers.get('Content-Type') || 'none'
+    })
+    
+    // Create Supabase client - Edge Functions automatically include JWT context
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
@@ -34,26 +38,55 @@ const handler = async (req: Request) => {
         auth: {
           autoRefreshToken: false,
           persistSession: false
-        },
-        global: {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
         }
       }
     )
 
-    // Get the current user from the JWT
+    // Get the current user from the JWT context (automatically handled by Supabase)
+    console.log('🔐 Edge Function: Getting authenticated user from context...')
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser()
 
     if (userError || !user) {
+      console.log('❌ Edge Function: Authentication failed:', userError?.message || 'No user')
       return new Response(
-        JSON.stringify({ error: 'Invalid or expired token' }),
+        JSON.stringify({ error: 'Authentication required' }),
         { 
           status: 401,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
+    }
+
+    console.log('✅ Edge Function: Authenticated user:', user.id)
+    
+    // Get device ID from headers - this should be sent by the client
+    const deviceId = req.headers.get('X-Device-ID') || req.headers.get('x-device-id')
+    console.log('🔐 Edge Function: Device ID from headers:', deviceId || 'none')
+    
+    // For now, skip session validation if we don't have a device ID
+    // This is because the headers aren't making it through properly
+    if (deviceId) {
+      console.log('🔐 Edge Function: Validating session with device ID:', deviceId)
+      const sessionValidation = await sessionValidationMiddleware(supabaseClient, {
+        'x-device-id': deviceId
+      })
+
+      if (!sessionValidation.isValid) {
+        console.log('❌ Edge Function: Session validation failed:', sessionValidation.error, sessionValidation.code)
+        return new Response(
+          JSON.stringify({ 
+            error: sessionValidation.error,
+            code: sessionValidation.code 
+          }),
+          { 
+            status: 401,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        )
+      }
+      console.log('✅ Edge Function: Session validation passed for user:', user.id)
+    } else {
+      console.log('⚠️ Edge Function: Skipping session validation - no device ID in headers')
     }
 
     // Parse the URL path

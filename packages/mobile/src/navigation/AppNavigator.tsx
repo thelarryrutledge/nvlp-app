@@ -11,6 +11,7 @@ import BudgetScreen from '../screens/BudgetScreen';
 import TransactionScreen from '../screens/TransactionScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import ActiveSessionsScreen from '../screens/ActiveSessionsScreen';
+import SplashScreen from '../screens/SplashScreen';
 
 export type RootTabParamList = {
   Home: undefined;
@@ -115,11 +116,11 @@ const MainTabNavigator = () => {
 };
 
 const AppNavigator = () => {
-  const { isAuthenticated, isInitialized } = useAuthContext();
+  const { isAuthenticated, isInitialized, isLoading } = useAuthContext();
 
-  // Don't render navigation until auth is initialized
-  if (!isInitialized) {
-    return null;
+  // Show splash screen while auth is initializing or loading
+  if (!isInitialized || isLoading) {
+    return <SplashScreen />;
   }
 
   return (

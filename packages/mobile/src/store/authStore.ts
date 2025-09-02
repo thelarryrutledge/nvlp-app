@@ -41,7 +41,7 @@ const useAuthStore = create<AuthState>()(
         isInitialized: false,
         error: null,
 
-      // Initialize auth state from secure storage
+      // Initialize auth state from secure storage (called on app startup)
       initialize: async () => {
         const { isInitialized } = get();
         if (isInitialized) {
@@ -49,54 +49,59 @@ const useAuthStore = create<AuthState>()(
           return;
         }
 
-        console.log('🔐 AuthStore: Starting initialization...');
+        console.log('🔐 AuthStore: Starting initialization (checking for stored tokens)...');
         set({ isLoading: true, error: null });
         
+        // Small delay to let magic link processing take precedence if app opened with deep link
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+        // Check if we've been initialized by magic link while waiting
+        const { isInitialized: nowInitialized } = get();
+        if (nowInitialized) {
+          console.log('🔐 AuthStore: Initialized by magic link during delay, skipping stored token check');
+          return;
+        }
+        
         try {
-          console.log('🔐 AuthStore: Checking for cached tokens...');
-          
-          // Check if we have valid cached tokens
+          // Check if we have stored tokens
           const tokens = await SecureStorageService.getAuthTokens();
-          const hasValidTokens = tokens !== null;
           
-          console.log('🔐 AuthStore: Token check result:', { hasValidTokens, tokens: tokens ? 'found' : 'none' });
-          
-          if (hasValidTokens) {
-            console.log('✅ AuthStore: Valid tokens found - user is authenticated');
-            // Update activity timestamp since app is opening
+          if (tokens) {
+            console.log('✅ AuthStore: Found stored tokens, trusting them and signing in');
             await SecureStorageService.updateLastActivity();
+            // Don't initialize API client here - let it happen lazily when needed
+            
+            set({
+              isAuthenticated: true,
+              isInitialized: true,
+              isLoading: false,
+              error: null,
+            });
           } else {
-            console.log('🔐 AuthStore: No valid tokens found - user needs to sign in');
+            console.log('🔐 AuthStore: No stored tokens - user needs to sign in');
+            set({
+              isAuthenticated: false,
+              isInitialized: true,
+              isLoading: false,
+              error: null,
+            });
           }
-          
-          set({
-            isAuthenticated: hasValidTokens,
-            isInitialized: true,
-            isLoading: false,
-            error: null,
-          });
-          
-          console.log('✅ AuthStore: Initialization complete, isAuthenticated:', hasValidTokens);
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Failed to initialize auth';
           console.error('❌ AuthStore: Failed to initialize:', error);
           
           set({
+            isAuthenticated: false,
             isInitialized: true,
             isLoading: false,
             error: errorMessage,
-            isAuthenticated: false,
           });
         }
       },
 
       // Sign in with magic link
       signInWithMagicLink: async (magicLinkData: MagicLinkData) => {
-        console.log('🔑 AuthStore: Starting magic link authentication...', {
-          hasAccessToken: !!magicLinkData.access_token,
-          hasRefreshToken: !!magicLinkData.refresh_token,
-          expiresIn: magicLinkData.expires_in
-        });
+        console.log('🔑 AuthStore: Starting magic link authentication...');
         set({ isLoading: true, error: null });
         
         try {
@@ -115,77 +120,99 @@ const useAuthStore = create<AuthState>()(
           
           console.log('✅ AuthStore: JWT token is valid and not expired');
           
-          // Store tokens securely with current timestamp as lastActivity
-          const expiresAtValue = magicLinkData.expires_at ? parseInt(magicLinkData.expires_at, 10) : undefined;
-          console.log('🔐 AuthStore: Parsing expires_at:', {
-            raw: magicLinkData.expires_at,
-            parsed: expiresAtValue,
+          // Clear any existing tokens first (magic link overrides stored tokens)
+          console.log('🗑️ AuthStore: Clearing any existing tokens...');
+          await SecureStorageService.clearAuthTokens();
+          
+          // Prepare new tokens from magic link
+          console.log('🔍 AuthStore: Magic link data received:', {
+            hasExpiresAt: !!magicLinkData.expires_at,
+            expiresAt: magicLinkData.expires_at,
             expiresIn: magicLinkData.expires_in,
-            calculatedExpiry: expiresAtValue ? new Date(expiresAtValue * 1000).toISOString() : 'N/A'
+            type: typeof magicLinkData.expires_at
           });
+          
+          // Parse expires_at - it comes as a string from the URL
+          let expiresAtValue: number | undefined;
+          
+          if (magicLinkData.expires_at) {
+            // Use expires_at if available (absolute timestamp)
+            expiresAtValue = typeof magicLinkData.expires_at === 'string' 
+              ? parseInt(magicLinkData.expires_at, 10) 
+              : magicLinkData.expires_at;
+            console.log('🔍 AuthStore: Using expires_at from magic link:', {
+              original: magicLinkData.expires_at,
+              parsed: expiresAtValue,
+              isValid: !isNaN(expiresAtValue),
+              expiryDate: new Date(expiresAtValue * 1000).toISOString()
+            });
+          } else if (magicLinkData.expires_in) {
+            // Fallback: calculate from expires_in (relative seconds)
+            const expiresIn = typeof magicLinkData.expires_in === 'string'
+              ? parseInt(magicLinkData.expires_in, 10)
+              : magicLinkData.expires_in;
+            expiresAtValue = Math.floor(Date.now() / 1000) + expiresIn;
+            console.log('🔍 AuthStore: Calculated expires_at from expires_in:', {
+              expiresIn,
+              calculated: expiresAtValue,
+              expiryDate: new Date(expiresAtValue * 1000).toISOString()
+            });
+          } else {
+            console.warn('⚠️ AuthStore: No expiry information in magic link!');
+          }
+          
+          // Extract user ID from the JWT token
+          let userId = 'unknown_user';
+          try {
+            // Decode JWT to get user ID (sub claim)
+            const tokenParts = magicLinkData.access_token.split('.');
+            if (tokenParts.length === 3) {
+              const payload = JSON.parse(atob(tokenParts[1]));
+              userId = payload.sub || 'unknown_user';
+              console.log('🔍 AuthStore: Extracted user ID from JWT:', userId);
+            }
+          } catch (e) {
+            console.warn('⚠️ AuthStore: Could not extract user ID from JWT:', e);
+          }
           
           const authTokens: AuthTokens = {
             accessToken: magicLinkData.access_token,
             refreshToken: magicLinkData.refresh_token,
-            userId: 'magic_link_user', // Use a default value for now
+            userId,
             lastActivity: Date.now(),
-            expiresAt: expiresAtValue, // Store the actual expiry time
+            expiresAt: expiresAtValue,
           };
           
-          console.log('💾 AuthStore: Storing auth tokens securely...', {
-            lastActivity: new Date(authTokens.lastActivity).toISOString(),
-            hasAccessToken: !!authTokens.accessToken,
-            hasRefreshToken: !!authTokens.refreshToken,
-            expiresAt: authTokens.expiresAt,
-            magicLinkExpiresAt: magicLinkData.expires_at
+          console.log('🔍 AuthStore: Created token object with expiresAt:', {
+            expiresAtValue,
+            tokenExpiresAt: authTokens.expiresAt,
+            isUndefined: authTokens.expiresAt === undefined
           });
           
+          console.log('💾 AuthStore: Storing new auth tokens...');
+          console.log('📋 Full token object being stored:', JSON.stringify(authTokens, null, 2));
+          console.log('📊 Token expiry details:', {
+            hasExpiresAt: !!authTokens.expiresAt,
+            expiresAt: authTokens.expiresAt,
+            expiresAtDate: authTokens.expiresAt ? new Date(authTokens.expiresAt * 1000).toISOString() : 'N/A',
+            expiresAtType: typeof authTokens.expiresAt
+          });
           await SecureStorageService.setAuthTokens(authTokens);
+          console.log('✅ AuthStore: Tokens stored successfully');
           
-          // Initialize API client if not already initialized
-          console.log('🔌 AuthStore: Initializing API client...');
+          // For magic link sign-in, we should register the device
+          // This is a new authentication event
           try {
+            console.log('📱 AuthStore: Registering device after magic link sign-in...');
+            // Initialize API client first with the fresh tokens
             await ApiClientService.initialize();
-            console.log('✅ AuthStore: API client initialized');
-            
-            // Create a proper session with the correct expires_at
-            // This is needed to override any incorrect expiry calculation during initialization
-            const session = {
-              access_token: magicLinkData.access_token!,
-              refresh_token: magicLinkData.refresh_token!,
-              expires_at: expiresAtValue || Math.floor(Date.now() / 1000) + 900, // Use parsed value or 15 min default
-              expires_in: parseInt(magicLinkData.expires_in || '900', 10),
-              token_type: magicLinkData.token_type || 'bearer',
-              user: {
-                id: 'magic_link_user',
-                aud: 'authenticated',
-                role: 'authenticated',
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString(),
-                email: '',
-                app_metadata: {},
-                user_metadata: {},
-              },
-            };
-            
-            // Update the session provider with the correct session
-            const sessionProvider = ApiClientService.getSessionProvider();
-            await sessionProvider.setSession(session);
-            console.log('✅ AuthStore: Session updated with correct expires_at:', session.expires_at);
-          } catch (initError) {
-            console.warn('⚠️ AuthStore: API client initialization failed:', initError);
-          }
-          
-          // Register device after successful authentication
-          console.log('📱 AuthStore: Registering device with API...');
-          try {
             await DeviceService.registerDevice();
             console.log('✅ AuthStore: Device registered successfully');
             
-            // Do an initial check for new devices
+            // Check for other new devices
             await DeviceService.checkForNewDevices();
           } catch (deviceError) {
-            // Log but don't fail authentication if device registration fails
+            // Don't fail auth if device registration fails
             console.warn('⚠️ AuthStore: Device registration failed (non-critical):', deviceError);
           }
           
@@ -193,6 +220,7 @@ const useAuthStore = create<AuthState>()(
             isAuthenticated: true,
             isLoading: false,
             error: null,
+            isInitialized: true,
           });
           
           console.log('✅ AuthStore: Magic link authentication successful, isAuthenticated: true');
