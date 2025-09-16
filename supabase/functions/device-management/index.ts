@@ -30,7 +30,23 @@ const handler = async (req: Request) => {
       contentType: req.headers.get('Content-Type') || 'none'
     })
     
-    // Create Supabase client - Edge Functions automatically include JWT context
+    // Get the Authorization header
+    const authHeader = req.headers.get('Authorization')
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.log('❌ Edge Function: No Authorization header found')
+      return new Response(
+        JSON.stringify({ error: 'No authorization token provided' }),
+        { 
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
+    const token = authHeader.replace('Bearer ', '')
+    
+    // Create Supabase client with the auth token
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
@@ -38,13 +54,18 @@ const handler = async (req: Request) => {
         auth: {
           autoRefreshToken: false,
           persistSession: false
+        },
+        global: {
+          headers: {
+            Authorization: authHeader
+          }
         }
       }
     )
 
-    // Get the current user from the JWT context (automatically handled by Supabase)
-    console.log('🔐 Edge Function: Getting authenticated user from context...')
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser()
+    // Get the current user from the JWT token
+    console.log('🔐 Edge Function: Getting authenticated user from token...')
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token)
 
     if (userError || !user) {
       console.log('❌ Edge Function: Authentication failed:', userError?.message || 'No user')
