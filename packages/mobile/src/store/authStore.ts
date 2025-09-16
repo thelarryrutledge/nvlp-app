@@ -32,6 +32,9 @@ interface AuthState {
   handleSessionInvalidated: (errorMessage: string) => Promise<void>;
 }
 
+// Global flag to prevent multiple auth listeners
+let authListenerInitialized = false;
+
 const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => {
@@ -55,28 +58,34 @@ const useAuthStore = create<AuthState>()(
         console.log('🔐 AuthStore: Starting initialization...');
         set({ isLoading: true, error: null });
         
-        // Set up Supabase auth state listener
-        console.log('🔐 AuthStore: Setting up Supabase auth listener...');
-        supabaseClient.auth.onAuthStateChange(async (event, session) => {
-          console.log('🔐 AuthStore: Auth state changed:', event, { hasSession: !!session });
+        // Set up Supabase auth state listener (only once)
+        if (!authListenerInitialized) {
+          console.log('🔐 AuthStore: Setting up Supabase auth listener...');
+          authListenerInitialized = true;
           
-          if (event === 'SIGNED_IN' && session) {
-            await get().handleSupabaseSession(session);
-          } else if (event === 'SIGNED_OUT') {
-            await get().handleSupabaseSession(null);
-          } else if (event === 'TOKEN_REFRESHED' && session) {
-            // Update stored tokens when they're refreshed
-            console.log('🔐 AuthStore: Token refreshed, updating storage...');
-            const authTokens: AuthTokens = {
-              accessToken: session.access_token,
-              refreshToken: session.refresh_token,
-              userId: session.user?.id || '',
-              expiresAt: session.expires_at,
-              lastActivity: Date.now(),
-            };
-            await SecureStorageService.setAuthTokens(authTokens);
-          }
-        });
+          supabaseClient.auth.onAuthStateChange(async (event, session) => {
+            console.log('🔐 AuthStore: Auth state changed:', event, { hasSession: !!session });
+            
+            if (event === 'SIGNED_IN' && session) {
+              await get().handleSupabaseSession(session);
+            } else if (event === 'SIGNED_OUT') {
+              await get().handleSupabaseSession(null);
+            } else if (event === 'TOKEN_REFRESHED' && session) {
+              // Update stored tokens when they're refreshed
+              console.log('🔐 AuthStore: Token refreshed, updating storage...');
+              const authTokens: AuthTokens = {
+                accessToken: session.access_token,
+                refreshToken: session.refresh_token,
+                userId: session.user?.id || '',
+                expiresAt: session.expires_at,
+                lastActivity: Date.now(),
+              };
+              await SecureStorageService.setAuthTokens(authTokens);
+            }
+          });
+        } else {
+          console.log('🔐 AuthStore: Auth listener already initialized, skipping...');
+        }
         
         // Small delay to let magic link processing take precedence if app opened with deep link
         await new Promise(resolve => setTimeout(resolve, 200));
@@ -347,8 +356,18 @@ const useAuthStore = create<AuthState>()(
           }
         } else {
           // Session was cleared (sign out)
-          console.log('🚪 AuthStore: Session cleared, signing out...');
-          await get().signOut();
+          console.log('🚪 AuthStore: Session cleared, updating state...');
+          
+          // Clear tokens and update state without calling signOut (to avoid infinite loop)
+          await SecureStorageService.clearAuthTokens();
+          await DeviceService.clearKnownDevices();
+          
+          set({
+            isAuthenticated: false,
+            isInitialized: true,
+            isLoading: false,
+            error: null,
+          });
         }
       },
 
