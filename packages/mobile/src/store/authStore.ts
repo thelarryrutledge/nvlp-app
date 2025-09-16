@@ -6,6 +6,8 @@ import { MagicLinkData } from '../services/deepLinkService';
 import { validateJWTForSecurity } from '../utils/jwt';
 import DeviceService from '../services/deviceService';
 import ApiClientService from '../services/apiClient';
+import supabaseClient from '../services/supabaseClient';
+import { Session } from '@supabase/supabase-js';
 
 interface AuthState {
   // State
@@ -17,6 +19,7 @@ interface AuthState {
   // Actions
   initialize: () => Promise<void>;
   signInWithMagicLink: (magicLinkData: MagicLinkData) => Promise<void>;
+  handleSupabaseSession: (session: Session | null) => Promise<void>;
   signOut: () => Promise<void>;
   updateActivity: () => Promise<void>;
   clearError: () => void;
@@ -49,8 +52,31 @@ const useAuthStore = create<AuthState>()(
           return;
         }
 
-        console.log('🔐 AuthStore: Starting initialization (checking for stored tokens)...');
+        console.log('🔐 AuthStore: Starting initialization...');
         set({ isLoading: true, error: null });
+        
+        // Set up Supabase auth state listener
+        console.log('🔐 AuthStore: Setting up Supabase auth listener...');
+        supabaseClient.auth.onAuthStateChange(async (event, session) => {
+          console.log('🔐 AuthStore: Auth state changed:', event, { hasSession: !!session });
+          
+          if (event === 'SIGNED_IN' && session) {
+            await get().handleSupabaseSession(session);
+          } else if (event === 'SIGNED_OUT') {
+            await get().handleSupabaseSession(null);
+          } else if (event === 'TOKEN_REFRESHED' && session) {
+            // Update stored tokens when they're refreshed
+            console.log('🔐 AuthStore: Token refreshed, updating storage...');
+            const authTokens: AuthTokens = {
+              accessToken: session.access_token,
+              refreshToken: session.refresh_token,
+              userId: session.user?.id || '',
+              expiresAt: session.expires_at,
+              lastActivity: Date.now(),
+            };
+            await SecureStorageService.setAuthTokens(authTokens);
+          }
+        });
         
         // Small delay to let magic link processing take precedence if app opened with deep link
         await new Promise(resolve => setTimeout(resolve, 200));
@@ -63,7 +89,15 @@ const useAuthStore = create<AuthState>()(
         }
         
         try {
-          // Check if we have stored tokens
+          // Check for existing Supabase session first
+          const { data: { session } } = await supabaseClient.auth.getSession();
+          if (session) {
+            console.log('🔐 AuthStore: Found existing Supabase session');
+            await get().handleSupabaseSession(session);
+            return;
+          }
+          
+          // Fall back to checking stored tokens
           const tokens = await SecureStorageService.getAuthTokens();
           
           if (tokens) {
@@ -236,12 +270,97 @@ const useAuthStore = create<AuthState>()(
         }
       },
 
+      // Handle Supabase session changes (for email/password auth)
+      handleSupabaseSession: async (session: Session | null) => {
+        console.log('🔐 AuthStore: Handling Supabase session change:', { hasSession: !!session });
+        
+        if (session) {
+          set({ isLoading: true, error: null });
+          
+          try {
+            // Validate the access token for security
+            console.log('🔒 AuthStore: Validating session JWT token security...');
+            const jwtValidation = validateJWTForSecurity(session.access_token);
+            
+            if (!jwtValidation.isValid) {
+              console.error('❌ AuthStore: JWT validation failed:', jwtValidation.reason);
+              throw new Error(`Security validation failed: ${jwtValidation.reason}`);
+            }
+            
+            console.log('✅ AuthStore: Session JWT token is valid');
+            
+            // Clear any existing tokens first
+            console.log('🗑️ AuthStore: Clearing any existing tokens...');
+            await SecureStorageService.clearAuthTokens();
+            
+            // Extract user ID from the session
+            const userId = session.user?.id || '';
+            
+            // Store the new tokens
+            const authTokens: AuthTokens = {
+              accessToken: session.access_token,
+              refreshToken: session.refresh_token,
+              userId,
+              expiresAt: session.expires_at,
+              lastActivity: Date.now(),
+            };
+            
+            console.log('💾 AuthStore: Storing session tokens...');
+            await SecureStorageService.setAuthTokens(authTokens);
+            await SecureStorageService.updateLastActivity();
+            
+            // Initialize API client (it will pick up the session from storage)
+            console.log('🔧 AuthStore: Initializing API client...');
+            await ApiClientService.initialize();
+            
+            set({
+              isAuthenticated: true,
+              isInitialized: true,
+              isLoading: false,
+              error: null,
+            });
+            
+            // Register device for new sign-in
+            try {
+              console.log('📱 AuthStore: Registering device after sign-in...');
+              await DeviceService.registerDevice();
+              console.log('✅ AuthStore: Device registered successfully');
+            } catch (deviceError) {
+              console.warn('⚠️ AuthStore: Device registration failed:', deviceError);
+              // Don't fail auth if device registration fails
+            }
+            
+            console.log('✅ AuthStore: Session authenticated successfully');
+          } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Session authentication failed';
+            console.error('❌ AuthStore: Session authentication failed:', error);
+            
+            // Clear tokens on failure
+            await SecureStorageService.clearAuthTokens();
+            
+            set({
+              isInitialized: true,
+              isLoading: false,
+              error: errorMessage,
+              isAuthenticated: false,
+            });
+          }
+        } else {
+          // Session was cleared (sign out)
+          console.log('🚪 AuthStore: Session cleared, signing out...');
+          await get().signOut();
+        }
+      },
+
       // Sign out
       signOut: async () => {
         set({ isLoading: true, error: null });
         
         try {
           console.log('🚪 Signing out...');
+          
+          // Sign out from Supabase
+          await supabaseClient.auth.signOut();
           
           // Clear known devices list
           await DeviceService.clearKnownDevices();
