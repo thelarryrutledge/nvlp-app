@@ -9,21 +9,21 @@ import {
   Platform,
   ActivityIndicator,
   Alert,
-  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthContext } from '../contexts/AuthContext';
 import supabaseClient from '../services/supabaseClient';
 import reactotron from '../config/reactotron';
-import DeepLinkService from '../services/deepLinkService';
 import SecureStorageService from '../services/secureStorage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const LoginScreen: React.FC = () => {
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isSignUp, setIsSignUp] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
-  const { magicLink, isAuthenticated, error } = useAuthContext();
+  const { isAuthenticated, error } = useAuthContext();
   
   // Debug logging
   React.useEffect(() => {
@@ -33,9 +33,9 @@ export const LoginScreen: React.FC = () => {
     });
   }, [isAuthenticated, error]);
 
-  const handleSendMagicLink = async () => {
-    if (!email) {
-      Alert.alert('Error', 'Please enter your email address');
+  const handleAuth = async () => {
+    if (!email || !password) {
+      Alert.alert('Error', 'Please enter your email and password');
       return;
     }
 
@@ -46,31 +46,55 @@ export const LoginScreen: React.FC = () => {
       return;
     }
 
+    if (password.length < 6) {
+      Alert.alert('Error', 'Password must be at least 6 characters');
+      return;
+    }
+
     setIsLoading(true);
     
     try {
-      reactotron.log('📧 Sending magic link to:', email);
-      
-      const result = await supabaseClient.sendMagicLink(email);
-      
-      if (result.success) {
-        Alert.alert(
-          'Check Your Email',
-          `We've sent a magic link to ${email}. Click the link in the email to sign in.`,
-          [{ text: 'OK' }]
-        );
+      if (isSignUp) {
+        reactotron.log('📝 Signing up user:', email);
+        const { data, error } = await supabaseClient.auth.signUp({
+          email,
+          password,
+        });
         
-        // Clear email field
-        setEmail('');
+        if (error) {
+          Alert.alert('Error', error.message);
+        } else if (data.user) {
+          Alert.alert(
+            'Check Your Email',
+            `We've sent a verification email to ${email}. Please verify your email before signing in.`,
+            [{ text: 'OK', onPress: () => setIsSignUp(false) }]
+          );
+          // Clear fields
+          setEmail('');
+          setPassword('');
+        }
       } else {
-        Alert.alert(
-          'Error',
-          result.error || 'Failed to send magic link. Please try again.',
-          [{ text: 'OK' }]
-        );
+        reactotron.log('🔑 Signing in user:', email);
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
+          email,
+          password,
+        });
+        
+        if (error) {
+          if (error.message.includes('Email not confirmed')) {
+            Alert.alert(
+              'Email Not Verified',
+              'Please check your email and verify your account before signing in.',
+              [{ text: 'OK' }]
+            );
+          } else {
+            Alert.alert('Error', error.message);
+          }
+        }
+        // If successful, the auth state change will be handled by the auth context
       }
     } catch (error) {
-      reactotron.error('Failed to send magic link:', error as Error);
+      reactotron.error('Authentication failed:', error as Error);
       Alert.alert(
         'Error',
         'An unexpected error occurred. Please try again.',
@@ -78,6 +102,34 @@ export const LoginScreen: React.FC = () => {
       );
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      Alert.alert('Error', 'Please enter your email address first');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Alert.alert('Error', 'Please enter a valid email address');
+      return;
+    }
+
+    try {
+      const { error } = await supabaseClient.auth.resetPasswordForEmail(email);
+      if (error) {
+        Alert.alert('Error', error.message);
+      } else {
+        Alert.alert(
+          'Check Your Email',
+          `We've sent a password reset link to ${email}.`,
+          [{ text: 'OK' }]
+        );
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to send password reset email');
     }
   };
 
@@ -110,7 +162,9 @@ export const LoginScreen: React.FC = () => {
           <Text style={styles.subtitle}>Virtual Envelope Budgeting</Text>
           
           <View style={styles.form}>
-            <Text style={styles.label}>Sign in with your email</Text>
+            <Text style={styles.label}>
+              {isSignUp ? 'Create your account' : 'Sign in to your account'}
+            </Text>
             
             <TextInput
               style={styles.input}
@@ -124,44 +178,55 @@ export const LoginScreen: React.FC = () => {
               editable={!isLoading}
             />
             
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your password"
+              placeholderTextColor="#999"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              autoCapitalize="none"
+              autoCorrect={false}
+              editable={!isLoading}
+            />
+            
             <TouchableOpacity
               style={[styles.button, isLoading && styles.buttonDisabled]}
-              onPress={handleSendMagicLink}
+              onPress={handleAuth}
               disabled={isLoading}
             >
               {isLoading ? (
                 <ActivityIndicator color="#FFF" />
               ) : (
-                <Text style={styles.buttonText}>Send Magic Link</Text>
+                <Text style={styles.buttonText}>
+                  {isSignUp ? 'Sign Up' : 'Sign In'}
+                </Text>
               )}
             </TouchableOpacity>
             
-            <Text style={styles.helpText}>
-              We'll send you a secure link to sign in without a password.
-            </Text>
+            {!isSignUp && (
+              <TouchableOpacity
+                style={styles.linkButton}
+                onPress={handleForgotPassword}
+                disabled={isLoading}
+              >
+                <Text style={styles.linkText}>Forgot Password?</Text>
+              </TouchableOpacity>
+            )}
             
-            {/* Test button for debugging */}
-            <TouchableOpacity
-              style={[styles.button, { backgroundColor: '#FF6B6B', marginTop: 20 }]}
-              onPress={() => {
-                const testUrl = 'nvlp://auth/callback#access_token=test_token&refresh_token=test_refresh&expires_in=3600&token_type=bearer&type=magiclink';
-                console.log('🧪 Testing magic link by simulating Linking event...');
-                
-                // Test the magic link parsing
-                const parsedData = DeepLinkService.testMagicLink(testUrl);
-                console.log('🧪 Parsed test data:', parsedData);
-                
-                // Simulate receiving a deep link via Linking
-                Linking.openURL(testUrl).catch(err => {
-                  console.log('Expected error opening custom scheme:', err);
-                  console.log('This is normal when testing - the URL would normally come from an external source');
-                });
-                
-                Alert.alert('Test', 'Check console for deep link processing logs. Parsed data: ' + JSON.stringify(parsedData));
-              }}
-            >
-              <Text style={styles.buttonText}>Test Magic Link (Debug)</Text>
-            </TouchableOpacity>
+            <View style={styles.switchContainer}>
+              <Text style={styles.switchText}>
+                {isSignUp ? 'Already have an account?' : "Don't have an account?"}
+              </Text>
+              <TouchableOpacity
+                onPress={() => setIsSignUp(!isSignUp)}
+                disabled={isLoading}
+              >
+                <Text style={styles.switchLink}>
+                  {isSignUp ? 'Sign In' : 'Sign Up'}
+                </Text>
+              </TouchableOpacity>
+            </View>
             
             {/* Clear Storage button for debugging */}
             {__DEV__ && (
@@ -195,17 +260,13 @@ export const LoginScreen: React.FC = () => {
           </View>
 
           {/* Debug info */}
-          <View style={styles.debugInfo}>
-            <Text style={styles.debugText}>
-              Magic Link Ready: {magicLink.isReady ? '✅' : '❌'}
-            </Text>
-            <Text style={styles.debugText}>
-              Redirect URL: {magicLink.getRedirectURL()}
-            </Text>
-            <Text style={styles.debugText}>
-              Stats: {JSON.stringify(magicLink.getStats(), null, 2)}
-            </Text>
-          </View>
+          {__DEV__ && error && (
+            <View style={styles.debugInfo}>
+              <Text style={styles.debugText}>
+                Error: {error}
+              </Text>
+            </View>
+          )}
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -310,6 +371,34 @@ const styles = StyleSheet.create({
     color: '#666',
     marginBottom: 4,
     fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+  },
+  linkButton: {
+    alignItems: 'center',
+    padding: 8,
+    marginTop: 8,
+  },
+  linkText: {
+    color: '#007AFF',
+    fontSize: 14,
+  },
+  switchContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 20,
+    paddingTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#E0E0E0',
+  },
+  switchText: {
+    color: '#666',
+    fontSize: 14,
+    marginRight: 5,
+  },
+  switchLink: {
+    color: '#007AFF',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
 

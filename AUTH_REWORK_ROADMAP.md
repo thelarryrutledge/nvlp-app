@@ -118,11 +118,11 @@ If revoked → Clear tokens → Return to login
   - [x] Clear tokens if session revoked (handleSessionInvalidated method)
 
 ### Phase 5: Mobile App Updates
-- [ ] **LoginScreen changes**
-  - [ ] Add password field
-  - [ ] Switch between Sign In / Sign Up modes
-  - [ ] Add "Forgot Password?" link
-  - [ ] Remove magic link UI elements
+- [x] **LoginScreen changes** ✅ [COMPLETED]
+  - [x] Add password field
+  - [x] Switch between Sign In / Sign Up modes
+  - [x] Add "Forgot Password?" link
+  - [x] Remove magic link UI elements
   
 - [ ] **New SignUpScreen**
   - [ ] Email and password fields

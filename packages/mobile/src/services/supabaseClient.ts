@@ -21,6 +21,13 @@ class SupabaseAuthClient {
   }
 
   /**
+   * Get the auth instance for direct auth operations
+   */
+  get auth() {
+    return this.client.auth;
+  }
+
+  /**
    * Send magic link to user's email using custom Edge Function
    */
   async sendMagicLink(email: string): Promise<{ success: boolean; error?: string }> {
