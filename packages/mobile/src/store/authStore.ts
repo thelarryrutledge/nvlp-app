@@ -35,6 +35,9 @@ interface AuthState {
 // Global flag to prevent multiple auth listeners
 let authListenerInitialized = false;
 
+// Global flag to prevent multiple simultaneous session handling
+let sessionHandlingInProgress = false;
+
 const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => {
@@ -286,10 +289,18 @@ const useAuthStore = create<AuthState>()(
       handleSupabaseSession: async (session: Session | null) => {
         console.log('🔐 AuthStore: Handling Supabase session change:', { hasSession: !!session });
         
-        if (session) {
-          set({ isLoading: true, error: null });
-          
-          try {
+        // Prevent multiple simultaneous session handling
+        if (sessionHandlingInProgress) {
+          console.log('🔐 AuthStore: Session handling already in progress, skipping...');
+          return;
+        }
+        
+        sessionHandlingInProgress = true;
+        
+        try {
+          if (session) {
+            set({ isLoading: true, error: null });
+            
             // Validate the access token for security
             console.log('🔒 AuthStore: Validating session JWT token security...');
             const jwtValidation = validateJWTForSecurity(session.access_token);
@@ -336,17 +347,15 @@ const useAuthStore = create<AuthState>()(
               error: null,
             });
             
-            // Register device for new sign-in
-            try {
-              console.log('📱 AuthStore: Registering device after sign-in...');
-              await DeviceService.registerDevice();
+            console.log('✅ AuthStore: Session authenticated successfully');
+            
+            // Register device for new sign-in (async, don't wait for it)
+            DeviceService.registerDevice().then(() => {
               console.log('✅ AuthStore: Device registered successfully');
-            } catch (deviceError) {
+            }).catch((deviceError) => {
               console.warn('⚠️ AuthStore: Device registration failed:', deviceError);
               // Don't fail auth if device registration fails
-            }
-            
-            console.log('✅ AuthStore: Session authenticated successfully');
+            });
           } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Session authentication failed';
             console.error('❌ AuthStore: Session authentication failed:', error);
@@ -375,6 +384,9 @@ const useAuthStore = create<AuthState>()(
             isLoading: false,
             error: null,
           });
+        }
+        } finally {
+          sessionHandlingInProgress = false;
         }
       },
 
