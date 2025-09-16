@@ -553,6 +553,20 @@ export class ApiClientService {
   }
 
   /**
+   * Reload the session from storage (useful after tokens are updated)
+   */
+  static async reloadSession(): Promise<void> {
+    if (!this.sessionProvider) {
+      console.warn('⚠️ ApiClientService: No session provider to reload');
+      return;
+    }
+    
+    console.log('🔄 ApiClientService: Reloading session from storage...');
+    await this.sessionProvider.loadStoredSession();
+    console.log('✅ ApiClientService: Session reloaded');
+  }
+
+  /**
    * Reinitialize the client (useful after config changes)
    */
   static async reinitialize(config?: Partial<NVLPClientConfig>): Promise<NVLPClient> {

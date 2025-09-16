@@ -81,6 +81,9 @@ const useAuthStore = create<AuthState>()(
                 lastActivity: Date.now(),
               };
               await SecureStorageService.setAuthTokens(authTokens);
+              
+              // Reload the session in the API client
+              await ApiClientService.reloadSession();
             }
           });
         } else {
@@ -321,6 +324,10 @@ const useAuthStore = create<AuthState>()(
             // Initialize API client (it will pick up the session from storage)
             console.log('🔧 AuthStore: Initializing API client...');
             await ApiClientService.initialize();
+            
+            // Reload the session in the API client to get the fresh tokens
+            console.log('🔄 AuthStore: Reloading session in API client...');
+            await ApiClientService.reloadSession();
             
             set({
               isAuthenticated: true,
