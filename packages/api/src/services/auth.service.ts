@@ -30,15 +30,25 @@ export class AuthService extends BaseService {
   }
 
   async resetPassword(email: string): Promise<void> {
-    const { error } = await this.client.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window?.location?.origin || ''}/reset-password`,
+    const { data, error } = await this.client.functions.invoke('auth-password', {
+      body: {
+        action: 'reset_password',
+        email,
+      },
     });
 
     if (error) {
       throw new ApiError(
-        ErrorCode.VALIDATION_ERROR,
-        'Failed to send password reset email',
+        ErrorCode.INTERNAL_ERROR,
+        'Password reset request failed',
         error
+      );
+    }
+
+    if (!data.success) {
+      throw new ApiError(
+        ErrorCode.VALIDATION_ERROR,
+        data.error || 'Failed to send password reset email'
       );
     }
   }
@@ -58,39 +68,61 @@ export class AuthService extends BaseService {
   }
 
   async resendVerificationEmail(email: string): Promise<void> {
-    const { error } = await this.client.auth.resend({
-      type: 'signup',
-      email,
+    const { data, error } = await this.client.functions.invoke('auth-password', {
+      body: {
+        action: 'resend_verification',
+        email,
+      },
     });
 
     if (error) {
       throw new ApiError(
-        ErrorCode.VALIDATION_ERROR,
-        'Failed to resend verification email',
+        ErrorCode.INTERNAL_ERROR,
+        'Verification email request failed',
         error
+      );
+    }
+
+    if (!data.success) {
+      throw new ApiError(
+        ErrorCode.VALIDATION_ERROR,
+        data.error || 'Failed to resend verification email'
       );
     }
   }
 
   async signInWithPassword(options: SignInOptions): Promise<User> {
-    const { data, error } = await this.client.auth.signInWithPassword({
-      email: options.email,
-      password: options.password,
+    // Call our Edge Function instead of Supabase client auth
+    const { data, error } = await this.client.functions.invoke('auth-password', {
+      body: {
+        action: 'signin',
+        email: options.email,
+        password: options.password,
+        deviceId: options.deviceId,
+        deviceName: options.deviceName,
+        deviceType: options.deviceType,
+      },
     });
 
     if (error) {
-      // Check for email not verified
-      if (error.message?.includes('Email not confirmed')) {
+      throw new ApiError(
+        ErrorCode.INTERNAL_ERROR,
+        'Authentication request failed',
+        error
+      );
+    }
+
+    if (!data.success) {
+      // Check for specific error codes
+      if (data.code === 'EMAIL_NOT_VERIFIED') {
         throw new ApiError(
           ErrorCode.VALIDATION_ERROR,
-          'Please verify your email before signing in',
-          error
+          'Please verify your email before signing in'
         );
       }
       throw new ApiError(
         ErrorCode.UNAUTHORIZED,
-        'Invalid email or password',
-        error
+        data.error || 'Invalid email or password'
       );
     }
 
@@ -101,45 +133,67 @@ export class AuthService extends BaseService {
       );
     }
 
-    // Register device if info provided
-    if (options.deviceId && data.session) {
-      await this.registerDevice({
-        deviceId: options.deviceId,
-        deviceName: options.deviceName || 'Unknown Device',
-        deviceType: options.deviceType || 'Unknown',
-      });
+    // Store the session in the Supabase client for future requests
+    if (data.session) {
+      await this.client.auth.setSession(data.session);
     }
 
     return this.getUserProfile(data.user.id);
   }
 
-  async signUp(options: SignUpOptions): Promise<User> {
-    const { data, error } = await this.client.auth.signUp({
-      email: options.email,
-      password: options.password,
-      options: {
-        data: {
-          display_name: options.displayName,
-        },
+  async signUp(options: SignUpOptions): Promise<{ user: User; requiresVerification: boolean }> {
+    // Call our Edge Function instead of Supabase client auth
+    const { data, error } = await this.client.functions.invoke('auth-password', {
+      body: {
+        action: 'signup',
+        email: options.email,
+        password: options.password,
+        displayName: options.displayName,
       },
     });
 
     if (error) {
       throw new ApiError(
-        ErrorCode.VALIDATION_ERROR,
-        'Failed to create account',
+        ErrorCode.INTERNAL_ERROR,
+        'Account creation request failed',
         error
       );
     }
 
-    if (!data.user) {
+    if (!data.success) {
       throw new ApiError(
-        ErrorCode.INTERNAL_ERROR,
-        'Sign up succeeded but no user returned'
+        ErrorCode.VALIDATION_ERROR,
+        data.error || 'Failed to create account'
       );
     }
 
-    return this.getUserProfile(data.user.id);
+    if (!data.userId) {
+      throw new ApiError(
+        ErrorCode.INTERNAL_ERROR,
+        'Sign up succeeded but no user ID returned'
+      );
+    }
+
+    // For signup, we can't get the full user profile immediately since email isn't verified
+    // Return a minimal user object
+    const minimalUser: Partial<User> = {
+      id: data.userId,
+      email: options.email,
+      display_name: options.displayName || null,
+      email_confirmed_at: null, // Not confirmed yet
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      // Add required fields with defaults
+      default_currency: 'USD',
+      default_budget_id: null,
+      avatar_url: null,
+      user_id: data.userId,
+    };
+    
+    return {
+      user: minimalUser as User,
+      requiresVerification: true,
+    };
   }
 
   async signOut(): Promise<void> {

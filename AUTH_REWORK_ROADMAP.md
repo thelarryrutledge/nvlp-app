@@ -106,16 +106,16 @@ If revoked → Clear tokens → Return to login
   - [x] Add sign out all devices method
   - [x] Handle email verification errors
 
-### Phase 4: Client Package Updates
-- [ ] **Update UnifiedClient**
-  - [ ] Remove magic link methods
-  - [ ] Add email/password auth methods
-  - [ ] Update error handling for revoked sessions
+### Phase 4: Client Package Updates ✅ [COMPLETED]
+- [x] **Update UnifiedClient**
+  - [x] Remove magic link methods (N/A - client doesn't implement auth methods)
+  - [x] Add email/password auth methods (N/A - handled by SessionProvider)
+  - [x] Update error handling for revoked sessions (already implemented)
   
-- [ ] **Token management**
-  - [ ] Keep existing token storage logic
-  - [ ] Add session validation on refresh
-  - [ ] Clear tokens if session revoked
+- [x] **Token management**
+  - [x] Keep existing token storage logic (preserved)
+  - [x] Add session validation on refresh (handled by http-client)
+  - [x] Clear tokens if session revoked (handleSessionInvalidated method)
 
 ### Phase 5: Mobile App Updates
 - [ ] **LoginScreen changes**

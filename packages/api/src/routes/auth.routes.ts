@@ -3,8 +3,9 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import { Database } from '@nvlp/types';
 
 export interface AuthRouteHandlers {
-  sendMagicLink: (email: string, redirectTo?: string) => Promise<{ success: boolean; message: string }>;
-  handleCallback: (code: string) => Promise<{ success: boolean; user?: any }>;
+  signUp: (email: string, password: string, displayName?: string) => Promise<{ success: boolean; message: string; user?: any }>;
+  signIn: (email: string, password: string, deviceInfo?: any) => Promise<{ success: boolean; user?: any }>;
+  resetPassword: (email: string) => Promise<{ success: boolean; message: string }>;
   logout: () => Promise<{ success: boolean }>;
   getCurrentUser: () => Promise<{ user: any | null }>;
   updateUserProfile: (updates: any) => Promise<{ user: any }>;
@@ -14,20 +15,32 @@ export function createAuthRoutes(client: SupabaseClient<Database>): AuthRouteHan
   const authService = new AuthService(client);
 
   return {
-    sendMagicLink: async (email: string, redirectTo?: string) => {
-      await authService.signInWithMagicLink({ email, redirectTo });
+    signUp: async (email: string, password: string, displayName?: string) => {
+      const user = await authService.signUp({ email, password, displayName });
       return {
         success: true,
-        message: 'Magic link sent to your email'
+        message: 'Account created! Please check your email to verify.',
+        user
       };
     },
 
-    handleCallback: async (code: string) => {
-      // The callback is handled automatically by Supabase client
-      // This endpoint would be used in a server environment to exchange the code
+    signIn: async (email: string, password: string, deviceInfo?: any) => {
+      const user = await authService.signInWithPassword({
+        email,
+        password,
+        ...deviceInfo
+      });
       return {
         success: true,
-        message: 'Authentication successful'
+        user
+      };
+    },
+
+    resetPassword: async (email: string) => {
+      await authService.resetPassword(email);
+      return {
+        success: true,
+        message: 'Password reset email sent'
       };
     },
 
