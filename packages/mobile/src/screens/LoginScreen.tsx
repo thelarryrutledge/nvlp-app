@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthContext } from '../contexts/AuthContext';
+import useAuthStore from '../store/authStore';
 import supabaseClient from '../services/supabaseClient';
 import reactotron from '../config/reactotron';
 import SecureStorageService from '../services/secureStorage';
@@ -24,6 +25,7 @@ export const LoginScreen: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   
   const { isAuthenticated, error } = useAuthContext();
+  const authStore = useAuthStore();
   
   // Debug logging
   React.useEffect(() => {
@@ -56,50 +58,38 @@ export const LoginScreen: React.FC = () => {
     try {
       if (isSignUp) {
         reactotron.log('📝 Signing up user:', email);
-        const { data, error } = await supabaseClient.auth.signUp({
-          email,
-          password,
-        });
+        await authStore.signUpWithEmailPassword(email, password);
         
-        if (error) {
-          Alert.alert('Error', error.message);
-        } else if (data.user) {
-          Alert.alert(
-            'Check Your Email',
-            `We've sent a verification email to ${email}. Please verify your email before signing in.`,
-            [{ text: 'OK', onPress: () => setIsSignUp(false) }]
-          );
-          // Clear fields
-          setEmail('');
-          setPassword('');
-        }
+        Alert.alert(
+          'Check Your Email',
+          `We've sent a verification email to ${email}. Please verify your email before signing in.`,
+          [{ text: 'OK', onPress: () => setIsSignUp(false) }]
+        );
+        
+        // Clear fields
+        setEmail('');
+        setPassword('');
       } else {
         reactotron.log('🔑 Signing in user:', email);
-        const { data, error } = await supabaseClient.auth.signInWithPassword({
-          email,
-          password,
-        });
+        await authStore.signInWithEmailPassword(email, password);
         
-        if (error) {
-          if (error.message.includes('Email not confirmed')) {
-            Alert.alert(
-              'Email Not Verified',
-              'Please check your email and verify your account before signing in.',
-              [{ text: 'OK' }]
-            );
-          } else {
-            Alert.alert('Error', error.message);
-          }
-        }
-        // If successful, the auth state change will be handled by the auth context
+        // If successful, auth state will be updated and user will be redirected
+        reactotron.log('✅ Sign in successful');
       }
     } catch (error) {
       reactotron.error('Authentication failed:', error as Error);
-      Alert.alert(
-        'Error',
-        'An unexpected error occurred. Please try again.',
-        [{ text: 'OK' }]
-      );
+      
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred. Please try again.';
+      
+      if (errorMessage.includes('Email not confirmed') || errorMessage.includes('EMAIL_NOT_VERIFIED')) {
+        Alert.alert(
+          'Email Not Verified',
+          'Please check your email and verify your account before signing in.',
+          [{ text: 'OK' }]
+        );
+      } else {
+        Alert.alert('Error', errorMessage);
+      }
     } finally {
       setIsLoading(false);
     }

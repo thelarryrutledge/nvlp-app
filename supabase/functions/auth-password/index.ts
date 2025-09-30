@@ -358,10 +358,36 @@ const handler = async (req: Request) => {
           )
         }
 
-        const token = authHeader.replace('Bearer ', '')
+        // Create a client with the user's auth context
+        const userClient = createClient(
+          Deno.env.get('SUPABASE_URL') ?? '',
+          Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+          {
+            global: {
+              headers: { Authorization: authHeader }
+            },
+            auth: {
+              autoRefreshToken: false,
+              persistSession: false
+            }
+          }
+        )
         
-        // Sign out the current session
-        const { error } = await supabaseClient.auth.admin.signOut(token)
+        // Get the current user to verify token is valid
+        const { data: { user }, error: userError } = await userClient.auth.getUser()
+        
+        if (userError || !user) {
+          return new Response(
+            JSON.stringify({ error: 'Invalid or expired token' }),
+            { 
+              status: 401,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          )
+        }
+        
+        // Sign out the user's session
+        const { error } = await userClient.auth.signOut()
 
         if (error) {
           return new Response(
@@ -373,7 +399,8 @@ const handler = async (req: Request) => {
           )
         }
 
-        // Mark session as inactive
+        // Mark session as inactive (using service role client)
+        const token = authHeader.replace('Bearer ', '')
         await supabaseClient
           .from('user_sessions')
           .update({ 
